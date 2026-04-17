@@ -196,3 +196,37 @@ body {
         height: 100px;
     }
 }
+
+.char-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 480px;
+    /* 배너 폭 확장 */
+    padding: 15px;
+}
+
+.sub-poses {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mini-pose {
+    width: 50px !important;
+    height: 50px !important;
+    opacity: 0.7;
+    filter: grayscale(20%);
+    transition: 0.3s;
+}
+
+.mini-pose:hover {
+    opacity: 1;
+    filter: grayscale(0%);
+    transform: scale(1.2);
+}
+
+.main-img {
+    width: 160px !important;
+    height: 160px !important;
+}

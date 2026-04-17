@@ -9,93 +9,87 @@
     <link rel="stylesheet" href="style.css">
     <style>
         :root {
-            --card-radius: 24px;
+            --card-radius: 28px;
             --zio-soft: #e0f7fa;
             --zia-soft: #fff0f3;
         }
 
-        /* 캐릭터 배너 처음 구조로 복구 (넓고 안정적인 대칭) */
         .character-banners {
             display: flex;
             justify-content: center;
-            gap: 40px;
+            gap: 30px;
             margin-bottom: 40px;
             flex-wrap: wrap;
         }
 
         .char-banner {
-            width: 480px;
-            padding: 20px;
+            width: 420px;
+            padding: 25px;
             border-radius: 35px;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .zio-banner {
-            background: var(--zio-soft) !important;
-            border: 3px solid #b2ebf2 !important;
-        }
-
-        .zia-banner {
-            background: var(--zia-soft) !important;
-            border: 3px solid #ffdde1 !important;
-        }
-
-        .sub-poses {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .mini-pose {
-            width: 60px !important;
-            height: 60px !important;
-            border-radius: 15px;
-            object-fit: contain;
-            background: rgba(255, 255, 255, 0.5);
-            padding: 5px;
-        }
-
-        .main-pose-box {
-            display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        .main-img {
-            width: 150px !important;
-            height: 150px !important;
-            border-radius: 50% !important;
-            object-fit: cover;
-            border: 4px solid white;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-            background-color: #000;
-        }
-
-        .main-pose-box h3 {
-            margin-top: 10px;
+        .char-banner h3 {
             color: #001f3f;
             font-family: 'Outfit';
             font-weight: 800;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
         }
 
-        /* 아이템 그리드 */
+        /* 방울(Bubble) 클러스터 디자인 */
+        .bubble-cluster {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .bubble {
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.08);
+            background-color: #fff;
+        }
+
+        .b-lg {
+            width: 130px;
+            height: 130px;
+        }
+
+        .b-md {
+            width: 90px;
+            height: 90px;
+        }
+
+        .b-sm {
+            width: 65px;
+            height: 65px;
+        }
+
         .items-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
             gap: 20px;
             padding: 20px;
+            width: 100%;
             max-width: 1100px;
             margin: 0 auto;
         }
 
+        /* 카드 90도 직각 해결 (overflow & inner radius) */
         .item-placeholder {
             border-radius: var(--card-radius) !important;
             border: 2px solid white !important;
             cursor: pointer;
             transition: 0.3s;
-            background: rgba(255, 255, 255, 0.6) !important;
+            overflow: hidden;
+            /* 배경 삐져나옴 방지 */
+            background: rgba(255, 255, 255, 0.5);
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -104,15 +98,15 @@
         }
 
         .item-placeholder:hover {
-            transform: translateY(-5px);
+            transform: scale(1.05);
             background: white !important;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         }
 
         .item-placeholder img {
             width: 85% !important;
             height: auto;
-            object-fit: contain;
+            border-radius: 16px;
+            /* 이미지 자체도 둥글게 */
         }
 
         .item-name-label {
@@ -122,10 +116,8 @@
             margin-top: 10px;
             color: #546e7a;
             text-transform: uppercase;
-            text-align: center;
         }
 
-        /* 팝업 모달 */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -183,29 +175,33 @@
 
         <main class="game-container">
             <div class="character-banners">
-                <div class="char-banner zio-banner glass">
-                    <div class="sub-poses left">
-                        <img src="assets/zio-cat-emo-pose.png" class="mini-pose">
-                    </div>
-                    <div class="main-pose-box">
-                        <img src="assets/zio.png" class="main-img">
-                        <h3>Zio Cat</h3>
-                    </div>
-                    <div class="sub-poses right">
-                        <img src="assets/zio-cat-emo-pose-1.png" class="mini-pose">
+                <div class="char-banner zio-banner glass"
+                    style="background: var(--zio-soft) !important; border: 3px solid #b2ebf2 !important;">
+                    <h3>Zio Cat</h3>
+                    <div class="bubble-cluster">
+                        <img src="assets/zio_awe.png" class="bubble b-sm"
+                            onerror="this.src='https://via.placeholder.com/65'">
+                        <img src="assets/zio_tucked.png" class="bubble b-lg"
+                            onerror="this.src='https://via.placeholder.com/130'">
+                        <img src="assets/zio_pleading.png" class="bubble b-md"
+                            onerror="this.src='https://via.placeholder.com/90'">
+                        <img src="assets/zio_hiding.png" class="bubble b-sm"
+                            onerror="this.src='https://via.placeholder.com/65'">
                     </div>
                 </div>
 
-                <div class="char-banner zia-banner glass">
-                    <div class="sub-poses left">
-                        <img src="assets/zia-cat-emo-pose.png" class="mini-pose">
-                    </div>
-                    <div class="main-pose-box">
-                        <img src="assets/zia.png" class="main-img">
-                        <h3>Zia Cat</h3>
-                    </div>
-                    <div class="sub-poses right">
-                        <img src="assets/zia-cat-emo-pose-1.png" class="mini-pose">
+                <div class="char-banner zia-banner glass"
+                    style="background: var(--zia-soft) !important; border: 3px solid #ffdde1 !important;">
+                    <h3>Zia Cat</h3>
+                    <div class="bubble-cluster">
+                        <img src="assets/zia_yarn.png" class="bubble b-sm"
+                            onerror="this.src='https://via.placeholder.com/65'">
+                        <img src="assets/zia_sitting.png" class="bubble b-lg"
+                            onerror="this.src='https://via.placeholder.com/130'">
+                        <img src="assets/zia_rolling.png" class="bubble b-md"
+                            onerror="this.src='https://via.placeholder.com/90'">
+                        <img src="assets/zia_stretching.png" class="bubble b-sm"
+                            onerror="this.src='https://via.placeholder.com/65'">
                     </div>
                 </div>
             </div>
