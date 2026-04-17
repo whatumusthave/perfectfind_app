@@ -9,73 +9,123 @@
     <link rel="stylesheet" href="style.css">
     <style>
         :root {
-            --card-radius: 28px;
-            --zio-main: #001f3f;
+            --card-radius: 24px;
             --zio-soft: #e0f7fa;
-            --zia-main: #ffb6c1;
             --zia-soft: #fff0f3;
         }
 
-        /* 점선 제거 및 고급스러운 실선 보정 */
-        .item-placeholder {
-            border: 2px solid rgba(255, 255, 255, 0.8) !important;
-            background: rgba(255, 255, 255, 0.5) !important;
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.03);
-            border-radius: var(--card-radius) !important;
-            cursor: pointer;
-            transition: 0.3s;
+        /* 캐릭터 배너 처음 구조로 복구 (넓고 안정적인 대칭) */
+        .character-banners {
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
-            padding: 15px !important;
+            gap: 40px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
         }
 
-        .item-placeholder:hover {
-            transform: scale(1.05);
-            background: white !important;
+        .char-banner {
+            width: 480px;
+            padding: 20px;
+            border-radius: 35px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
 
-        .item-placeholder img {
-            width: 85%;
-            height: auto;
-            object-fit: contain;
-        }
-
-        /* 캐릭터 배너 컬러 매칭 최적화 */
         .zio-banner {
             background: var(--zio-soft) !important;
             border: 3px solid #b2ebf2 !important;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 20px;
-            border-radius: 30px;
         }
 
         .zia-banner {
             background: var(--zia-soft) !important;
             border: 3px solid #ffdde1 !important;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            padding: 20px;
-            border-radius: 30px;
         }
 
-        .main-img {
-            width: 160px !important;
-            height: 160px !important;
-            filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.1));
+        .sub-poses {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
         .mini-pose {
             width: 60px !important;
             height: 60px !important;
-            border-radius: 12px;
-            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 15px;
+            object-fit: contain;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 5px;
         }
 
+        .main-pose-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .main-img {
+            width: 150px !important;
+            height: 150px !important;
+            border-radius: 50% !important;
+            object-fit: cover;
+            border: 4px solid white;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            background-color: #000;
+        }
+
+        .main-pose-box h3 {
+            margin-top: 10px;
+            color: #001f3f;
+            font-family: 'Outfit';
+            font-weight: 800;
+        }
+
+        /* 아이템 그리드 */
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .item-placeholder {
+            border-radius: var(--card-radius) !important;
+            border: 2px solid white !important;
+            cursor: pointer;
+            transition: 0.3s;
+            background: rgba(255, 255, 255, 0.6) !important;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+        }
+
+        .item-placeholder:hover {
+            transform: translateY(-5px);
+            background: white !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .item-placeholder img {
+            width: 85% !important;
+            height: auto;
+            object-fit: contain;
+        }
+
+        .item-name-label {
+            font-family: 'Outfit';
+            font-size: 0.75rem;
+            font-weight: 800;
+            margin-top: 10px;
+            color: #546e7a;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        /* 팝업 모달 */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -99,9 +149,22 @@
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
         }
 
+        .item-modal h2 {
+            color: #001f3f;
+            font-family: 'Outfit';
+            font-weight: 800;
+            margin-bottom: 15px;
+        }
+
+        .item-modal p {
+            color: #2c3e50;
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
         .close-btn {
             margin-top: 25px;
-            background: var(--zio-main);
+            background: #001f3f;
             color: white;
             border: none;
             padding: 12px 35px;
@@ -121,21 +184,34 @@
         <main class="game-container">
             <div class="character-banners">
                 <div class="char-banner zio-banner glass">
-                    <img src="assets/zio-cat-emo-pose.png" class="mini-pose">
-                    <div class="main-pose-box"><img src="assets/zio.png" alt="Zio Main" class="main-img">
+                    <div class="sub-poses left">
+                        <img src="assets/zio-cat-emo-pose.png" class="mini-pose">
+                    </div>
+                    <div class="main-pose-box">
+                        <img src="assets/zio.png" class="main-img">
                         <h3>Zio Cat</h3>
                     </div>
+                    <div class="sub-poses right">
+                        <img src="assets/zio-cat-emo-pose-1.png" class="mini-pose">
+                    </div>
                 </div>
+
                 <div class="char-banner zia-banner glass">
-                    <div class="main-pose-box"><img src="assets/zia.png" alt="Zia Main" class="main-img">
+                    <div class="sub-poses left">
+                        <img src="assets/zia-cat-emo-pose.png" class="mini-pose">
+                    </div>
+                    <div class="main-pose-box">
+                        <img src="assets/zia.png" class="main-img">
                         <h3>Zia Cat</h3>
                     </div>
-                    <img src="assets/zia-cat-emo-pose.png" class="mini-pose">
+                    <div class="sub-poses right">
+                        <img src="assets/zia-cat-emo-pose-1.png" class="mini-pose">
+                    </div>
                 </div>
             </div>
 
             <section class="item-grid-section">
-                <div class="items-grid" id="items-grid">
+                <div class="items-grid">
                     <div class="item-placeholder glass"
                         onclick="showInfo('Golden Paw', 'A symbol of divine luck and the ultimate treasure of the cat kingdom.')">
                         <img src="assets/Golden_Paw.png">
@@ -150,6 +226,61 @@
                         onclick="showInfo('Fuchsia Ribbon', 'Zia\'s prized possession, woven from starlight and silken dreams.')">
                         <img src="assets/Fuchsia_Ribbon.png">
                         <div class="item-name-label">Fuchsia Ribbon</div>
+                    </div>
+                    <div class="item-placeholder glass"
+                        onclick="showInfo('Crystal Ball', 'A mystical orb that reveals hidden patterns in the cosmic puzzle.')">
+                        <img src="assets/Crystal_Ball.png">
+                        <div class="item-name-label">Crystal Ball</div>
+                    </div>
+                    <div class="item-placeholder glass"
+                        onclick="showInfo('Silver Bag', 'Contains infinite surprises from the most exclusive boutiques in DTLA.')">
+                        <img src="assets/Silver_Shopping_Bag.png">
+                        <div class="item-name-label">Silver Bag</div>
+                    </div>
+                    <div class="item-placeholder glass"
+                        onclick="showInfo('Royal Bed', 'A velvet throne designed for the highest level of feline relaxation.')">
+                        <img src="assets/Royal_Cat_Bed.png">
+                        <div class="item-name-label">Royal Bed</div>
+                    </div>
+                    <div class="item-placeholder glass"
+                        onclick="showInfo('Celestial Potion', 'A glowing elixir that boosts your matching speed with lunar energy.')">
+                        <img src="assets/Celestial_Potion.png">
+                        <div class="item-name-label">Celestial Potion</div>
+                    </div>
+                    <div class="item-placeholder glass"
+                        onclick="showInfo('Starry Mic', 'For the feline who dreams of becoming a galactic pop sensation.')">
+                        <img src="assets/Starry_Cat_Mic.png">
+                        <div class="item-name-label">Starry Mic</div>
+                    </div>
+                    <div class="item-placeholder glass"
+                        onclick="showInfo('Amethyst Heart', 'A rare gem that symbolizes the deep bond between Zio and Zia.')">
+                        <img src="assets/Amethyst_Heart.png">
+                        <div class="item-name-label">Amethyst Heart</div>
+                    </div>
+                    <div class="item-placeholder glass"
+                        onclick="showInfo('Midnight Cushion', 'An enchanted pillow that allows cats to travel through dreams.')">
+                        <img src="assets/Midnight_Cushion.png">
+                        <div class="item-name-label">Midnight Cushion</div>
+                    </div>
+                    <div class="item-placeholder glass"
+                        onclick="showInfo('Sapphire Paw', 'A cool, calming talisman that guides cats through the darkest nights.')">
+                        <img src="assets/Sapphire_Paw.png">
+                        <div class="item-name-label">Sapphire Paw</div>
+                    </div>
+                    <div class="item-placeholder glass"
+                        onclick="showInfo('Starlight Yarn', 'An endless ball of yarn that glows brighter the more it is played with.')">
+                        <img src="assets/Starlight_Yarn_Ball.png">
+                        <div class="item-name-label">Starlight Yarn</div>
+                    </div>
+                    <div class="item-placeholder glass"
+                        onclick="showInfo('Jeweled Key', 'The entrance to the secret vault where legendary treats are kept.')">
+                        <img src="assets/Jeweled_Keyhole.png">
+                        <div class="item-name-label">Jeweled Key</div>
+                    </div>
+                    <div class="item-placeholder glass"
+                        onclick="showInfo('Emerald Fish', 'A quirky, shimmering companion that brings joy to every match.')">
+                        <img src="assets/Emerald_Pufferfish.png">
+                        <div class="item-name-label">Emerald Fish</div>
                     </div>
                 </div>
             </section>
