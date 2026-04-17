@@ -6,18 +6,18 @@
 export const CARD_PAIRS = [
   { id: 1, name: 'Zia', img: '/assets/zia.png' },
   { id: 2, name: 'Zio', img: '/assets/zio.png' },
-  { id: 3, name: 'Golden Paw', img: '/assets/item_01.png' },
-  { id: 4, name: 'Indigo Bowtie', img: '/assets/item_02.png' },
-  { id: 5, name: 'Fuchsia Ribbon', img: '/assets/item_03.png' },
-  { id: 6, name: 'Crystal Ball', img: '/assets/item_04.png' },
-  { id: 7, name: 'Royal Cat Bed', img: '/assets/item_05.png' },
-  { id: 8, name: 'Silver Bag', img: '/assets/item_06.png' },
-  { id: 9, name: 'Emerald Fish', img: '/assets/item_07.png' },
-  { id: 10, name: 'Luxury Snack', img: '/assets/item_08.png' },
-  { id: 11, name: 'Catnip Toy', img: '/assets/item_09.png' },
-  { id: 12, name: 'Grooming Brush', img: '/assets/item_10.png' },
-  { id: 13, name: 'Feather Wand', img: '/assets/item_11.png' },
-  { id: 14, name: 'Premium Can', img: '/assets/item_12.png' }
+  { id: 3, name: 'Golden Paw', img: '/assets/Golden_Paw.png' },
+  { id: 4, name: 'Indigo Bowtie', img: '/assets/Indigo_Bowtie.png' },
+  { id: 5, name: 'Fuchsia Ribbon', img: '/assets/Fuchsia_Ribbon.png' },
+  { id: 6, name: 'Crystal Ball', img: '/assets/Crystal_Ball.png' },
+  { id: 7, name: 'Royal Cat Bed', img: '/assets/Royal_Cat_Bed.png' },
+  { id: 8, name: 'Silver Bag', img: '/assets/Silver_Shopping_Bag.png' },
+  { id: 9, name: 'Emerald Pufferfish', img: '/assets/Emerald_Pufferfish.png' },
+  { id: 10, name: 'Luxury Snack', img: '/assets/Silver_Shopping_Bag.png' },
+  { id: 11, name: 'Catnip Toy', img: '/assets/Emerald_Pufferfish.png' },
+  { id: 12, name: 'Grooming Brush', img: '/assets/Luxury_Cat_Snack.png' },
+  { id: 13, name: 'Feather Wand', img: '/assets/Catnip_Toy.png' },
+  { id: 14, name: 'Premium Can', img: '/assets/Grooming_Brush.png' }
 ];
 
 const gameConfig = {

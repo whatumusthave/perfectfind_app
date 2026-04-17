@@ -28,9 +28,9 @@ def generate_card(item_id):
     
     items = {
         7: {
-            "name": "Emerald Fish",
+            "name": "Emerald Pufferfish",
             "url": "https://lh3.googleusercontent.com/aida-public/AB6AXuA8xQgpD02QFrhSGKKvFXmmGyMqn-YlWN6Xie8Cv0A5-DkkZX4hrov0l-K2nn1J0MiucjfKdygfvYgjdKJFeKTIyta5fkk0aROar2JLPCzClpybWJO0PE0yZvjd5IRV_qMs-MgUbBKLdmx1oGQEbmYBPIehCE6NSWlTOX7yG5-_dE7Vmmw_2MBa_s2VDkKf4A50Gq3FErmpRDwEUTy0-8iA5UQgURABg6UD8NKBlr8UKKaQslhA7-tjda278PCdkO6zgJvCzMDkyDF8",
-            "filename": "07_emerald_fish.png"
+            "filename": "Emerald_Pufferfish.png"
         }
     }
     
