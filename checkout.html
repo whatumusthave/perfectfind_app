@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Perfect Paw Match</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="policy-page">
+    <div class="policy-container glass">
+        <a href="index.html" class="back-link">← Back to Home</a>
+        <h1>Secure Checkout</h1>
+        <p>Premium Digital Collection</p>
+        
+        <div class="content">
+            <div class="purchase-summary">
+                <div class="product-info">
+                    <img src="zio_showhost.png" alt="Product" style="width: 100px; border-radius: 15px;">
+                    <div>
+                        <h3>Perfect Paw Match Asset Bundle</h3>
+                        <p>High-resolution 3D assets & Exclusive Game Access</p>
+                    </div>
+                </div>
+                <div class="price-details">
+                    <div class="price-row">
+                        <span>Bundle Price</span>
+                        <span>$1.99</span>
+                    </div>
+                    <div class="price-row total">
+                        <span>Total Due</span>
+                        <span>$1.99</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="payment-action" style="margin-top: 40px; text-align: center;">
+                <p style="margin-bottom: 20px; font-size: 0.85rem; opacity: 0.7;">Secure payment processed by Stripe.</p>
+                <button id="pay-button" style="width: 100%; max-width: 300px; padding: 15px; font-size: 1.1rem;">
+                    Pay & Start Playing
+                </button>
+            </div>
+        </div>
+
+        <div class="info-section glass" style="margin-top: 40px; grid-template-columns: 1fr;">
+            <div class="info-block">
+                <h3>Safe & Secure</h3>
+                <p>Your payment information is encrypted and never stored on our servers. By purchasing, you agree to our <a href="tos.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('pay-button').addEventListener('click', function() {
+            // Success page for demonstration
+            window.location.href = 'success.html';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,529 @@
+:root {
+    --zio-primary: #001f3f;
+    --zio-accent: #7fffd4; /* Mint Blue */
+    --zia-primary: #ffb6c1; /* Pink */
+    --zia-accent: #e6e6fa; /* Lavender */
+    --glass-bg: rgba(255, 255, 255, 0.2);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --text-main: #2c3e50;
+    --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Outfit', 'Gowun Dodum', sans-serif;
+}
+
+body {
+    background: var(--bg-gradient);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-main);
+    overflow-x: hidden;
+}
+
+.page-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+#app-wrapper {
+    width: 100%;
+    max-width: 1200px;
+    height: 95vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+}
+
+/* --- Header --- */
+.premium-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+}
+
+.premium-logo {
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(45deg, var(--zio-primary), var(--zia-primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+}
+
+.stats-area {
+    display: flex;
+    gap: 15px;
+}
+
+.stat-item {
+    padding: 8px 20px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 110px;
+}
+
+.glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+.stat-item .label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    opacity: 0.6;
+    letter-spacing: 1px;
+}
+
+.stat-item .value {
+    font-size: 1.3rem;
+    font-weight: 800;
+}
+
+/* --- Game Stage --- */
+.game-stage {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px;
+}
+
+.stack-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    width: 250px;
+}
+
+.character-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    padding: 8px;
+    background: white;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: transform 0.3s;
+}
+
+.character-circle:hover { transform: scale(1.05); }
+
+.character-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.zio-glow { border: 3px solid var(--zio-accent); box-shadow: 0 0 15px rgba(127, 255, 212, 0.3); }
+.zia-glow { border: 3px solid var(--zia-primary); box-shadow: 0 0 15px rgba(255, 182, 193, 0.3); }
+
+.stack-meta {
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    font-size: 0.8rem;
+    opacity: 0.8;
+}
+
+.card-stack {
+    position: relative;
+    width: 110px;
+    height: 160px;
+}
+
+/* --- Cards --- */
+.game-card {
+    position: absolute;
+    width: 100%;
+    height: 110px;
+    background: white;
+    border-radius: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    border: 2px solid #f8f9fa;
+    user-select: none;
+    overflow: hidden; /* Ensure high-res images don't bleed out during scaling */
+}
+
+.game-card img {
+    width: 85%;
+    height: 85%;
+    object-fit: contain;
+    pointer-events: none;
+    transition: transform 0.2s;
+}
+
+.game-card:active { transform: scale(0.9); }
+
+/* --- Center Zone --- */
+.center-zone {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.message-box {
+    padding: 12px 25px;
+    border-radius: 50px;
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--zio-primary);
+    transition: all 0.4s ease;
+    z-index: 10;
+}
+
+.hidden { opacity: 0; transform: translateY(10px); pointer-events: none; }
+
+/* --- Tray Area --- */
+.tray-area {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.tray-container {
+    width: 650px;
+    padding: 12px;
+    border-radius: 22px;
+}
+
+.slots-grid {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.slot {
+    width: 75px;
+    height: 75px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 14px;
+    border: 1.5px dashed rgba(0,0,0,0.04);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.tray-card {
+    position: relative;
+    width: 65px;
+    height: 65px;
+    font-size: 1.8rem;
+    border-radius: 12px;
+}
+
+.tray-label {
+    font-size: 0.65rem;
+    font-weight: 800;
+    opacity: 0.4;
+    letter-spacing: 1px;
+}
+
+/* --- Overlay --- */
+.overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255,255,255,0.6);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    border-radius: 20px;
+}
+
+.modal {
+    padding: 30px;
+    border-radius: 25px;
+    text-align: center;
+}
+
+.modal h2 { font-size: 1.8rem; margin-bottom: 8px; color: var(--zio-primary); }
+.modal p { margin-bottom: 25px; font-size: 0.9rem; opacity: 0.7; }
+
+button {
+    padding: 12px 25px;
+    border-radius: 50px;
+    border: none;
+    background: var(--zio-primary);
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* --- Policy Pages --- */
+.policy-page {
+    background: #fdfdfd;
+    height: auto;
+    display: block;
+    padding: 40px 20px;
+}
+
+.policy-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px;
+    border-radius: 30px;
+    background: white;
+}
+
+.policy-container h1 {
+    font-size: 2.5rem;
+    color: var(--zio-primary);
+    margin-bottom: 5px;
+}
+
+.policy-container p {
+    font-size: 0.9rem;
+    opacity: 0.6;
+    margin-bottom: 30px;
+}
+
+.policy-container .content h2 {
+    font-size: 1.4rem;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    color: var(--zio-primary);
+}
+
+.policy-container .content p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-main);
+    margin-bottom: 15px;
+    opacity: 0.9;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 20px;
+    text-decoration: none;
+    color: var(--zio-primary);
+    font-weight: 600;
+}
+
+/* --- Game Page Extras --- */
+.game-page {
+    background: var(--bg-gradient);
+    height: 100vh;
+    overflow: hidden;
+}
+
+.item-grid-section {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 15px;
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.item-placeholder {
+    aspect-ratio: 1/1;
+    border-radius: 15px;
+    border: 2px dashed var(--glass-border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(0,0,0,0.3);
+    transition: all 0.3s;
+}
+
+.item-placeholder:hover {
+    border-color: var(--zia-primary);
+    background: rgba(255, 182, 193, 0.1);
+    color: var(--zia-primary);
+}
+
+.info-section {
+    margin-top: 40px;
+    padding: 30px;
+    border-radius: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    text-align: left;
+}
+
+.info-block h3 {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+    color: var(--zio-primary);
+}
+
+.info-block p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    opacity: 0.8;
+}
+
+/* --- AdSense Optimized Layout --- */
+.main-nav {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 20px 0;
+    margin-bottom: 40px;
+}
+
+.main-nav a {
+    text-decoration: none;
+    color: var(--zio-primary);
+    font-weight: 800;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    transition: 0.3s;
+}
+
+.main-nav a:hover { color: var(--zia-primary); }
+
+.content-section {
+    background: white;
+    padding: 60px 40px;
+    border-radius: 30px;
+    margin-bottom: 40px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+}
+
+.section-title {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: var(--zio-primary);
+    background: linear-gradient(45deg, var(--zio-primary), var(--zia-primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.section-text {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    opacity: 0.8;
+    margin-bottom: 40px;
+}
+
+/* --- Item Grid --- */
+.item-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 25px;
+    margin-top: 40px;
+}
+
+.grid-card {
+    background: #fdfdfd;
+    border: 1.5px solid #f1f1f1;
+    border-radius: 20px;
+    padding: 20px;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.grid-card:hover { 
+    transform: translateY(-5px);
+    border-color: var(--zia-primary);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.05);
+}
+
+.grid-card img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: contain;
+    border-radius: 15px;
+    margin-bottom: 15px;
+    background: white;
+}
+
+.grid-card h4 {
+    font-size: 1rem;
+    margin-bottom: 8px;
+    color: var(--zio-primary);
+}
+
+.grid-card p {
+    font-size: 0.8rem;
+    opacity: 0.6;
+    line-height: 1.4;
+}
+
+/* --- Footer --- */
+.site-footer {
+    padding: 60px 20px;
+    text-align: center;
+    margin-top: auto;
+}
+
+.footer-links {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.footer-links a {
+    color: var(--zio-primary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    opacity: 0.6;
+}
+
+.footer-links a:hover { opacity: 1; text-decoration: underline; }
+
+.footer-contact {
+    font-size: 0.9rem;
+    opacity: 0.5;
+    margin-bottom: 10px;
+}
+
+.copyright {
+    font-size: 0.9rem;
+    font-weight: 800;
+    opacity: 0.8;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .content-section { padding: 40px 20px; }
+    .section-title { font-size: 1.8rem; }
+    .item-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+    .main-nav { gap: 15px; flex-wrap: wrap; }
+}
