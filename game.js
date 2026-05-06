@@ -81,32 +81,28 @@ function generateTiles() {
   shuffle(pool);
   
   // 2. Define positions in a "pseudo-3D" stack
-  // We'll use a coordinate system where layers are slightly offset
-  const centerX = $board.offsetWidth / 2 - CONFIG.TILE_SIZE / 2;
-  const centerY = $board.offsetHeight / 2 - CONFIG.TILE_SIZE / 2;
+  // Fallback to 800x600 if board size is not yet available
+  const boardW = $board.clientWidth || 800;
+  const boardH = $board.clientHeight || 500;
+  const centerX = boardW / 2;
+  const centerY = boardH / 2;
   
-  // Create a structured pyramid with some randomness
   let tileIndex = 0;
   
   // Layer distribution (total 84)
-  // Layer 5 (Bottom): 6x6 = 36
-  // Layer 4: 5x5 = 25
-  // Layer 3: 4x4 = 16
-  // Layer 2: 2x2 = 4
-  // Layer 1 (Top): 3 tiles centered
-  // Total = 36 + 25 + 16 + 4 + 3 = 84
-  
   const layerConfigs = [
-    { z: 0, rows: 6, cols: 6, offset: 0 },
-    { z: 1, rows: 5, cols: 5, offset: 36 },
-    { z: 2, rows: 4, cols: 4, offset: 36 + 25 },
-    { z: 3, rows: 2, cols: 2, offset: 36 + 25 + 16 },
-    { z: 4, rows: 1, cols: 3, offset: 36 + 25 + 16 + 4 }
+    { z: 0, rows: 6, cols: 6 }, // 36
+    { z: 1, rows: 5, cols: 5 }, // 25
+    { z: 2, rows: 4, cols: 4 }, // 16
+    { z: 3, rows: 2, cols: 2 }, // 4
+    { z: 4, rows: 1, cols: 3 }  // 3
   ];
   
   layerConfigs.forEach(layer => {
-    const startX = centerX - ((layer.cols - 1) * (CONFIG.TILE_SIZE / 2));
-    const startY = centerY - ((layer.rows - 1) * (CONFIG.TILE_SIZE / 2));
+    // Offset each layer slightly to create depth
+    const layerOffset = layer.z * 4;
+    const startX = centerX - ((layer.cols * CONFIG.TILE_SIZE) / 2) + layerOffset;
+    const startY = centerY - ((layer.rows * CONFIG.TILE_SIZE) / 2) + layerOffset;
     
     for (let r = 0; r < layer.rows; r++) {
       for (let c = 0; c < layer.cols; c++) {
@@ -118,8 +114,8 @@ function generateTiles() {
           type: card.id,
           img: card.img,
           name: card.name,
-          x: startX + (c * CONFIG.TILE_SIZE) + (Math.random() * 10 - 5),
-          y: startY + (r * CONFIG.TILE_SIZE) + (Math.random() * 10 - 5),
+          x: startX + (c * CONFIG.TILE_SIZE),
+          y: startY + (r * CONFIG.TILE_SIZE),
           z: layer.z,
           isBlocked: false,
           element: null
@@ -133,12 +129,16 @@ function generateTiles() {
 }
 
 function renderBoard() {
+  // Clear board before rendering
+  $board.innerHTML = '<div class="board-bg"></div>';
   state.boardTiles.forEach(tile => {
     const el = document.createElement('div');
     el.className = 'tile';
     el.id = tile.id;
-    el.style.left = `${tile.x}px`;
-    el.style.top = `${tile.y}px`;
+    // Use transform for better performance and positioning
+    el.style.left = `0px`;
+    el.style.top = `0px`;
+    el.style.transform = `translate(${tile.x}px, ${tile.y}px)`;
     el.style.zIndex = tile.z * 10;
     
     const img = document.createElement('img');
