@@ -1,80 +1,251 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Privacy Policy - Perfect Paw Match</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;600;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Outfit', sans-serif; line-height: 1.6; color: #2c3e50; padding: 40px; max-width: 800px; margin: 0 auto; }
-        h1 { color: #001f3f; border-bottom: 2px solid #eee; padding-bottom: 10px; }
-        .content { background: #f9f9f9; padding: 30px; border-radius: 20px; }
-        footer { margin-top: 40px; font-size: 0.8rem; color: #7f8c8d; text-align: center; }
-    </style>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Privacy Policy - Perfect Paw Match</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 48;
+    }
+    body {
+      background-color: #1b0b2f; /* Using surface from theme config */
+    }
+    .glass-panel {
+      background: rgba(45, 27, 105, 0.4);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(201, 184, 255, 0.1);
+    }
+    .nebula-gradient {
+      background: radial-gradient(circle at top right, rgba(112, 93, 0, 0.15), transparent),
+                  radial-gradient(circle at bottom left, rgba(78, 63, 125, 0.2), transparent);
+    }
+  </style>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+                  "on-secondary-fixed": "#1f0e4c",
+                  "primary": "#fff6df",
+                  "inverse-primary": "#705d00",
+                  "surface-container-high": "#322247",
+                  "on-secondary-fixed-variant": "#4b3d7a",
+                  "inverse-on-surface": "#39294e",
+                  "on-primary-container": "#705e00",
+                  "on-primary-fixed": "#221b00",
+                  "primary-fixed": "#ffe16d",
+                  "inverse-surface": "#eedcff",
+                  "on-tertiary": "#33226f",
+                  "secondary-fixed": "#e8deff",
+                  "tertiary": "#faf4ff",
+                  "surface-container-low": "#231437",
+                  "surface-container-lowest": "#150529",
+                  "on-primary-fixed-variant": "#544600",
+                  "surface-dim": "#1b0b2f",
+                  "on-surface": "#eedcff",
+                  "surface": "#1b0b2f",
+                  "on-tertiary-fixed-variant": "#4a3a87",
+                  "on-primary": "#3a3000",
+                  "primary-container": "#ffd700",
+                  "on-secondary": "#342662",
+                  "secondary": "#cdbdff",
+                  "outline-variant": "#4d4732",
+                  "outline": "#999077",
+                  "background": "#1b0b2f",
+                  "on-background": "#eedcff",
+                  "surface-variant": "#3d2d52",
+                  "tertiary-container": "#ded4ff",
+                  "on-surface-variant": "#d0c6ab",
+                  "secondary-container": "#4e3f7d",
+                  "surface-container-highest": "#3d2d52",
+                  "on-error-container": "#ffdad6",
+                  "on-tertiary-fixed": "#1e055a",
+                  "secondary-fixed-dim": "#cdbdff",
+                  "on-secondary-container": "#bfaef5",
+                  "on-tertiary-container": "#6253a1",
+                  "error-container": "#93000a",
+                  "surface-container": "#27183c",
+                  "surface-bright": "#423257",
+                  "on-error": "#690005",
+                  "error": "#ffb4ab",
+                  "tertiary-fixed": "#e7deff",
+                  "surface-tint": "#e9c400",
+                  "primary-fixed-dim": "#e9c400",
+                  "tertiary-fixed-dim": "#cbbeff"
+          },
+          "borderRadius": {
+                  "DEFAULT": "0.25rem",
+                  "lg": "0.5rem",
+                  "xl": "0.75rem",
+                  "full": "9999px"
+          },
+          "spacing": {
+                  "unit": "8px",
+                  "container-padding": "24px",
+                  "grid-gutter": "12px",
+                  "element-gap": "16px"
+          },
+          "fontFamily": {
+                  "body-md": ["Plus Jakarta Sans"],
+                  "label-caps": ["Plus Jakarta Sans"],
+                  "headline-md": ["Plus Jakarta Sans"],
+                  "title-sm": ["Plus Jakarta Sans"],
+                  "display-lg": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+                  "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                  "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                  "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                  "title-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                  "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+          }
+        },
+      },
+    }
+  </script>
 </head>
-<body>
-    <h1>Privacy Policy</h1>
-    <div class="content">
-        <p><em>Last Updated: April 17, 2026</em></p>
-        <p>This Privacy Policy explains how we collect, use, and protect your information when you purchase or use Perfect Paw Match (“the Game”).</p>
-        
-        <p><strong>1. Information We Collect</strong><br>
-        We may collect the following information:<br>
-        - Email address (for delivering the download link)<br>
-        - Payment confirmation details (from Stripe or Payoneer)<br>
-        - IP address (for security and fraud prevention)<br>
-        - Login information if the Game includes account features</p>
-        
-        <p>We do NOT collect or store:<br>
-        - Full credit card numbers<br>
-        - Social Security Numbers<br>
-        - Sensitive personal data</p>
-
-        <p><strong>2. How We Use Your Information</strong><br>
-        We use your information to:<br>
-        - Process your purchase<br>
-        - Deliver your download link<br>
-        - Provide customer support<br>
-        - Prevent fraud and unauthorized access<br>
-        - Improve the Game and website</p>
-
-        <p><strong>3. Payment Processing</strong><br>
-        Payments are handled by Stripe or Payoneer.<br>
-        We do not store or have access to your full payment details.</p>
-
-        <p><strong>4. Cookies</strong><br>
-        Our website may use cookies for:<br>
-        - Security<br>
-        - Session management<br>
-        - Analytics</p>
-
-        <p><strong>5. Data Security</strong><br>
-        We use industry-standard security measures:<br>
-        - HTTPS encryption<br>
-        - Secure token-based download links<br>
-        - Encrypted password storage (bcrypt/argon2)<br>
-        - Server-side protection against SQL injection and CSRF</p>
-
-        <p><strong>6. Data Retention</strong><br>
-        We keep purchase records for fraud prevention and tax compliance.<br>
-        You may request deletion of your account data at any time.</p>
-
-        <p><strong>7. Third-Party Services</strong><br>
-        We may use:<br>
-        - Stripe<br>
-        - Payoneer<br>
-        - Cloudflare<br>
-        - Google Analytics<br>
-        These services have their own privacy policies.</p>
-
-        <p><strong>8. Children</strong><br>
-        We do not knowingly collect data from children under 13.</p>
-
-        <p><strong>9. Changes to Policy</strong><br>
-        We may update this Privacy Policy at any time.</p>
-
-        <p><strong>10. Contact</strong><br>
-        For privacy questions, email: whatumusthaveis@gmail.com</p>
-    </div>
-    <footer>© 2026 Perfect Paw Match. All rights reserved.</footer>
-</body>
-</html>
+<body class="font-body-md text-on-surface nebula-gradient min-h-screen flex flex-col">
+<!-- TopAppBar Component -->
+<header class="bg-surface/80 backdrop-blur-xl text-primary-container docked full-width top-0 z-50 border-b border-secondary/20 shadow-[0_4px_20px_rgba(255,215,0,0.15)] flex justify-between items-center px-container-padding h-16 w-full fixed">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary-container">pets</span>
+<h1 class="text-title-sm font-title-sm font-bold text-primary-container tracking-wider">Perfect Paw Match</h1>
+</div>
+<div class="flex items-center gap-6">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary-container transition-colors active:scale-95 transition-transform duration-200">settings</button>
+</div>
+</header>
+<main class="flex-grow pt-16 pb-12 w-full">
+<!-- Hero Header with Image 17 -->
+<div class="relative w-full h-[400px] overflow-hidden">
+<img alt="Perfect Paw Match Heroes" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/ADBb0ujAfHPtgqaGoCfB2NyO9qOWgzwVCx3WHxBDOdocERBfSvuIeKeNvwjr3YWgEy76rBrrRcoqMsNpUszCwVRP_vlNJsi1zZHWUS-a6S_LUCqpNe9OxlXib3t59pV4HopBmm4u76kNo_0J8iWC83eJLJDn1V-TtkGThhmoUuh8m4jntKGXwsh6Cv8YQvunUclVtFeRwESp0qBMFXv7KOdR2VVBt0i0gUViGUmedmHRKWQbf1vcVffjMqDPIiS403QSmsXp6of4kmJADA" style="object-position: center;"/>
+<div class="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent flex items-center px-container-padding">
+<div class="max-w-[1280px] mx-auto w-full">
+<div class="max-w-2xl">
+<h2 class="font-display-lg text-display-lg text-primary-container mb-4">Privacy Policy</h2>
+<p class="font-body-md text-secondary">Your cosmic journey and personal data are protected by the highest celestial standards. Learn how we curate your experience at Perfect Paw Match.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Content Sections: Max Width 1280px Desktop Layout -->
+<div class="max-w-[1280px] mx-auto px-container-padding py-12">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-grid-gutter">
+<!-- Intro Section -->
+<section class="glass-panel rounded-2xl p-8 md:col-span-2 lg:col-span-3">
+<div class="flex items-start gap-4">
+<div class="p-3 bg-secondary-container/20 rounded-xl">
+<span class="material-symbols-outlined text-primary-container">security</span>
+</div>
+<div>
+<h3 class="font-title-sm text-title-sm text-primary-container mb-3">Our Commitment</h3>
+<p class="font-body-md text-on-surface-variant">At Perfect Paw Match, we believe your privacy is as precious as a shooting star. This policy outlines how we handle the fragments of data you share with us while navigating our puzzle galaxies. We are dedicated to ensuring that your cosmic identity remains secure as you traverse the nebula and match celestial companions. Last updated: May 2024.</p>
+</div>
+</div>
+</section>
+<!-- Information Collection -->
+<section class="glass-panel rounded-2xl p-8">
+<h3 class="font-title-sm text-title-sm text-primary-container mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">person_search</span>
+            Information Collection
+          </h3>
+<p class="font-body-md text-on-surface-variant mb-4">We collect data to personalize your feline constellation adventures. This includes:</p>
+<ul class="space-y-3">
+<li class="flex items-center gap-3 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+              Celestial account identifiers
+            </li>
+<li class="flex items-center gap-3 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+              Puzzle progress &amp; achievements
+            </li>
+<li class="flex items-center gap-3 text-secondary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+              Device-specific metadata
+            </li>
+</ul>
+</section>
+<!-- Data Security (Replaced Zia/Zio image with text) -->
+<section class="glass-panel rounded-2xl p-8">
+<h3 class="font-title-sm text-title-sm text-primary-container mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">verified_user</span>
+            Data Security
+          </h3>
+<p class="font-body-md text-on-surface-variant mb-4">
+            The safety of your starlight data is our top priority. We employ advanced encryption methods to protect your information against unauthorized access from rogue cosmic entities.
+          </p>
+<p class="font-body-md text-on-surface-variant">
+            Our systems are continuously monitored to ensure the highest integrity of the puzzle grid and your personal achievements across the galaxy.
+          </p>
+</section>
+<!-- Use of Data -->
+<section class="glass-panel rounded-2xl p-8">
+<h3 class="font-title-sm text-title-sm text-primary-container mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">auto_fix_high</span>
+            Use of Data
+          </h3>
+<p class="font-body-md text-on-surface-variant">Your starlight data is used exclusively to refine the nebula’s paths. We use this information to maintain the sanctity of your matches, troubleshoot planetary glitches, and provide regal customer support when your journey hits a cosmic snag.</p>
+</section>
+<!-- Cookies & Tracking -->
+<section class="glass-panel rounded-2xl p-8">
+<h3 class="font-title-sm text-title-sm text-primary-container mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">cookie</span>
+            Cookies &amp; Tracking
+          </h3>
+<p class="font-body-md text-on-surface-variant">We utilize "Star-Dust Cookies" to remember your preferences across sessions. These tiny celestial trackers help us understand which puzzle patterns evoke the most joy, allowing us to expand the universe in directions you love most.</p>
+</section>
+<!-- Third Party Services -->
+<section class="glass-panel rounded-2xl p-8 md:col-span-2">
+<div class="flex flex-col md:flex-row gap-8 items-center">
+<div class="w-full md:w-1/3 rounded-xl overflow-hidden aspect-video relative">
+<img alt="Perfect Paw Match Atmosphere" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/ADBb0uhLdnIk1yLUBVHCNjjxtNGC1sXqLcSlasxgIFJFPAYX9YMMOwXR8VffefL1y6wX1SPBtq6kQnO9VHdnwhx0_GiP2nfc-odrkferZBaSdqlm4fZEn45NZVmw03NksxMrw3jKXY1LowdZTW0LF8xpTmgaEwoo3wzsxlSbcTCjDM0j0dtxuzGFC3EI2PFMwT3T_zkPD3eOIkuHVObeYpdY_Hg0pEaOtwqTo1PRTF9wZ-n4qGyKE7JYJgIu74knG2f7r_dIR24Bw9SgcQ"/>
+<div class="absolute inset-0 flex items-center justify-center bg-black/20">
+<span class="font-display-lg text-primary-container text-2xl md:text-3xl text-center px-4 drop-shadow-lg shadow-black" style="color: #FFD700;">Perfect Paw Match</span>
+</div>
+</div>
+<div class="flex-1">
+<h3 class="font-title-sm text-title-sm text-primary-container mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined">hub</span>
+                Third Party Services
+              </h3>
+<p class="font-body-md text-on-surface-variant mb-4">To keep the nebula expanding, we partner with trusted celestial entities. This includes Google AdSense, which may serve personalized star-charts (ads). These partners have their own mystical scrolls which we encourage you to read.</p>
+<div class="p-4 bg-surface-container-high rounded-xl border border-secondary/10">
+<p class="text-label-caps font-label-caps text-secondary mb-1">NOTE ON ADSENSE</p>
+<p class="text-body-md text-on-surface/70 text-sm">Advertisements help us provide the Perfect Paw Match experience for free to all explorers across the galaxy.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Contact -->
+<section class="glass-panel rounded-2xl p-8 md:col-span-2 lg:col-span-1 text-center flex flex-col justify-center">
+<h3 class="font-title-sm text-title-sm text-primary-container mb-4">Contact the High Council</h3>
+<p class="font-body-md text-on-surface-variant mb-6">If you have questions about your data or wish to erase your cosmic footprint, please reach out to our guardians.</p>
+<a class="inline-flex items-center justify-center gap-3 bg-primary-container text-surface px-8 py-3 rounded-full font-bold shadow-[0_0_15px_rgba(255,215,0,0.3)] hover:scale-105 transition-transform active:scale-95" href="mailto:guardians@perfectpawmatch.com">
+<span class="material-symbols-outlined">mail</span>
+            Summon Support
+          </a>
+</section>
+</div>
+</div>
+</main>
+<!-- Footer Component -->
+<footer class="bg-surface-container-lowest text-secondary w-full py-8 mt-auto border-t border-secondary/10 shadow-none">
+<div class="flex flex-col items-center gap-4 w-full max-w-[1280px] mx-auto px-container-padding">
+<div class="flex gap-8">
+<a class="text-label-caps font-label-caps text-secondary/60 hover:text-primary-container transition-colors transition-opacity hover:opacity-80" href="#">Privacy</a>
+<a class="text-label-caps font-label-caps text-secondary/60 hover:text-primary-container transition-colors transition-opacity hover:opacity-80" href="#">Terms</a>
+<a class="text-label-caps font-label-caps text-secondary/60 hover:text-primary-container transition-colors transition-opacity hover:opacity-80" href="#">Contact</a>
+</div>
+<div class="text-primary-container font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">pets</span>
+        Perfect Paw Match
+      </div>
+<p class="text-body-md font-body-md text-secondary/60">© 2024 Perfect Paw Match. All celestial rights reserved.</p>
+</div>
+</footer>
+</body></html>

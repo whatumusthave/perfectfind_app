@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-secondary-fixed": "#1f0e4c",
+            "primary": "#fff6df",
+            "inverse-primary": "#705d00",
+            "surface-container-high": "#322247",
+            "on-secondary-fixed-variant": "#4b3d7a",
+            "inverse-on-surface": "#39294e",
+            "on-primary-container": "#705e00",
+            "on-primary-fixed": "#221b00",
+            "primary-fixed": "#ffe16d",
+            "inverse-surface": "#eedcff",
+            "on-tertiary": "#33226f",
+            "secondary-fixed": "#e8deff",
+            "tertiary": "#faf4ff",
+            "surface-container-low": "#231437",
+            "surface-container-lowest": "#150529",
+            "on-primary-fixed-variant": "#544600",
+            "surface-dim": "#1b0b2f",
+            "on-surface": "#eedcff",
+            "surface": "#1b0b2f",
+            "on-tertiary-fixed-variant": "#4a3a87",
+            "on-primary": "#3a3000",
+            "primary-container": "#ffd700",
+            "on-secondary": "#342662",
+            "secondary": "#cdbdff",
+            "outline-variant": "#4d4732",
+            "outline": "#999077",
+            "background": "#1b0b2f",
+            "on-background": "#eedcff",
+            "surface-variant": "#3d2d52",
+            "tertiary-container": "#ded4ff",
+            "on-surface-variant": "#d0c6ab",
+            "secondary-container": "#4e3f7d",
+            "surface-container-highest": "#3d2d52",
+            "on-error-container": "#ffdad6",
+            "on-tertiary-fixed": "#1e055a",
+            "secondary-fixed-dim": "#cdbdff",
+            "on-secondary-container": "#bfaef5",
+            "on-tertiary-container": "#6253a1",
+            "error-container": "#93000a",
+            "surface-container": "#27183c",
+            "surface-bright": "#423257",
+            "on-error": "#690005",
+            "error": "#ffb4ab",
+            "tertiary-fixed": "#e7deff",
+            "surface-tint": "#e9c400",
+            "primary-fixed-dim": "#e9c400",
+            "tertiary-fixed-dim": "#cbbeff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "unit": "8px",
+            "container-padding": "24px",
+            "grid-gutter": "12px",
+            "element-gap": "16px"
+          },
+          "fontFamily": {
+            "body-md": ["Plus Jakarta Sans"],
+            "label-caps": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "title-sm": ["Plus Jakarta Sans"],
+            "display-lg": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+            "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+            "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+            "title-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+            "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .cosmic-blur {
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .modal-glow {
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.15), 0 0 100px rgba(78, 63, 125, 0.2);
+    }
+    .star-glow {
+      filter: drop-shadow(0 0 12px rgba(255, 215, 0, 0.6));
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-hidden flex flex-col items-center justify-center relative">
+<!-- Background Game Canvas (Blurred) -->
+<div class="absolute inset-0 z-0 overflow-hidden select-none pointer-events-none blur-md scale-105 opacity-60">
+<div class="grid grid-cols-6 gap-grid-gutter p-container-padding h-full w-full max-w-[1280px] mx-auto content-center">
+<!-- Dummy Puzzle Tiles for Background Effect -->
+<div class="aspect-square bg-surface-container-high rounded-xl border border-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-secondary/30">pets</span>
+</div>
+<div class="aspect-square bg-surface-container-high rounded-xl border border-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-secondary/30">star</span>
+</div>
+<div class="aspect-square bg-primary-container/20 rounded-xl border border-primary-container/40 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-primary-container/40" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+<div class="aspect-square bg-surface-container-high rounded-xl border border-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-secondary/30">rocket_launch</span>
+</div>
+<div class="aspect-square bg-surface-container-high rounded-xl border border-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-secondary/30">cruelty_free</span>
+</div>
+<div class="aspect-square bg-surface-container-high rounded-xl border border-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-secondary/30">nightlight</span>
+</div>
+<div class="aspect-square bg-surface-container-high rounded-xl border border-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-secondary/30">potted_plant</span>
+</div>
+<div class="aspect-square bg-surface-container-high rounded-xl border border-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-secondary/30">pets</span>
+</div>
+<div class="aspect-square bg-surface-container-high rounded-xl border border-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-secondary/30">auto_awesome</span>
+</div>
+<div class="aspect-square bg-surface-container-high rounded-xl border border-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-secondary/30">star</span>
+</div>
+<div class="aspect-square bg-surface-container-high rounded-xl border border-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-secondary/30">rocket_launch</span>
+</div>
+<div class="aspect-square bg-surface-container-high rounded-xl border border-secondary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-4xl text-secondary/30">cruelty_free</span>
+</div>
+</div>
+</div>
+<!-- Modal Overlay Backdrop -->
+<div class="fixed inset-0 bg-surface-dim/80 cosmic-blur z-10 flex items-center justify-center p-6">
+<!-- Modal Container -->
+<div class="relative w-full max-w-[520px] bg-surface-container-highest/60 rounded-[32px] border border-secondary/20 modal-glow flex flex-col items-center py-12 px-10">
+<!-- Content Layout -->
+<div class="w-full flex flex-col items-center gap-8 relative z-10 text-center">
+<!-- Level Success Header -->
+<div class="space-y-2">
+<p class="font-label-caps text-label-caps text-secondary uppercase tracking-[0.2em]">Success</p>
+<h1 class="font-display-lg text-display-lg text-primary-container drop-shadow-sm">Level Complete!</h1>
+</div>
+<!-- Star Array -->
+<div class="flex items-end justify-center gap-6 py-2">
+<!-- Side Star Left -->
+<div class="w-20 h-20 flex items-center justify-center rotate-[-15deg]">
+<span class="material-symbols-outlined text-6xl text-primary-container star-glow" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<!-- Center Star (Largest) -->
+<div class="w-28 h-28 flex items-center justify-center -translate-y-4">
+<span class="material-symbols-outlined text-8xl text-primary-container star-glow" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<!-- Side Star Right -->
+<div class="w-20 h-20 flex items-center justify-center rotate-[15deg]">
+<span class="material-symbols-outlined text-6xl text-primary-container star-glow" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<!-- Score & Stats -->
+<div class="w-full space-y-5 bg-secondary-container/20 rounded-2xl p-8 border border-secondary/10">
+<div class="flex justify-between items-center px-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Final Score</span>
+<span class="font-title-sm text-title-sm text-primary-container">12,450</span>
+</div>
+<!-- Progress Bar Decoration -->
+<div class="w-full h-2.5 bg-surface-container-low rounded-full overflow-hidden">
+<div class="h-full w-full bg-gradient-to-r from-secondary to-primary-container rounded-full"></div>
+</div>
+<div class="flex justify-between items-center px-2">
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">Paws Matched</span>
+<span class="font-title-sm text-title-sm text-primary">48</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="w-full flex flex-col gap-4 pt-4">
+<button class="w-full h-16 bg-primary-container text-on-primary-container font-title-sm rounded-2xl flex items-center justify-center gap-3 shadow-[0_0_20px_rgba(255,215,0,0.3)] hover:scale-[1.02] active:scale-95 transition-all group">
+<span>Next Level</span>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<div class="flex gap-4 w-full">
+<button class="flex-1 h-14 bg-transparent border-2 border-secondary/30 text-on-surface font-label-caps rounded-xl flex items-center justify-center gap-2 hover:bg-secondary/10 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-lg">refresh</span>
+<span>Replay</span>
+</button>
+<button class="flex-1 h-14 bg-transparent border-2 border-secondary/30 text-on-surface font-label-caps rounded-xl flex items-center justify-center gap-2 hover:bg-secondary/10 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-lg">home</span>
+<span>Menu</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Background Nebula Accents (Floating Glows) -->
+<div class="absolute -z-10 top-1/4 left-1/4 w-[500px] h-[500px] bg-secondary/10 blur-[120px] rounded-full"></div>
+<div class="absolute -z-10 bottom-1/4 right-1/4 w-[400px] h-[400px] bg-primary-container/5 blur-[100px] rounded-full"></div>
+</div>
+</body></html>
