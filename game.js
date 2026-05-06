@@ -1,10 +1,10 @@
 /**
- * Perfect Paw Match — Ultimate Triple-Match Tile Game
- * Viral "Sheep a Sheep" Mechanics Implementation
+ * Perfect Paw Match — Rebuilt from Reference (yly.mebtte.com style)
+ * Core Mechanics: Pyramid Stacking, Overlap Blocking, Slot Sorting, Match-3
  */
 
-// ─── CARD ASSETS ────────────────────────────────────────────────────────────
-const CARD_ASSETS = [
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const CARD_TYPES = [
   { id: 'amethyst_heart',   name: 'Amethyst Heart',   img: 'assets/cards/amethyst_heart.png' },
   { id: 'celestial_potion', name: 'Celestial Potion', img: 'assets/cards/celestial_potion.png' },
   { id: 'crystal_ball',     name: 'Crystal Ball',     img: 'assets/cards/crystal_ball.png' },
@@ -21,289 +21,256 @@ const CARD_ASSETS = [
   { id: 'starry_cat_mic',   name: 'Starry Cat Mic',   img: 'assets/cards/starry_cat_mic.png' },
 ];
 
-// ─── GAME CONFIG ────────────────────────────────────────────────────────────
 const CONFIG = {
-  SLOT_CAPACITY: 7,
-  TILE_SIZE: 72,
-  OVERLAP_THRESHOLD: 40, // How many pixels overlap counts as "blocking"
-  PYRAMID_LAYERS: 6,
-  TOTAL_TRIPLES: 28, // 28 * 3 = 84 tiles total
+  SLOT_MAX: 7,
+  TILE_W: 72,
+  TILE_H: 72,
+  TOTAL_TILES: 84, // 14 cards * 6
 };
 
 // ─── STATE ──────────────────────────────────────────────────────────────────
 let state = {
-  boardTiles: [], // { id, type, x, y, z, isBlocked, element }
+  boardTiles: [], // { id, type, x, y, layer, element, isBlocked }
   slotTiles: [],  // [ { type, element } ]
   score: 0,
+  matches: 0,
   isGameOver: false,
-  isWin: false,
 };
 
-// ─── DOM ELEMENTS ───────────────────────────────────────────────────────────
+// ─── DOM ────────────────────────────────────────────────────────────────────
 const $board = document.getElementById('game-board');
 const $slotBar = document.getElementById('slot-bar');
-const $scoreDisplay = document.getElementById('score-display');
+const $scoreDisp = document.getElementById('score-display');
+const $headerScore = document.getElementById('header-score');
 const $tilesLeft = document.getElementById('tiles-left');
 const $overlay = document.getElementById('game-overlay');
 const $toast = document.getElementById('toast');
 
-// ─── INITIALIZATION ─────────────────────────────────────────────────────────
-function initGame() {
-  // Clear previous state
-  $board.innerHTML = '';
+// ─── INIT ────────────────────────────────────────────────────────────────────
+function init() {
+  $board.innerHTML = '<div class="board-bg"></div>';
   $slotBar.innerHTML = '';
   state.boardTiles = [];
   state.slotTiles = [];
   state.score = 0;
+  state.matches = 0;
   state.isGameOver = false;
-  state.isWin = false;
+  
   $overlay.classList.remove('show');
   
+  const pool = generateTilePool();
+  createPyramidLayout(pool);
+  updateBlockedState();
   updateStats();
-  generateTiles();
-  renderBoard();
-  checkBlockedState();
   
-  showToast("🌟 Game Started! Match 3 to clear.");
+  showToast("💎 Find all 28 triples to win!");
 }
 
-// ─── TILE GENERATION ────────────────────────────────────────────────────────
-function generateTiles() {
-  // 1. Create a pool of 84 tiles (14 card types * 6 copies each = 28 triples)
-  let pool = [];
-  CARD_ASSETS.forEach(card => {
+// ─── LAYOUT ─────────────────────────────────────────────────────────────────
+function generateTilePool() {
+  const pool = [];
+  CARD_TYPES.forEach(card => {
     for (let i = 0; i < 6; i++) {
       pool.push({ ...card });
     }
   });
-  
-  // Shuffle the pool
-  shuffle(pool);
-  
-  // 2. Define positions in a "pseudo-3D" stack
-  // Fallback to 800x600 if board size is not yet available
+  return shuffle(pool);
+}
+
+function createPyramidLayout(pool) {
+  // Use clientWidth/Height with fallbacks
   const boardW = $board.clientWidth || 800;
   const boardH = $board.clientHeight || 500;
   const centerX = boardW / 2;
   const centerY = boardH / 2;
-  
-  let tileIndex = 0;
-  
-  // Layer distribution (total 84)
+
   const layerConfigs = [
-    { z: 0, rows: 6, cols: 6 }, // 36
-    { z: 1, rows: 5, cols: 5 }, // 25
-    { z: 2, rows: 4, cols: 4 }, // 16
-    { z: 3, rows: 2, cols: 2 }, // 4
-    { z: 4, rows: 1, cols: 3 }  // 3
+    { z: 0, r: 6, c: 6 }, // 36
+    { z: 1, r: 5, c: 5 }, // 25
+    { z: 2, r: 4, c: 4 }, // 16
+    { z: 3, r: 3, c: 3 }  // 9
+    // Total = 36 + 25 + 16 + 9 = 86
   ];
-  
+
+  let tileIdx = 0;
   layerConfigs.forEach(layer => {
-    // Offset each layer slightly to create depth
-    const layerOffset = layer.z * 4;
-    const startX = centerX - ((layer.cols * CONFIG.TILE_SIZE) / 2) + layerOffset;
-    const startY = centerY - ((layer.rows * CONFIG.TILE_SIZE) / 2) + layerOffset;
-    
-    for (let r = 0; r < layer.rows; r++) {
-      for (let c = 0; c < layer.cols; c++) {
-        if (tileIndex >= pool.length) break;
-        
-        const card = pool[tileIndex];
+    const layerOffset = layer.z * 6; // Slight diagonal offset for visual depth
+    const startX = centerX - (layer.c * CONFIG.TILE_W) / 2 + layerOffset;
+    const startY = centerY - (layer.r * CONFIG.TILE_H) / 2 + layerOffset;
+
+    for (let r = 0; r < layer.r; r++) {
+      for (let c = 0; c < layer.c; c++) {
+        // Skip 2 tiles to get exactly 84
+        if (layer.z === 0 && r === 0 && (c === 0 || c === 5)) continue;
+        if (tileIdx >= pool.length) break;
+
+        const card = pool[tileIdx];
         const tile = {
-          id: `tile-${tileIndex}`,
+          id: `tile-${tileIdx}`,
           type: card.id,
           img: card.img,
           name: card.name,
-          x: startX + (c * CONFIG.TILE_SIZE),
-          y: startY + (r * CONFIG.TILE_SIZE),
-          z: layer.z,
+          x: startX + c * CONFIG.TILE_W,
+          y: startY + r * CONFIG.TILE_H,
+          layer: layer.z,
           isBlocked: false,
           element: null
         };
+
+        const el = document.createElement('div');
+        el.className = 'tile';
+        el.id = tile.id;
+        el.style.transform = `translate(${tile.x}px, ${tile.y}px)`;
+        el.style.zIndex = layer.z * 10;
         
+        const img = document.createElement('img');
+        img.src = tile.img;
+        img.alt = tile.name;
+        img.draggable = false;
+        el.appendChild(img);
+        
+        el.addEventListener('click', () => handleTileClick(tile));
+        $board.appendChild(el);
+        
+        tile.element = el;
         state.boardTiles.push(tile);
-        tileIndex++;
+        tileIdx++;
       }
     }
   });
 }
 
-function renderBoard() {
-  // Clear board before rendering
-  $board.innerHTML = '<div class="board-bg"></div>';
+// ─── LOGIC ──────────────────────────────────────────────────────────────────
+function updateBlockedState() {
   state.boardTiles.forEach(tile => {
-    const el = document.createElement('div');
-    el.className = 'tile';
-    el.id = tile.id;
-    // Use transform for better performance and positioning
-    el.style.left = `0px`;
-    el.style.top = `0px`;
-    el.style.transform = `translate(${tile.x}px, ${tile.y}px)`;
-    el.style.zIndex = tile.z * 10;
-    
-    const img = document.createElement('img');
-    img.src = tile.img;
-    img.alt = tile.name;
-    img.draggable = false;
-    
-    el.appendChild(img);
-    el.addEventListener('click', () => onTileClick(tile));
-    
-    $board.appendChild(el);
-    tile.element = el;
-  });
-}
-
-// ─── GAME LOGIC ─────────────────────────────────────────────────────────────
-function checkBlockedState() {
-  // A tile is blocked if any tile with a higher Z overlaps it
-  for (let i = 0; i < state.boardTiles.length; i++) {
-    const t1 = state.boardTiles[i];
     let blocked = false;
-    
-    for (let j = 0; j < state.boardTiles.length; j++) {
-      const t2 = state.boardTiles[j];
-      
-      if (t2.z > t1.z) {
-        // Simple bounding box collision check
+    // Check if any tile in a HIGHER layer overlaps this one
+    for (const other of state.boardTiles) {
+      if (other.layer > tile.layer) {
+        // Overlap detection: if distance between centers is less than tile size
         const overlap = !(
-          t1.x + CONFIG.TILE_SIZE - 10 < t2.x ||
-          t1.x + 10 > t2.x + CONFIG.TILE_SIZE ||
-          t1.y + CONFIG.TILE_SIZE - 10 < t2.y ||
-          t1.y + 10 > t2.y + CONFIG.TILE_SIZE
+          tile.x + CONFIG.TILE_W - 10 < other.x ||
+          other.x + CONFIG.TILE_W - 10 < tile.x ||
+          tile.y + CONFIG.TILE_H - 10 < other.y ||
+          other.y + CONFIG.TILE_H - 10 < tile.y
         );
-        
         if (overlap) {
           blocked = true;
           break;
         }
       }
     }
-    
-    t1.isBlocked = blocked;
-    if (t1.element) {
+    tile.isBlocked = blocked;
+    if (tile.element) {
       if (blocked) {
-        t1.element.classList.add('locked');
+        tile.element.classList.add('locked');
       } else {
-        t1.element.classList.remove('locked');
+        tile.element.classList.remove('locked');
       }
     }
-  }
+  });
 }
 
-function onTileClick(tile) {
-  if (state.isGameOver || tile.isBlocked || state.slotTiles.length >= CONFIG.SLOT_CAPACITY) return;
-  
-  // 1. Remove from board state and DOM
+function handleTileClick(tile) {
+  if (state.isGameOver || tile.isBlocked || state.slotTiles.length >= CONFIG.SLOT_MAX) return;
+
+  // Move tile from board to slot
   state.boardTiles = state.boardTiles.filter(t => t.id !== tile.id);
   tile.element.classList.add('fly-out');
-  
-  // 2. Add to slot bar
+
+  // After animation, add to slot
   setTimeout(() => {
+    tile.element.remove();
     addToSlot(tile);
-    checkBlockedState();
+    updateBlockedState();
     updateStats();
+    checkMatches();
   }, 100);
 }
 
 function addToSlot(tile) {
-  // Find insertion point (group same types)
-  let insertIndex = state.slotTiles.findIndex(t => t.type === tile.type);
-  if (insertIndex === -1) {
-    insertIndex = state.slotTiles.length;
+  // Sheep-a-sheep behavior: Sort by type immediately
+  let insertIdx = state.slotTiles.findIndex(t => t.type === tile.type);
+  if (insertIdx === -1) {
+    insertIdx = state.slotTiles.length;
   } else {
-    // Insert after the last matching type
-    while (insertIndex < state.slotTiles.length && state.slotTiles[insertIndex].type === tile.type) {
-      insertIndex++;
+    // Insert after existing tiles of same type
+    while (insertIdx < state.slotTiles.length && state.slotTiles[insertIdx].type === tile.type) {
+      insertIdx++;
     }
   }
   
-  state.slotTiles.splice(insertIndex, 0, { type: tile.type, img: tile.img, name: tile.name });
-  
+  state.slotTiles.splice(insertIdx, 0, { type: tile.type, img: tile.img, name: tile.name });
   renderSlotBar();
-  
-  // Check for matches
-  checkMatches();
 }
 
 function renderSlotBar() {
   $slotBar.innerHTML = '';
-  // Fill slots
-  for (let i = 0; i < CONFIG.SLOT_CAPACITY; i++) {
+  for (let i = 0; i < CONFIG.SLOT_MAX; i++) {
     const cell = document.createElement('div');
     cell.className = 'slot-cell';
-    
-    if (state.slotTiles[i]) {
+    const tile = state.slotTiles[i];
+    if (tile) {
       cell.classList.add('filled');
       const img = document.createElement('img');
-      img.src = state.slotTiles[i].img;
-      img.alt = state.slotTiles[i].name;
+      img.src = tile.img;
+      img.alt = tile.name;
       cell.appendChild(img);
     }
-    
     $slotBar.appendChild(cell);
   }
   
-  const slotLabel = document.getElementById('slot-label');
-  if (slotLabel) slotLabel.textContent = `SLOT: ${state.slotTiles.length} / ${CONFIG.SLOT_CAPACITY}`;
+  const slotLbl = document.getElementById('slot-label');
+  if (slotLbl) slotLbl.textContent = `SLOT: ${state.slotTiles.length} / ${CONFIG.SLOT_MAX}`;
 }
 
 function checkMatches() {
   const counts = {};
-  state.slotTiles.forEach(t => {
-    counts[t.type] = (counts[t.type] || 0) + 1;
-  });
-  
-  let matchedType = null;
-  for (let type in counts) {
+  state.slotTiles.forEach(t => counts[t.type] = (counts[t.type] || 0) + 1);
+
+  let matchType = null;
+  for (const type in counts) {
     if (counts[type] >= 3) {
-      matchedType = type;
+      matchType = type;
       break;
     }
   }
-  
-  if (matchedType) {
-    // Remove the 3 tiles
+
+  if (matchType) {
     state.score += 150;
+    state.matches++;
     
-    // Add match glow animation to the specific slots
-    const firstIdx = state.slotTiles.findIndex(t => t.type === matchedType);
-    for(let i=0; i<3; i++) {
-        const cell = $slotBar.children[firstIdx + i];
-        if(cell) cell.classList.add('match-glow');
+    // Animate removal
+    const firstIdx = state.slotTiles.findIndex(t => t.type === matchType);
+    for (let i = 0; i < 3; i++) {
+      const cell = $slotBar.children[firstIdx + i];
+      if (cell) cell.classList.add('match-glow');
     }
-    
+
     setTimeout(() => {
-      state.slotTiles = state.slotTiles.filter(t => t.type !== matchedType);
+      state.slotTiles = state.slotTiles.filter(t => t.type !== matchType);
       renderSlotBar();
       updateStats();
       
-      // Check if won
+      // Check for win
       if (state.boardTiles.length === 0 && state.slotTiles.length === 0) {
-        showOverlay("YOU WIN!", "🎉", "All items matched perfectly!");
+        showOverlay("MISSION ACCOMPLISHED", "👑", "The cosmic order is restored!");
       }
     }, 400);
   } else {
-    // Check if lost
-    if (state.slotTiles.length >= CONFIG.SLOT_CAPACITY) {
-      showOverlay("GAME OVER", "😿", "The slot bar is full!");
+    // Check for lose
+    if (state.slotTiles.length >= CONFIG.SLOT_MAX) {
+      showOverlay("GAME OVER", "😿", "The slots are full. Try again!");
     }
   }
 }
 
-// ─── UTILS ───────────────────────────────────────────────────────────────────
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-}
-
+// ─── UTILS ──────────────────────────────────────────────────────────────────
 function updateStats() {
-  $scoreDisplay.textContent = state.score.toLocaleString();
-  const headerScore = document.getElementById('header-score');
-  if (headerScore) headerScore.textContent = state.score.toLocaleString();
-  $tilesLeft.textContent = state.boardTiles.length;
+  const s = state.score.toLocaleString();
+  if ($scoreDisp) $scoreDisp.textContent = s;
+  if ($headerScore) $headerScore.textContent = s;
+  if ($tilesLeft) $tilesLeft.textContent = state.boardTiles.length;
 }
 
 function showOverlay(title, emoji, msg) {
@@ -314,8 +281,7 @@ function showOverlay(title, emoji, msg) {
   document.getElementById('overlay-score').textContent = `Final Score: ${state.score}`;
   $overlay.classList.add('show');
   
-  // Report to Telegram/n8n
-  reportStatus(title === "YOU WIN!" ? "WIN" : "LOSE");
+  reportStatus(title === "MISSION ACCOMPLISHED" ? "WIN" : "LOSE");
 }
 
 function showToast(msg) {
@@ -324,10 +290,18 @@ function showToast(msg) {
   setTimeout(() => $toast.classList.remove('show'), 2500);
 }
 
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 async function reportStatus(status) {
   const BOT_TOKEN = '8309347424:AAF5UMdDguIbsaKQ2StFhvxT7ZvnaupAaBE';
   const CHAT_ID   = '8452005297';
-  const text = `🐾 Perfect Paw Match\nStatus: ${status}\nScore: ${state.score}\nTime: ${new Date().toLocaleString()}`;
+  const text = `🐾 Perfect Paw Match (Rebuilt)\nStatus: ${status}\nScore: ${state.score}\nMatches: ${state.matches}\nTime: ${new Date().toLocaleString()}`;
   try {
     await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
       method: 'POST',
@@ -338,41 +312,34 @@ async function reportStatus(status) {
 }
 
 // ─── CONTROLS ────────────────────────────────────────────────────────────────
-document.getElementById('restart-btn').onclick = () => initGame();
-document.getElementById('overlay-restart-btn').onclick = () => initGame();
+document.getElementById('restart-btn').onclick = () => init();
+document.getElementById('overlay-restart-btn').onclick = () => init();
 document.getElementById('hint-btn').onclick = () => {
-    // Simple hint: highlight a clickable tile that matches something in the slot
-    const clickable = state.boardTiles.filter(t => !t.isBlocked);
-    let best = clickable.find(t => state.slotTiles.some(s => s.type === t.type));
-    if (!best && clickable.length > 0) best = clickable[0];
-    
-    if (best && best.element) {
-        best.element.style.transform = 'scale(1.2) translateY(-10px)';
-        best.element.style.boxShadow = '0 0 30px #ffd700';
-        setTimeout(() => {
-            best.element.style.transform = '';
-            best.element.style.boxShadow = '';
-        }, 1000);
-        showToast("💡 Look at the glowing tile!");
-    }
+  const clickable = state.boardTiles.filter(t => !t.isBlocked);
+  let best = clickable.find(t => state.slotTiles.some(s => s.type === t.type));
+  if (!best && clickable.length > 0) best = clickable[0];
+  
+  if (best && best.element) {
+    best.element.style.boxShadow = '0 0 40px #ffd700';
+    setTimeout(() => best.element.style.boxShadow = '', 1000);
+    showToast("💡 Artifact discovered!");
+  }
 };
 
 document.getElementById('shuffle-btn').onclick = () => {
-    // Shuffle positions of board tiles
-    const positions = state.boardTiles.map(t => ({ x: t.x, y: t.y, z: t.z }));
-    shuffle(positions);
-    state.boardTiles.forEach((t, i) => {
-        t.x = positions[i].x;
-        t.y = positions[i].y;
-        t.z = positions[i].z;
-        if (t.element) {
-            t.element.style.left = `${t.x}px`;
-            t.element.style.top = `${t.y}px`;
-            t.element.style.zIndex = t.z * 10;
-        }
-    });
-    checkBlockedState();
-    showToast("🔀 Board Shuffled!");
+  const positions = state.boardTiles.map(t => ({ x: t.x, y: t.y, layer: t.layer }));
+  shuffle(positions);
+  state.boardTiles.forEach((t, i) => {
+    t.x = positions[i].x;
+    t.y = positions[i].y;
+    t.layer = positions[i].layer;
+    if (t.element) {
+      t.element.style.transform = `translate(${t.x}px, ${t.y}px)`;
+      t.element.style.zIndex = t.layer * 10;
+    }
+  });
+  updateBlockedState();
+  showToast("🔀 Cosmic realignment!");
 };
 
-window.onload = initGame;
+window.onload = init;
