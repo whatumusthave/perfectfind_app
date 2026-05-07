@@ -354,6 +354,23 @@
     .tile { width: 52px; height: 52px; }
     .slot-cell { width: 48px; height: 48px; }
   }
+  /* ---- SIDE DECKS ---- */
+  .side-deck {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 80px;
+    height: 380px;
+    background: rgba(45, 27, 105, 0.25);
+    border: 1px dashed rgba(205, 189, 255, 0.3);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 10px 0;
+    z-index: 5;
+  }
 </style>
 </head>
 <body>
@@ -403,6 +420,8 @@
   <!-- BOARD -->
   <div class="board-section">
     <div class="board-bg"></div>
+    <div class="side-deck" id="side-deck-left" style="left: 10px;"></div>
+    <div class="side-deck" id="side-deck-right" style="right: 10px;"></div>
     <div class="game-board" id="game-board">
       <!-- tiles rendered by JS -->
     </div>
@@ -422,11 +441,11 @@
 
   <!-- CONTROLS -->
   <div class="controls-section">
-    <button class="btn btn-primary" id="hint-btn">
-      <span class="icon">auto_awesome</span> HINT
-    </button>
-    <button class="btn btn-secondary" id="undo-btn">
+    <button class="btn btn-primary" id="undo-btn">
       <span class="icon">undo</span> UNDO (2)
+    </button>
+    <button class="btn btn-secondary" id="shuffle-btn">
+      <span class="icon">shuffle</span> SHUFFLE (1)
     </button>
     <button class="btn btn-secondary" id="restart-btn">
       <span class="icon">replay</span> RESTART
