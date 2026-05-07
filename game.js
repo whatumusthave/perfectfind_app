@@ -1,259 +1,261 @@
-// Perfect Paw Match - Yang Le Ge Yang FINAL
-// STRICT RULE: A tile is BLOCKED if ANY higher-layer tile overlaps even 1 pixel
-const CARDS = [
-  'amethyst_heart','celestial_potion','crystal_ball','fuchsia_ribbon',
-  'golden_paw','indigo_bowtie','jeweled_keyhole','midnight_cushion',
-  'mystic_yarn_ball','rose_pufferfish','royal_cat_bed','sapphire_paw',
-  'shopping_bag','starry_cat_mic'
-];
-const CARD_PATH = 'assets/cards/';
-const SLOT_MAX = 7;
-const TW = 56;
-const TH = 56;
-const GRID_STEP = 42; // 56 * 0.75 = 42 means 14px overlap = 1/4
+// Perfect Paw Match - Yang Le Ge Yang EXACT
+// KEY FIX: All layers share the SAME grid positions
+// Higher layer tile sits EXACTLY on top of lower layer tile
+// So blocking detection is guaranteed
+const CARDS=['amethyst_heart','celestial_potion','crystal_ball','fuchsia_ribbon','golden_paw','indigo_bowtie','jeweled_keyhole','midnight_cushion','mystic_yarn_ball','rose_pufferfish','royal_cat_bed','sapphire_paw','shopping_bag','starry_cat_mic'];
+const CP='assets/cards/',SM=7,TW=56,TH=56,GS=42;
+let stage=1,tiles=[],slots=[],leftDeck=[],rightDeck=[],hist=[],undo=2,shuf=1,score=0,time=90,tmr=null,on=false;
 
-let stage=1, tiles=[], slots=[], slotsTop=[], hasTopRow=false;
-let leftDeck=[], rightDeck=[], undoHistory=[];
-let undoCount=2, shuffleCount=1, score=0, timeLeft=90;
-let timerInterval=null, gameActive=false;
+function sh(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
 
-function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
-
-function generatePool(){
-  if(stage===1){
-    const p=[];
-    CARDS.slice(0,3).forEach(c=>{for(let i=0;i<3;i++)p.push(c);});
-    return{board:shuffle(p),left:[],right:[]};
-  }
-  const b=[];
-  CARDS.forEach(c=>{for(let i=0;i<6;i++)b.push(c);});
-  const dp=shuffle([...CARDS,...CARDS,...CARDS]);
-  return{board:shuffle(b),left:dp.slice(0,13),right:dp.slice(13,26)};
+function gen(){
+  if(stage===1){const p=[];CARDS.slice(0,3).forEach(c=>{for(let i=0;i<3;i++)p.push(c);});return{b:sh(p),l:[],r:[]};}
+  const b=[];CARDS.forEach(c=>{for(let i=0;i<6;i++)b.push(c);});
+  const d=sh([...CARDS,...CARDS,...CARDS]);
+  return{b:sh(b),l:d.slice(0,13),r:d.slice(13,26)};
 }
 
-function buildBoard(pool){
-  const board=document.getElementById('game-board');
-  const bw=board.clientWidth||500, bh=board.clientHeight||400;
+function build(pool){
+  const bd=document.getElementById('game-board');
+  const bw=bd.clientWidth||500,bh=bd.clientHeight||400;
   tiles=[];
 
   if(stage===1){
-    // 3x3 single layer tutorial
-    const cols=3,gw=cols*GRID_STEP,gh=cols*GRID_STEP;
-    const sx=Math.floor(bw/2-gw/2),sy=Math.floor(bh/2-gh/2);
-    pool.forEach((card,i)=>{
-      tiles.push({id:i,card,x:sx+(i%cols)*GRID_STEP,y:sy+Math.floor(i/cols)*GRID_STEP,layer:0,removed:false});
-    });
+    // 3x3 grid, 1 layer
+    const c=3,gw=c*GS,gh=c*GS,sx=0|bw/2-gw/2,sy=0|bh/2-gh/2;
+    pool.forEach((card,i)=>{tiles.push({id:i,card,gx:i%c,gy:0|i/c,x:sx+(i%c)*GS,y:sy+(0|i/c)*GS,layer:0,rm:false});});
     return;
   }
 
-  // Stage 2+: 5 layers, dense grid, 1/4 overlap
-  const layers=5, per=Math.ceil(pool.length/layers);
+  // Stage 2+: GRID-BASED layers
+  // Define a master grid. Each layer fills certain grid cells.
+  // Higher layers sit ON TOP of same grid cells = guaranteed blocking.
+  const COLS=7,ROWS=7;
+  const gw=(COLS-1)*GS+TW, gh=(ROWS-1)*GS+TH;
+  const sx=0|bw/2-gw/2, sy=0|bh/2-gh/2;
+
+  // Create grid positions for each layer
+  // Layer 0: fill most cells (7x7=49 minus center hole)
+  // Layer 1: fill 5x5 center area (25)
+  // Layer 2: fill 3x3 center area (9)
+  // Layer 3: fill 1 center tile (1)
+  // Total grid slots: ~84 positions across layers
+
+  const layerGrids = [
+    // Layer 0: 7x7 grid minus center 1x1 hole = 48 cells
+    (() => {
+      const cells = [];
+      for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) {
+        if(r===3 && c===3) continue; // center hole
+        cells.push({gx:c, gy:r});
+      }
+      return cells;
+    })(),
+    // Layer 1: 5x5 grid centered = 25 cells
+    (() => {
+      const cells = [];
+      for(let r=1;r<=5;r++) for(let c=1;c<=5;c++) cells.push({gx:c, gy:r});
+      return cells;
+    })(),
+    // Layer 2: 3x3 grid centered = 9 cells
+    (() => {
+      const cells = [];
+      for(let r=2;r<=4;r++) for(let c=2;c<=4;c++) cells.push({gx:c, gy:r});
+      return cells;
+    })(),
+    // Layer 3: 1x1 center = 1 cell
+    [{gx:3, gy:3}],
+    // Layer 4: 1 extra = 1 cell offset
+    [{gx:3, gy:2}]
+  ];
+
   let idx=0;
-  for(let layer=0;layer<layers;layer++){
-    const count=Math.min(per,pool.length-idx);
-    const cols=Math.ceil(Math.sqrt(count*1.3));
-    const rows=Math.ceil(count/cols);
-    const gw=(cols-1)*GRID_STEP+TW;
-    const gh=(rows-1)*GRID_STEP+TH;
-    // Center each layer, offset slightly per layer
-    const sx=Math.floor(bw/2-gw/2)+layer*2;
-    const sy=Math.floor(bh/2-gh/2)+layer*2;
-    for(let i=0;i<count&&idx<pool.length;i++){
-      const col=i%cols, row=Math.floor(i/cols);
+  for(let layer=0;layer<layerGrids.length && idx<pool.length;layer++){
+    const cells = sh([...layerGrids[layer]]); // shuffle cells
+    for(let i=0;i<cells.length && idx<pool.length;i++){
+      const {gx,gy} = cells[i];
       tiles.push({
         id:idx, card:pool[idx],
-        x:sx+col*GRID_STEP,
-        y:sy+row*GRID_STEP,
-        layer, removed:false
+        gx, gy,
+        x: sx + gx*GS,
+        y: sy + gy*GS,
+        layer,
+        rm:false
       });
       idx++;
     }
   }
 }
 
-// ── STRICT BLOCKING: even 1px overlap from higher layer = BLOCKED ──
-function isBlocked(tile){
-  if(tile.removed) return true;
+// BLOCKING: tile is blocked if ANY higher-layer tile occupies the SAME grid cell
+// OR overlaps its pixel bounds at all
+function blocked(t){
+  if(t.rm) return true;
   for(let i=0;i<tiles.length;i++){
-    const t=tiles[i];
-    if(t.removed || t.id===tile.id || t.layer<=tile.layer) continue;
-    // Check if rectangles overlap AT ALL (even 1px)
-    const noOverlap = t.x >= tile.x+TW || t.x+TW <= tile.x || t.y >= tile.y+TH || t.y+TH <= tile.y;
-    if(!noOverlap) return true; // ANY overlap = blocked
+    const o=tiles[i];
+    if(o.rm||o.id===t.id||o.layer<=t.layer) continue;
+    // Same grid cell = definitely blocked
+    if(o.gx===t.gx && o.gy===t.gy) return true;
+    // Pixel overlap check (for edge cases)
+    if(!(o.x>=t.x+TW || o.x+TW<=t.x || o.y>=t.y+TH || o.y+TH<=t.y)) return true;
   }
   return false;
 }
 
 function render(){
-  const board=document.getElementById('game-board');
-  board.innerHTML='';
-  const vis=tiles.filter(t=>!t.removed).sort((a,b)=>a.layer!==b.layer?a.layer-b.layer:a.y!==b.y?a.y-b.y:a.x-b.x);
-  vis.forEach((tile,si)=>{
-    const blocked=isBlocked(tile);
+  const bd=document.getElementById('game-board');
+  bd.innerHTML='';
+  const vis=tiles.filter(t=>!t.rm).sort((a,b)=>a.layer!==b.layer?a.layer-b.layer:a.gy!==b.gy?a.gy-b.gy:a.gx-b.gx);
+  vis.forEach((t,i)=>{
+    const bl=blocked(t);
     const el=document.createElement('div');
-    el.className='tile'+(blocked?' blocked':' free');
-    el.style.left=tile.x+'px';
-    el.style.top=tile.y+'px';
-    el.style.zIndex=tile.layer*1000+(tile.y/GRID_STEP|0)*50+(tile.x/GRID_STEP|0);
+    el.className='tile'+(bl?' blocked':' free');
+    el.style.left=t.x+'px';el.style.top=t.y+'px';
+    el.style.zIndex=t.layer*1000+t.gy*50+t.gx;
     const img=document.createElement('img');
-    img.src=CARD_PATH+tile.card+'.png';
-    img.draggable=false;
+    img.src=CP+t.card+'.png';img.draggable=false;
     el.appendChild(img);
-    if(!blocked){
-      el.onclick=()=>clickTile(tile);
-      el.ontouchstart=(e)=>{e.preventDefault();clickTile(tile);};
-    }
-    board.appendChild(el);
+    if(!bl){el.onclick=()=>click(t);el.ontouchstart=e=>{e.preventDefault();click(t);};}
+    bd.appendChild(el);
   });
-  renderDecks();
-  renderSlots();
-  updateUI();
+  rDecks();rSlots();ui();
 }
 
-function renderDecks(){
-  rDeck('left-deck',leftDeck,'left');
-  rDeck('right-deck',rightDeck,'right');
-}
-function rDeck(id,deck,side){
+function rDecks(){rD('left-deck',leftDeck,'left');rD('right-deck',rightDeck,'right');}
+function rD(id,dk,sd){
   const el=document.getElementById(id);
-  if(!deck.length){el.innerHTML='<div class="deck-empty">✓</div>';return;}
-  const top=deck[deck.length-1];
-  const sc=Math.min(deck.length-1,4);
-  let h=`<div class="deck-wrap" onclick="drawDeck('${side}')">`;
+  if(!dk.length){el.innerHTML='<div class="deck-empty">✓</div>';return;}
+  const top=dk[dk.length-1],sc=Math.min(dk.length-1,4);
+  let h=`<div class="deck-wrap" onclick="draw('${sd}')">`;
   for(let i=sc;i>=1;i--)h+=`<div class="deck-back-card" style="bottom:${i*3}px;right:${i*2}px"></div>`;
-  h+=`<div class="deck-top-open"><img src="${CARD_PATH}${top}.png"/></div>`;
-  h+=`<div class="deck-count">${deck.length}</div></div>`;
+  h+=`<div class="deck-top-open"><img src="${CP}${top}.png"/></div>`;
+  h+=`<div class="deck-count">${dk.length}</div></div>`;
   el.innerHTML=h;
 }
 
-function renderSlots(){
-  const topBar=document.getElementById('slot-bar-top');
-  if(hasTopRow){
-    topBar.style.display='flex';topBar.innerHTML='';
-    for(let i=0;i<SLOT_MAX;i++){
-      const d=document.createElement('div');d.className='slot'+(slotsTop[i]?' filled':'');
-      if(slotsTop[i]){const m=document.createElement('img');m.src=CARD_PATH+slotsTop[i]+'.png';d.appendChild(m);}
-      topBar.appendChild(d);
-    }
-  }else{topBar.style.display='none';}
+function rSlots(){
   const bar=document.getElementById('slot-bar');bar.innerHTML='';
-  for(let i=0;i<SLOT_MAX;i++){
-    const d=document.createElement('div');d.className='slot'+(slots[i]?' filled':'');
-    if(slots[i]){const m=document.createElement('img');m.src=CARD_PATH+slots[i]+'.png';d.appendChild(m);}
+  // Show total available slots (7 base + 3 bonus if earned)
+  const max=slots.length<=SM?SM:SM+3;
+  for(let i=0;i<max;i++){
+    const d=document.createElement('div');
+    d.className='slot'+(slots[i]?' filled':'')+(i>=SM?' bonus':'');
+    if(slots[i]){const m=document.createElement('img');m.src=CP+slots[i]+'.png';d.appendChild(m);}
     bar.appendChild(d);
   }
-  document.getElementById('slot-count').textContent=`SLOT: ${slots.length+slotsTop.length} / ${hasTopRow?SLOT_MAX*2:SLOT_MAX}`;
+  document.getElementById('slot-count').textContent=`SLOT: ${slots.length} / ${max}`;
 }
 
-function updateUI(){
+function ui(){
   document.getElementById('score').textContent='★ '+score.toLocaleString();
-  document.getElementById('undo-btn').innerHTML=`↩<br>UNDO(${undoCount})`;
-  document.getElementById('shuffle-btn').innerHTML=`⟳<br>SHUF(${shuffleCount})`;
-  if(!tiles.filter(t=>!t.removed).length&&!leftDeck.length&&!rightDeck.length&&!slots.length&&!slotsTop.length)showWin();
+  document.getElementById('undo-btn').innerHTML=`↩<br>UNDO(${undo})`;
+  document.getElementById('shuffle-btn').innerHTML=`⟳<br>SHUF(${shuf})`;
+  if(!tiles.filter(t=>!t.rm).length&&!leftDeck.length&&!rightDeck.length&&!slots.length)win();
 }
 
-function insertSlot(card){
-  const tgt=(hasTopRow&&slots.length>=SLOT_MAX)?slotsTop:slots;
-  let at=tgt.length;
-  for(let i=tgt.length-1;i>=0;i--){if(tgt[i]===card){at=i+1;break;}}
-  tgt.splice(at,0,card);
+function ins(card){
+  let at=slots.length;
+  for(let i=slots.length-1;i>=0;i--){if(slots[i]===card){at=i+1;break;}}
+  slots.splice(at,0,card);
 }
 
-function checkMatch(){
+function chk(){
   let ch=true;
   while(ch){ch=false;const m={};slots.forEach((c,i)=>{(m[c]=m[c]||[]).push(i);});
     for(const[,idx]of Object.entries(m)){if(idx.length>=3){slots=slots.filter((_,i)=>!new Set(idx.slice(0,3)).has(i));score+=300*stage;ch=true;break;}}}
-  if(hasTopRow){
-    ch=true;
-    while(ch){ch=false;const m={};slotsTop.forEach((c,i)=>{(m[c]=m[c]||[]).push(i);});
-      for(const[,idx]of Object.entries(m)){if(idx.length>=3){slotsTop=slotsTop.filter((_,i)=>!new Set(idx.slice(0,3)).has(i));score+=300*stage;ch=true;break;}}}
-    if(!slotsTop.length)hasTopRow=false;
-    else if(slots.length<SLOT_MAX){while(slots.length<SLOT_MAX&&slotsTop.length)slots.push(slotsTop.shift());if(!slotsTop.length)hasTopRow=false;}
-  }
 }
 
-function saveUndo(){undoHistory.push({slots:[...slots],slotsTop:[...slotsTop],hasTopRow,leftDeck:[...leftDeck],rightDeck:[...rightDeck],ts:tiles.map(t=>({id:t.id,r:t.removed})),score});}
+function save(){hist.push({slots:[...slots],l:[...leftDeck],r:[...rightDeck],ts:tiles.map(t=>({id:t.id,r:t.rm})),score});}
 
-function clickTile(tile){
-  if(!gameActive||tile.removed||isBlocked(tile))return;
-  saveUndo();tile.removed=true;insertSlot(tile.card);checkMatch();render();
-  if(!hasTopRow&&slots.length>=SLOT_MAX)showSlotFull();
-  else if(hasTopRow&&slotsTop.length>=SLOT_MAX)showGameOver();
+function click(t){
+  if(!on||t.rm||blocked(t))return;
+  save();t.rm=true;ins(t.card);chk();render();
+  if(slots.length>=SM)full();
 }
 
-function drawDeck(side){
-  if(!gameActive)return;
-  if(!hasTopRow&&slots.length>=SLOT_MAX){showSlotFull();return;}
-  if(hasTopRow&&slotsTop.length>=SLOT_MAX){showGameOver();return;}
+function draw(side){
+  if(!on)return;
   const dk=side==='left'?leftDeck:rightDeck;
   if(!dk.length)return;
-  saveUndo();insertSlot(dk.pop());checkMatch();render();
-  if(!hasTopRow&&slots.length>=SLOT_MAX)showSlotFull();
-  else if(hasTopRow&&slotsTop.length>=SLOT_MAX)showGameOver();
+  if(slots.length>=SM+3){over();return;}
+  save();ins(dk.pop());chk();render();
+  if(slots.length>=SM+3)over();
 }
 
 function doUndo(){
-  if(!gameActive||!undoCount||!undoHistory.length)return;
-  const s=undoHistory.pop();
-  s.ts.forEach(ts=>{const t=tiles.find(t=>t.id===ts.id);if(t)t.removed=ts.r;});
-  slots=s.slots;slotsTop=s.slotsTop;hasTopRow=s.hasTopRow;
-  leftDeck=s.leftDeck;rightDeck=s.rightDeck;score=s.score;
-  undoCount--;render();
+  if(!on||!undo||!hist.length)return;
+  const s=hist.pop();
+  s.ts.forEach(ts=>{const t=tiles.find(t=>t.id===ts.id);if(t)t.rm=ts.r;});
+  slots=s.slots;leftDeck=s.l;rightDeck=s.r;score=s.score;
+  undo--;render();
 }
 
 function doShuffle(){
-  if(!gameActive||!shuffleCount)return;
-  shuffleCount--;
-  const a=tiles.filter(t=>!t.removed);
-  const c=shuffle(a.map(t=>t.card));
-  a.forEach((t,i)=>t.card=c[i]);
-  render();
+  if(!on||!shuf)return;shuf--;
+  const a=tiles.filter(t=>!t.rm),c=sh(a.map(t=>t.card));
+  a.forEach((t,i)=>t.card=c[i]);render();
 }
 
-function showSlotFull(){
-  gameActive=false;clearInterval(timerInterval);
+// SLOT FULL → watch ad → expand to 10 slots (3 bonus to the RIGHT)
+function full(){
+  if(slots.length<SM)return;
+  on=false;clearInterval(tmr);
   document.getElementById('overlay').style.display='flex';
-  document.getElementById('overlay').innerHTML=`<div class="result-box lose"><div style="font-size:36px">😾</div><h2>SLOTS FULL!</h2><p>Watch ad to push 3 slots up!</p><button onclick="watchAd()" style="background:#22c55e;color:#fff">📺 Watch Ad → Push 3 Up</button><button onclick="restartGame()">↺ Restart</button></div>`;
+  document.getElementById('overlay').innerHTML=`
+    <div class="result-box lose">
+      <div style="font-size:36px">😾</div>
+      <h2>SLOTS FULL!</h2>
+      <p>Watch ad to get +3 bonus slots!</p>
+      <button onclick="ad()" style="background:#22c55e;color:#fff">📺 Watch Ad → +3 Slots</button>
+      <button onclick="restart()">↺ Restart</button>
+    </div>`;
 }
 
-function watchAd(){
+function ad(){
   const ov=document.getElementById('overlay');
   let cd=5;
-  ov.innerHTML=`<div class="result-box"><div style="font-size:48px">📺</div><h2 style="color:var(--l)">Ad Playing...</h2><div id="acd" style="font-size:48px;color:var(--g);margin:12px 0">${cd}</div></div>`;
+  ov.innerHTML=`<div class="result-box"><div style="font-size:48px">📺</div><h2 style="color:var(--l)">Ad...</h2><div id="acd" style="font-size:48px;color:var(--g);margin:12px 0">${cd}</div></div>`;
   const t=setInterval(()=>{cd--;const e=document.getElementById('acd');if(e)e.textContent=cd;
-    if(cd<=0){clearInterval(t);const moved=slots.splice(slots.length-3,3);slotsTop=[...moved,...slotsTop];hasTopRow=true;ov.style.display='none';gameActive=true;startTimer();render();}
+    if(cd<=0){clearInterval(t);ov.style.display='none';on=true;timer();render();}
   },1000);
 }
 
-function showGameOver(){
-  if(!gameActive)return;gameActive=false;clearInterval(timerInterval);
+function over(){
+  if(!on)return;on=false;clearInterval(tmr);
+  const r=stage===1?'72%':'0.1%';
   document.getElementById('overlay').style.display='flex';
-  document.getElementById('overlay').innerHTML=`<div class="result-box lose"><div style="font-size:48px">😾</div><h2>GAME OVER</h2><div class="clear-rate">Clear Rate: ${stage===1?'72%':'0.1%'}</div><p>${stage>1?'Only 0.1% clear this!':'Try again!'}</p><button onclick="restartGame()">↺ Try Again</button><button onclick="nextStage()">Next Stage</button></div>`;
+  document.getElementById('overlay').innerHTML=`
+    <div class="result-box lose"><div style="font-size:48px">😾</div><h2>GAME OVER</h2>
+    <div class="clear-rate">Clear Rate: ${r}</div>
+    <p>${stage>1?'Only 0.1% clear this!':'Try again!'}</p>
+    <button onclick="restart()">↺ Try Again</button><button onclick="next()">Next Stage</button></div>`;
 }
 
-function showWin(){
-  gameActive=false;clearInterval(timerInterval);
+function win(){
+  on=false;clearInterval(tmr);
   document.getElementById('overlay').style.display='flex';
-  document.getElementById('overlay').innerHTML=`<div class="result-box win"><div style="font-size:48px">👑</div><h2>PERFECT MATCH!</h2><div class="result-score">Score: ${score.toLocaleString()}</div><button onclick="nextStage()">Next Stage →</button><button onclick="restartGame()">Play Again</button></div>`;
+  document.getElementById('overlay').innerHTML=`
+    <div class="result-box win"><div style="font-size:48px">👑</div><h2>PERFECT!</h2>
+    <div class="result-score">Score: ${score.toLocaleString()}</div>
+    <button onclick="next()">Next Stage →</button><button onclick="restart()">Play Again</button></div>`;
 }
 
-function startTimer(){
-  timeLeft=stage===1?60:180;clearInterval(timerInterval);updateTimer();
-  timerInterval=setInterval(()=>{timeLeft--;updateTimer();if(timeLeft<=0){clearInterval(timerInterval);showGameOver();}},1000);
+function timer(){
+  time=stage===1?60:180;clearInterval(tmr);uT();
+  tmr=setInterval(()=>{time--;uT();if(time<=0){clearInterval(tmr);over();}},1000);
+}
+function uT(){
+  const m=String(0|time/60).padStart(2,'0'),s=String(time%60).padStart(2,'0');
+  const e=document.getElementById('timer');e.textContent=m+':'+s;e.style.color=time<30?'#ff6b6b':'#ffd700';
 }
 
-function updateTimer(){
-  const m=String(Math.floor(timeLeft/60)).padStart(2,'0'),s=String(timeLeft%60).padStart(2,'0');
-  const el=document.getElementById('timer');el.textContent=m+':'+s;el.style.color=timeLeft<30?'#ff6b6b':'#ffd700';
+function next(){stage++;document.getElementById('overlay').style.display='none';document.getElementById('stage-label').textContent='Stage '+stage;go();}
+function restart(){document.getElementById('overlay').style.display='none';go();}
+
+function go(){
+  on=true;slots=[];hist=[];undo=2;shuf=1;score=0;
+  const{b,l,r}=gen();leftDeck=l;rightDeck=r;build(b);render();timer();
 }
 
-function nextStage(){stage++;document.getElementById('overlay').style.display='none';document.getElementById('stage-label').textContent='Stage '+stage;startGame();}
-function restartGame(){document.getElementById('overlay').style.display='none';startGame();}
-
-function startGame(){
-  gameActive=true;slots=[];slotsTop=[];hasTopRow=false;undoHistory=[];undoCount=2;shuffleCount=1;score=0;
-  const{board,left,right}=generatePool();leftDeck=left;rightDeck=right;buildBoard(board);render();startTimer();
-}
-
-window.addEventListener('load',()=>{stage=1;startGame();});
-window.doUndo=doUndo;window.doShuffle=doShuffle;window.restartGame=restartGame;window.nextStage=nextStage;window.drawDeck=drawDeck;window.watchAd=watchAd;
+window.addEventListener('load',()=>{stage=1;go();});
+window.doUndo=doUndo;window.doShuffle=doShuffle;window.restart=restart;window.next=next;window.draw=draw;window.ad=ad;
