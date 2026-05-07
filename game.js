@@ -1,15 +1,31 @@
-// Perfect Paw Match - No Timer, 7 Slots Fixed, Easier + Random Patterns
-const CARDS=['amethyst_heart','celestial_potion','crystal_ball','fuchsia_ribbon','golden_paw','indigo_bowtie','jeweled_keyhole','midnight_cushion','mystic_yarn_ball','rose_pufferfish','royal_cat_bed','sapphire_paw','shopping_bag','starry_cat_mic'];
-const CP='assets/cards/',SM=7,TW=56,TH=56,GS=46;
+// Perfect Paw Match - Stripe Cards, No Timer, 7 Slots, Proper Blocking
+const CARDS=[
+  '1amethyst_heart',
+  '2zia',
+  '3Silver_Shopping_Bag',
+  '4Terquois_cushion',
+  '5Sapphire_Paw',
+  '6fuchsia_ribbon',
+  '7jeweled_keyhole',
+  '8golden_paw ',
+  '9pinkruby_pufferfish',
+  '10crystal_ball',
+  '11celestial_potion',
+  '12royal cat bed',
+  '13zio',
+  '14indigo_bowtie',
+  '15ziawink'
+];
+const CP='assets/cards/',SM=7,TW=64,TH=64,GS=48;
 let stage=1,tiles=[],slots=[],leftDeck=[],rightDeck=[],hist=[],undo=2,shuf=1,score=0,on=false;
 
 function sh(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
 
 function stageConfig(){
-  if(stage===1) return {types:3,copies:3,layers:1,deckCards:0};
-  if(stage===2) return {types:5,copies:3,layers:2,deckCards:6};
-  if(stage===3) return {types:7,copies:3,layers:3,deckCards:9};
-  return {types:9,copies:3,layers:3,deckCards:12};
+  if(stage===1) return {types:4, copies:3, layers:2, deckCards:0};
+  if(stage===2) return {types:6, copies:3, layers:3, deckCards:6};
+  if(stage===3) return {types:8, copies:3, layers:3, deckCards:9};
+  return {types:10, copies:3, layers:4, deckCards:12};
 }
 
 function gen(){
@@ -27,49 +43,58 @@ function gen(){
 
 function build(pool){
   const bd=document.getElementById('game-board');
-  const bw=bd.clientWidth||360,bh=bd.clientHeight||420;
+  const bw=bd.clientWidth||360,bh=bd.clientHeight||440;
   tiles=[];
   const cfg=stageConfig();
   const numLayers=cfg.layers;
 
-  if(numLayers===1){
-    const cols=Math.ceil(Math.sqrt(pool.length));
-    const rows=Math.ceil(pool.length/cols);
-    const gw=cols*GS,gh=rows*GS;
-    const sx=0|bw/2-gw/2,sy=0|bh/2-gh/2;
-    pool.forEach((card,i)=>{
-      tiles.push({id:i,card,gx:i%cols,gy:0|i/cols,x:sx+(i%cols)*GS,y:sy+(0|i/cols)*GS,layer:0,rm:false});
-    });
-    return;
-  }
+  // Grid dimensions per layer (centered, shrinking each layer)
+  const layerDefs=[
+    {c:6,r:5},
+    {c:4,r:4},
+    {c:3,r:3},
+    {c:2,r:2}
+  ].slice(0,numLayers);
 
-  const COLS=7,ROWS=6;
-  const gw=COLS*GS,gh=ROWS*GS;
-  const sx=0|bw/2-gw/2,sy=0|bh/2-gh/2;
-  const layerSizes=[{c:COLS,r:ROWS},{c:5,r:4},{c:3,r:3},{c:2,r:2}].slice(0,numLayers);
+  const COLS=6,ROWS=5;
+  const totalW=COLS*GS, totalH=ROWS*GS;
+  const sx=0|bw/2-totalW/2, sy=0|bh/2-totalH/2;
 
   let idx=0;
   for(let layer=0;layer<numLayers&&idx<pool.length;layer++){
-    const {c,r}=layerSizes[layer];
-    const offX=0|((COLS-c)/2);const offY=0|((ROWS-r)/2);
+    const {c,r}=layerDefs[layer];
+    const offX=0|((COLS-c)/2);
+    const offY=0|((ROWS-r)/2);
     const cells=[];
-    for(let gy=offY;gy<offY+r;gy++) for(let gx=offX;gx<offX+c;gx++) cells.push({gx,gy});
+    for(let gy=offY;gy<offY+r;gy++)
+      for(let gx=offX;gx<offX+c;gx++)
+        cells.push({gx,gy});
     const picked=sh(cells).slice(0,Math.min(cells.length,pool.length-idx));
     picked.forEach(({gx,gy})=>{
       if(idx>=pool.length)return;
-      tiles.push({id:idx,card:pool[idx],gx,gy,x:sx+gx*GS,y:sy+gy*GS,layer,rm:false});
+      tiles.push({
+        id:idx,card:pool[idx],
+        gx,gy,
+        // offset each layer slightly so stacking is visible
+        x:sx+gx*GS+(layer*4),
+        y:sy+gy*GS+(layer*4),
+        layer,rm:false
+      });
       idx++;
     });
   }
 }
 
+// A tile is blocked if ANY higher-layer tile overlaps it (pixel overlap)
 function blocked(t){
   if(t.rm)return true;
   for(let i=0;i<tiles.length;i++){
     const o=tiles[i];
     if(o.rm||o.id===t.id||o.layer<=t.layer)continue;
-    if(o.gx===t.gx&&o.gy===t.gy)return true;
-    if(!(o.x>=t.x+TW||o.x+TW<=t.x||o.y>=t.y+TH||o.y+TH<=t.y))return true;
+    // pixel overlap
+    const overlapX=!(o.x>=t.x+TW||o.x+TW<=t.x);
+    const overlapY=!(o.y>=t.y+TH||o.y+TH<=t.y);
+    if(overlapX&&overlapY)return true;
   }
   return false;
 }
@@ -77,17 +102,25 @@ function blocked(t){
 function render(){
   const bd=document.getElementById('game-board');
   bd.innerHTML='';
-  const vis=tiles.filter(t=>!t.rm).sort((a,b)=>a.layer!==b.layer?a.layer-b.layer:a.gy!==b.gy?a.gy-b.gy:a.gx-b.gx);
+  const vis=tiles.filter(t=>!t.rm)
+    .sort((a,b)=>a.layer!==b.layer?a.layer-b.layer:a.gy!==b.gy?a.gy-b.gy:a.gx-b.gx);
   vis.forEach(t=>{
     const bl=blocked(t);
     const el=document.createElement('div');
     el.className='tile'+(bl?' blocked':' free');
-    el.style.left=t.x+'px';el.style.top=t.y+'px';
+    el.style.left=t.x+'px';
+    el.style.top=t.y+'px';
+    el.style.width=TW+'px';
+    el.style.height=TH+'px';
     el.style.zIndex=t.layer*1000+t.gy*50+t.gx;
     const img=document.createElement('img');
-    img.src=CP+t.card+'.png';img.draggable=false;
+    img.src=CP+t.card+'.png';
+    img.draggable=false;
     el.appendChild(img);
-    if(!bl){el.onclick=()=>click(t);el.ontouchstart=e=>{e.preventDefault();click(t);};}
+    if(!bl){
+      el.onclick=()=>click(t);
+      el.ontouchstart=e=>{e.preventDefault();click(t);};
+    }
     bd.appendChild(el);
   });
   rDecks();rSlots();ui();
@@ -110,7 +143,11 @@ function rSlots(){
   for(let i=0;i<SM;i++){
     const d=document.createElement('div');
     d.className='slot'+(slots[i]?' filled':'');
-    if(slots[i]){const m=document.createElement('img');m.src=CP+slots[i]+'.png';d.appendChild(m);}
+    if(slots[i]){
+      const m=document.createElement('img');
+      m.src=CP+slots[i]+'.png';
+      d.appendChild(m);
+    }
     bar.appendChild(d);
   }
   document.getElementById('slot-count').textContent=`SLOT: ${slots.length} / ${SM}`;
@@ -131,8 +168,17 @@ function ins(card){
 
 function chk(){
   let ch=true;
-  while(ch){ch=false;const m={};slots.forEach((c,i)=>{(m[c]=m[c]||[]).push(i);});
-    for(const[,idx]of Object.entries(m)){if(idx.length>=3){slots=slots.filter((_,i)=>!new Set(idx.slice(0,3)).has(i));score+=300*stage;ch=true;break;}}}
+  while(ch){
+    ch=false;
+    const m={};
+    slots.forEach((c,i)=>{(m[c]=m[c]||[]).push(i);});
+    for(const[,idx]of Object.entries(m)){
+      if(idx.length>=3){
+        slots=slots.filter((_,i)=>!new Set(idx.slice(0,3)).has(i));
+        score+=300*stage;ch=true;break;
+      }
+    }
+  }
 }
 
 function save(){hist.push({slots:[...slots],l:[...leftDeck],r:[...rightDeck],ts:tiles.map(t=>({id:t.id,r:t.rm})),score});}
@@ -174,7 +220,7 @@ function full(){
     <div class="result-box lose">
       <div style="font-size:36px">😾</div>
       <h2>SLOTS FULL!</h2>
-      <p>Watch ad to get 3 slots back!</p>
+      <p>Watch ad to free 3 slots!</p>
       <button onclick="ad()" style="background:#22c55e;color:#fff">📺 Watch Ad</button>
       <button onclick="restart()">↺ Restart</button>
     </div>`;
@@ -184,18 +230,11 @@ function ad(){
   const ov=document.getElementById('overlay');
   let cd=5;
   ov.innerHTML=`<div class="result-box"><div style="font-size:48px">📺</div><h2 style="color:var(--l)">Ad...</h2><div id="acd" style="font-size:48px;color:var(--g);margin:12px 0">${cd}</div></div>`;
-  const t=setInterval(()=>{cd--;const e=document.getElementById('acd');if(e)e.textContent=cd;
+  const t=setInterval(()=>{
+    cd--;
+    const e=document.getElementById('acd');if(e)e.textContent=cd;
     if(cd<=0){clearInterval(t);slots=slots.slice(3);ov.style.display='none';on=true;render();}
   },1000);
-}
-
-function over(){
-  if(!on)return;on=false;
-  document.getElementById('overlay').style.display='flex';
-  document.getElementById('overlay').innerHTML=`
-    <div class="result-box lose"><div style="font-size:48px">😾</div><h2>GAME OVER</h2>
-    <p>${stage>1?'Only 0.1% clear this!':'Try again!'}</p>
-    <button onclick="restart()">↺ Try Again</button></div>`;
 }
 
 function win(){
