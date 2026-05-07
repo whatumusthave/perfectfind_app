@@ -1,483 +1,98 @@
 <!DOCTYPE html>
-<html class="dark" lang="en">
+<html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Perfect Paw Match - Triple Tile Game</title>
-<meta name="description" content="Play Perfect Paw Match - a cosmic triple-match tile puzzle game. Match 3 identical tiles to clear them before the slot fills up!"/>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Perfect Paw Match</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
-  :root {
-    --bg: #1b0b2f;
-    --surface: #1b0b2f;
-    --surface-container: #27183c;
-    --surface-container-high: #322247;
-    --surface-variant: #3d2d52;
-    --surface-bright: #423257;
-    --primary: #fff6df;
-    --primary-container: #ffd700;
-    --secondary: #cdbdff;
-    --secondary-container: #4e3f7d;
-    --on-surface: #eedcff;
-    --on-surface-variant: #d0c6ab;
-    --outline: #999077;
-    --outline-variant: #4d4732;
-  }
+:root{--bg:#1b0b2f;--s:#27183c;--h:#322247;--g:#ffd700;--l:#cdbdff;--r:#ff6b6b;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--l);font-family:'Plus Jakarta Sans',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none;}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+/* Header */
+header{display:flex;align-items:center;justify-content:space-between;padding:6px 14px;background:rgba(27,11,47,.95);border-bottom:1px solid rgba(205,189,255,.15);flex-shrink:0;}
+.logo{font-size:13px;font-weight:800;color:var(--g);}
+#score{font-size:13px;font-weight:800;color:var(--g);background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);border-radius:20px;padding:3px 10px;}
+#timer{font-size:17px;font-weight:800;color:var(--g);}
+#stage-label{font-size:11px;font-weight:700;color:var(--l);letter-spacing:.1em;}
 
-  body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    background-color: var(--bg);
-    background-image:
-      radial-gradient(circle at 15% 25%, rgba(78, 63, 125, 0.45) 0%, transparent 55%),
-      radial-gradient(circle at 85% 75%, rgba(45, 27, 105, 0.4) 0%, transparent 55%),
-      radial-gradient(circle at 50% 50%, rgba(30, 15, 60, 0.3) 0%, transparent 80%);
-    color: var(--on-surface);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+/* Game layout */
+.game-wrap{flex:1;display:flex;align-items:stretch;gap:4px;padding:4px;overflow:hidden;min-height:0;}
 
-  /* ---- HEADER ---- */
-  header {
-    position: fixed; top: 0; left: 0; width: 100%; z-index: 50;
-    background: rgba(27, 11, 47, 0.85);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid rgba(205, 189, 255, 0.2);
-    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.12);
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 0 24px; height: 60px;
-  }
-  .header-logo { display: flex; align-items: center; gap: 8px; text-decoration: none; }
-  .header-logo .logo-icon { font-size: 24px; color: var(--primary-container); }
-  .header-logo span { font-size: 18px; font-weight: 800; color: var(--primary-container); letter-spacing: 0.04em; }
-  .header-right { display: flex; align-items: center; gap: 16px; }
-  .header-btn {
-    background: none; border: none; cursor: pointer;
-    color: var(--on-surface-variant); font-family: 'Material Symbols Outlined';
-    font-size: 22px; transition: color 0.2s;
-  }
-  .header-btn:hover { color: var(--primary-container); }
-  .score-display {
-    background: rgba(255, 215, 0, 0.1);
-    border: 1px solid rgba(255, 215, 0, 0.3);
-    border-radius: 20px;
-    padding: 4px 14px;
-    font-size: 13px; font-weight: 700;
-    color: var(--primary-container);
-    letter-spacing: 0.05em;
-  }
+/* Side decks */
+.side-deck{width:66px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;}
+.deck-wrap{position:relative;width:54px;height:78px;cursor:pointer;}
+.deck-wrap:hover{transform:scale(1.05);}
+.deck-wrap:active{transform:scale(.95);}
+.deck-back-card{position:absolute;width:52px;height:74px;background:linear-gradient(135deg,#3d2e6b,#251847);border:1.5px solid rgba(205,189,255,.5);border-radius:7px;}
+.deck-top-card{position:absolute;bottom:0;left:0;width:52px;height:74px;background:linear-gradient(135deg,#4e3f7d,#2d1b69);border:2px solid var(--l);border-radius:7px;overflow:hidden;}
+.deck-pattern{width:100%;height:100%;background-image:repeating-linear-gradient(45deg,transparent,transparent 5px,rgba(205,189,255,.08) 5px,rgba(205,189,255,.08) 10px),repeating-linear-gradient(-45deg,transparent,transparent 5px,rgba(255,215,0,.04) 5px,rgba(255,215,0,.04) 10px);}
+.deck-count{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:var(--l);background:var(--h);border-radius:10px;padding:2px 7px;white-space:nowrap;}
+.deck-empty{font-size:20px;color:rgba(205,189,255,.3);}
 
-  /* ---- MAIN GAME AREA ---- */
-  .game-wrapper {
-    padding-top: 60px;
-    min-height: 100vh;
-    display: flex; flex-direction: column; align-items: center;
-    padding-bottom: 120px;
-  }
+/* Board */
+#game-board{flex:1;position:relative;background:rgba(45,27,105,.12);border:1px solid rgba(205,189,255,.08);border-radius:12px;overflow:hidden;min-width:0;}
 
-  /* ---- STATS BAR ---- */
-  .stats-bar {
-    width: 100%; max-width: 860px;
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 20px;
-    margin-top: 16px;
-    background: rgba(45, 27, 105, 0.35);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(205, 189, 255, 0.18);
-    border-radius: 16px;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.08);
-  }
-  .stat-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-  .stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--secondary); text-transform: uppercase; }
-  .stat-value { font-size: 22px; font-weight: 800; color: var(--primary-container); font-variant-numeric: tabular-nums; }
-  .timer-ring { position: relative; width: 56px; height: 56px; }
-  .timer-ring svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
-  .timer-ring .ring-bg { stroke: var(--surface-variant); fill: none; stroke-width: 4; }
-  .timer-ring .ring-fill { stroke: var(--primary-container); fill: none; stroke-width: 4; stroke-dasharray: 150; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
-  .timer-ring .ring-text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: var(--primary-container); }
-  .timer-ring.danger .ring-fill { stroke: #ff6b6b; }
-  .timer-ring.danger .ring-text { color: #ff6b6b; }
+/* Tiles */
+.tile{position:absolute;width:58px;height:58px;cursor:pointer;border-radius:7px;overflow:hidden;box-shadow:0 2px 6px rgba(0,0,0,.7),inset 0 0 0 1px rgba(205,189,255,.25);background:var(--h);transition:transform .08s,box-shadow .08s;}
+.tile img{width:100%;height:100%;object-fit:cover;pointer-events:none;display:block;}
+.tile:hover:not(.blocked){transform:translateY(-5px) scale(1.1);box-shadow:0 10px 28px rgba(255,215,0,.4),inset 0 0 0 2px var(--g);z-index:99999!important;}
+.tile:active:not(.blocked){transform:scale(.93);}
+.tile.blocked{filter:brightness(.4) saturate(.15);cursor:not-allowed;}
 
-  /* ---- BOARD AREA ---- */
-  .board-section {
-    width: 100%; max-width: 860px;
-    margin-top: 14px;
-    background: rgba(45, 27, 105, 0.3);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(205, 189, 255, 0.15);
-    border-radius: 24px;
-    padding: 16px;
-    min-height: 480px;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 0 40px rgba(255, 215, 0, 0.06);
-  }
+/* Bottom */
+.bottom{flex-shrink:0;padding:0 6px 6px;display:flex;flex-direction:column;gap:4px;}
+#slot-count{text-align:center;font-size:10px;font-weight:700;color:var(--l);letter-spacing:.1em;}
+#slot-bar{display:flex;justify-content:center;gap:4px;background:rgba(45,27,105,.3);border:1px solid rgba(205,189,255,.12);border-radius:10px;padding:6px;min-height:72px;align-items:center;}
+.slot{width:56px;height:56px;border:2px dashed rgba(205,189,255,.18);border-radius:7px;background:rgba(50,34,71,.4);display:flex;align-items:center;justify-content:center;}
+.slot.filled{border-color:rgba(255,215,0,.4);background:rgba(255,215,0,.06);}
+.slot img{width:48px;height:48px;object-fit:cover;border-radius:5px;}
 
-  .board-bg {
-    position: absolute; inset: 0; opacity: 0.04; pointer-events: none;
-    background: repeating-linear-gradient(
-      45deg, rgba(255,215,0,0.3) 0px, rgba(255,215,0,0.3) 1px,
-      transparent 1px, transparent 40px
-    );
-  }
+/* Action buttons - 3 big buttons like original */
+.action-btns{display:flex;justify-content:center;gap:10px;}
+.action-btns button{width:76px;height:52px;border:none;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:11px;font-weight:700;cursor:pointer;transition:transform .1s;line-height:1.3;}
+.action-btns button:active{transform:scale(.93);}
+#undo-btn{background:var(--g);color:#1a0a2e;box-shadow:0 0 14px rgba(255,215,0,.35);}
+#shuffle-btn{background:var(--g);color:#1a0a2e;box-shadow:0 0 14px rgba(255,215,0,.35);}
+#restart-btn{background:rgba(205,189,255,.12);color:var(--l);border:2px solid rgba(205,189,255,.25);}
 
-  .game-board {
-    position: relative;
-    width: 100%;
-    /* Dynamic height via JS */
-    min-height: 420px;
-  }
-
-  /* Tile stack positioning handled by JS (absolute positioned) */
-  .tile {
-    position: absolute;
-    width: 72px; height: 72px;
-    border-radius: 14px;
-    background: rgba(50, 34, 71, 0.9);
-    border: 2px solid rgba(205, 189, 255, 0.2);
-    cursor: pointer;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
-    overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.07);
-    user-select: none;
-    -webkit-user-select: none;
-  }
-  .tile img {
-    width: 88%; height: 88%;
-    object-fit: contain;
-    pointer-events: none;
-    border-radius: 8px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-  }
-  .tile.active {
-    border-color: rgba(255, 215, 0, 0.6);
-    box-shadow: 0 0 16px rgba(255,215,0,0.35), 0 4px 12px rgba(0,0,0,0.4);
-    cursor: pointer;
-  }
-  .tile.active:hover {
-    transform: translateY(-4px) scale(1.06) !important;
-    box-shadow: 0 0 24px rgba(255,215,0,0.5), 0 8px 20px rgba(0,0,0,0.5) !important;
-    border-color: var(--primary-container) !important;
-    z-index: 999 !important;
-  }
-  .tile.locked {
-    border-color: rgba(100,80,140,0.3);
-    cursor: not-allowed;
-    opacity: 0.55;
-    filter: brightness(0.7) saturate(0.6);
-  }
-  .tile.locked:hover { transform: none !important; }
-  .tile.fly-out {
-    animation: flyOut 0.35s ease forwards;
-  }
-  @keyframes flyOut {
-    0% { transform: scale(1); opacity: 1; }
-    60% { transform: scale(1.15); opacity: 0.8; }
-    100% { transform: scale(0.3) translateY(100px); opacity: 0; }
-  }
-
-  /* ---- EMPTY BOARD MESSAGE ---- */
-  .board-empty {
-    display: none;
-    position: absolute; inset: 0;
-    flex-direction: column; align-items: center; justify-content: center;
-    gap: 12px;
-  }
-  .board-empty.show { display: flex; }
-  .board-empty span { font-size: 48px; }
-  .board-empty p { color: var(--secondary); font-size: 14px; }
-
-  /* ---- SLOT BAR ---- */
-  .slot-section {
-    width: 100%; max-width: 860px;
-    margin-top: 14px;
-    position: relative;
-  }
-  .slot-label {
-    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-    background: var(--primary-container);
-    color: #1a0a2e; font-size: 11px; font-weight: 800;
-    padding: 3px 14px; border-radius: 20px; letter-spacing: 0.1em;
-    white-space: nowrap; z-index: 2;
-  }
-  .slot-bar {
-    background: rgba(45, 27, 105, 0.35);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(205, 189, 255, 0.18);
-    border-bottom: 3px solid rgba(255,215,0,0.2);
-    border-radius: 18px;
-    padding: 14px 16px;
-    display: flex; gap: 10px; justify-content: center; align-items: center;
-    min-height: 100px;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.07);
-  }
-  .slot-cell {
-    width: 72px; height: 72px;
-    border-radius: 14px;
-    background: rgba(50, 34, 71, 0.5);
-    border: 2px dashed rgba(100, 80, 140, 0.4);
-    display: flex; align-items: center; justify-content: center;
-    position: relative;
-    transition: border-color 0.2s;
-    flex-shrink: 0;
-  }
-  .slot-cell.filled {
-    background: rgba(60, 40, 90, 0.8);
-    border-style: solid;
-    border-color: rgba(205, 189, 255, 0.3);
-  }
-  .slot-cell.match-glow {
-    border-color: var(--primary-container);
-    box-shadow: 0 0 16px rgba(255,215,0,0.6);
-    animation: matchPulse 0.4s ease;
-  }
-  @keyframes matchPulse {
-    0%, 100% { box-shadow: 0 0 16px rgba(255,215,0,0.6); }
-    50% { box-shadow: 0 0 32px rgba(255,215,0,1); }
-  }
-  .slot-cell img {
-    width: 82%; height: 82%; object-fit: contain;
-    border-radius: 8px;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-  }
-  .slot-cell .match-particle {
-    position: absolute; inset: 0;
-    pointer-events: none;
-    border-radius: 14px;
-    animation: particleBurst 0.5s ease forwards;
-    background: radial-gradient(circle, rgba(255,215,0,0.8), transparent 70%);
-  }
-  @keyframes particleBurst {
-    0% { opacity: 1; transform: scale(0.5); }
-    100% { opacity: 0; transform: scale(2.5); }
-  }
-
-  /* ---- CONTROLS ---- */
-  .controls-section {
-    width: 100%; max-width: 860px;
-    margin-top: 14px;
-    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
-  }
-  .btn {
-    display: flex; align-items: center; gap: 8px;
-    padding: 12px 24px;
-    border-radius: 50px;
-    border: none; cursor: pointer;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 14px; font-weight: 700;
-    letter-spacing: 0.06em;
-    transition: all 0.2s ease;
-  }
-  .btn:active { transform: scale(0.95); }
-  .btn-primary {
-    background: var(--primary-container);
-    color: #1a0a2e;
-    box-shadow: 0 0 20px rgba(255,215,0,0.4);
-  }
-  .btn-primary:hover { box-shadow: 0 0 32px rgba(255,215,0,0.7); transform: translateY(-2px); }
-  .btn-secondary {
-    background: rgba(78, 63, 125, 0.6);
-    color: var(--secondary);
-    border: 1px solid rgba(205, 189, 255, 0.3);
-  }
-  .btn-secondary:hover { background: rgba(78, 63, 125, 0.9); color: var(--primary); }
-  .btn span.icon { font-family: 'Material Symbols Outlined'; font-size: 20px; }
-
-  /* ---- OVERLAY (Game Over / Win) ---- */
-  #game-overlay {
-    display: none; position: fixed; inset: 0; z-index: 200;
-    align-items: center; justify-content: center;
-    background: rgba(10, 5, 25, 0.85); backdrop-filter: blur(10px);
-  }
-  #game-overlay.show { display: flex; }
-  .overlay-card {
-    background: linear-gradient(135deg, rgba(50, 34, 71, 0.95), rgba(30, 15, 60, 0.98));
-    border: 1px solid rgba(205, 189, 255, 0.25);
-    border-radius: 28px;
-    padding: 40px 48px;
-    text-align: center;
-    box-shadow: 0 0 60px rgba(255,215,0,0.2), 0 20px 60px rgba(0,0,0,0.6);
-    max-width: 420px; width: 90%;
-    animation: overlayIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
-  }
-  @keyframes overlayIn {
-    from { opacity: 0; transform: scale(0.7) translateY(30px); }
-    to { opacity: 1; transform: scale(1) translateY(0); }
-  }
-  .overlay-emoji { font-size: 64px; margin-bottom: 12px; }
-  .overlay-title { font-size: 32px; font-weight: 800; color: var(--primary-container); margin-bottom: 8px; }
-  .overlay-msg { font-size: 15px; color: var(--secondary); margin-bottom: 8px; }
-  .overlay-score { font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 24px; }
-  .overlay-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-
-  /* ---- TOAST MESSAGE ---- */
-  #toast {
-    position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%) translateY(20px);
-    background: rgba(50, 34, 71, 0.95);
-    border: 1px solid rgba(255,215,0,0.4);
-    color: var(--primary-container);
-    font-size: 14px; font-weight: 700;
-    padding: 10px 22px; border-radius: 30px;
-    box-shadow: 0 0 20px rgba(255,215,0,0.2);
-    opacity: 0; transition: all 0.3s ease;
-    z-index: 100; pointer-events: none;
-    white-space: nowrap;
-  }
-  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  /* ---- PARTICLE STARS ---- */
-  .star-particle {
-    position: fixed; pointer-events: none; z-index: 300;
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--primary-container);
-    animation: starFly 0.8s ease forwards;
-  }
-  @keyframes starFly {
-    0% { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0); }
-  }
-
-  /* ---- RESPONSIVE ---- */
-  @media (max-width: 600px) {
-    .tile { width: 60px; height: 60px; border-radius: 12px; }
-    .slot-cell { width: 58px; height: 58px; border-radius: 12px; }
-    .slot-cell img, .tile img { width: 80%; height: 80%; }
-    .slot-bar { gap: 6px; padding: 10px 10px; }
-    .stat-value { font-size: 18px; }
-    .board-section { padding: 12px; }
-    .controls-section { gap: 8px; }
-    .btn { padding: 10px 18px; font-size: 13px; }
-  }
-  @media (max-width: 400px) {
-    .tile { width: 52px; height: 52px; }
-    .slot-cell { width: 48px; height: 48px; }
-  }
-  /* ---- SIDE DECKS ---- */
-  .side-deck {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 80px;
-    height: 380px;
-    background: rgba(45, 27, 105, 0.25);
-    border: 1px dashed rgba(205, 189, 255, 0.3);
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 10px 0;
-    z-index: 5;
-  }
+/* Overlay */
+#overlay{display:none;position:fixed;inset:0;background:rgba(27,11,47,.9);backdrop-filter:blur(14px);z-index:10000;align-items:center;justify-content:center;}
+.result-box{background:rgba(50,34,71,.96);border:1px solid rgba(205,189,255,.2);border-radius:22px;padding:32px 26px;text-align:center;max-width:290px;width:90%;}
+.result-box.win{box-shadow:0 0 60px rgba(255,215,0,.35);}
+.result-box.lose{box-shadow:0 0 60px rgba(255,107,107,.25);}
+.result-box h2{font-size:24px;font-weight:800;color:var(--g);margin:10px 0 8px;}
+.result-score{font-size:17px;font-weight:700;color:var(--l);margin-bottom:6px;}
+.clear-rate{font-size:14px;font-weight:700;color:var(--r);margin-bottom:6px;}
+.result-box p{font-size:12px;color:rgba(205,189,255,.7);margin-bottom:18px;}
+.result-box button{display:block;width:100%;padding:12px;margin-top:8px;border:none;border-radius:10px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;}
+.result-box button:first-of-type{background:var(--g);color:#1a0a2e;}
+.result-box button:last-of-type{background:transparent;color:var(--l);border:2px solid rgba(205,189,255,.3);margin-top:6px;}
 </style>
 </head>
 <body>
-
-<!-- HEADER -->
 <header>
-  <a class="header-logo" href="index.html">
-    <span class="material-symbols-outlined logo-icon" style="font-variation-settings:'FILL' 1;">pets</span>
-    <span>Perfect Paw Match</span>
-  </a>
-  <div class="header-right">
-    <div class="score-display">⭐ <span id="header-score">0</span></div>
-    <button class="header-btn" id="mute-btn" title="Mute" style="font-family:'Material Symbols Outlined';">volume_up</button>
-  </div>
+  <div class="logo">🐾 Perfect Paw Match</div>
+  <div id="stage-label">Stage 1</div>
+  <div id="timer">01:30</div>
+  <div id="score">★ 0</div>
 </header>
-
-<!-- GAME WRAPPER -->
-<div class="game-wrapper" id="game-wrapper">
-
-  <!-- STATS BAR -->
-  <div class="stats-bar">
-    <div class="stat-item">
-      <span class="stat-label">Score</span>
-      <span class="stat-value" id="score-display">0</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Matches</span>
-      <span class="stat-value" id="matches-display">0</span>
-    </div>
-    <div class="timer-ring" id="timer-ring">
-      <svg viewBox="0 0 56 56">
-        <circle class="ring-bg" cx="28" cy="28" r="24"/>
-        <circle class="ring-fill" id="ring-fill" cx="28" cy="28" r="24" stroke-dashoffset="0"/>
-      </svg>
-      <div class="ring-text" id="timer-text">2:00</div>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Level</span>
-      <span class="stat-value" id="level-display">1</span>
-    </div>
-    <div class="stat-item">
-      <span class="stat-label">Tiles Left</span>
-      <span class="stat-value" id="tiles-left">0</span>
-    </div>
-  </div>
-
-  <!-- BOARD -->
-  <div class="board-section">
-    <div class="board-bg"></div>
-    <div class="side-deck" id="side-deck-left" style="left: 10px;"></div>
-    <div class="side-deck" id="side-deck-right" style="right: 10px;"></div>
-    <div class="game-board" id="game-board">
-      <!-- tiles rendered by JS -->
-    </div>
-    <div class="board-empty" id="board-empty">
-      <span>🎉</span>
-      <p>Board cleared! Matching slot tiles...</p>
-    </div>
-  </div>
-
-  <!-- SLOT BAR -->
-  <div class="slot-section">
-    <div class="slot-label" id="slot-label">SLOT: 0 / 7</div>
-    <div class="slot-bar" id="slot-bar">
-      <!-- 7 slot cells rendered by JS -->
-    </div>
-  </div>
-
-  <!-- CONTROLS -->
-  <div class="controls-section">
-    <button class="btn btn-primary" id="undo-btn">
-      <span class="icon">undo</span> UNDO (2)
-    </button>
-    <button class="btn btn-secondary" id="shuffle-btn">
-      <span class="icon">shuffle</span> SHUFFLE (1)
-    </button>
-    <button class="btn btn-secondary" id="restart-btn">
-      <span class="icon">replay</span> RESTART
-    </button>
-  </div>
-
+<div class="game-wrap">
+  <div class="side-deck" id="left-deck"></div>
+  <div id="game-board"></div>
+  <div class="side-deck" id="right-deck"></div>
 </div>
-
-<!-- GAME OVER / WIN OVERLAY -->
-<div id="game-overlay">
-  <div class="overlay-card">
-    <div class="overlay-emoji" id="overlay-emoji">😿</div>
-    <div class="overlay-title" id="overlay-title">GAME OVER</div>
-    <div class="overlay-msg" id="overlay-msg">Slot bar filled up!</div>
-    <div class="overlay-score" id="overlay-score">Score: 0</div>
-    <div class="overlay-btns">
-      <button class="btn btn-primary" id="overlay-next-btn" style="display: none;" onclick="nextStage()">
-        <span class="icon">arrow_forward</span> NEXT LEVEL
-      </button>
-      <button class="btn btn-primary" id="overlay-restart-btn">
-        <span class="icon">replay</span> PLAY AGAIN
-      </button>
-      <button class="btn btn-secondary" onclick="window.location.href='index.html'">
-        <span class="icon">home</span> HOME
-      </button>
-    </div>
+<div class="bottom">
+  <div id="slot-count">SLOT: 0 / 7</div>
+  <div id="slot-bar"></div>
+  <div class="action-btns">
+    <button id="undo-btn" onclick="doUndo()">↩<br>UNDO(2)</button>
+    <button id="shuffle-btn" onclick="doShuffle()">⟳<br>SHUF(1)</button>
+    <button id="restart-btn" onclick="restartGame()">↺<br>RESTART</button>
   </div>
 </div>
-
-<!-- TOAST -->
-<div id="toast"></div>
-
+<div id="overlay"></div>
 <script src="game.js"></script>
 </body>
 </html>
