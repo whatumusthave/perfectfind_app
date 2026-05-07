@@ -1,8 +1,5 @@
-/**
- * Perfect Paw Match — Chaos & Side Decks Edition
- * 84 Tiles on Board + 42 Tiles in Side Decks (Total 126, 14 types * 9)
- * Messy overlapping with ±30px random offsets.
- */
+// Perfect Paw Match - Yang Le Ge Yang Style Game
+// 14 cards × 6 = 84 tiles, guaranteed 3-divisible, rage-inducing difficulty
 
 const CARDS = [
   'amethyst_heart', 'celestial_potion', 'crystal_ball', 'fuchsia_ribbon',
@@ -13,9 +10,9 @@ const CARDS = [
 
 const CARD_PATH = 'assets/cards/';
 const SLOT_MAX = 7;
-const TILE_W = 72;
-const TILE_H = 72;
-const TILE_OVERLAP = 20;
+const TILE_W = 64;
+const TILE_H = 64;
+const TILE_OVERLAP = 20; // how much tiles overlap each other
 
 let stage = 1;
 let tiles = [];
@@ -27,34 +24,19 @@ let undoCount = 2;
 let shuffleCount = 1;
 let score = 0;
 let timerInterval = null;
-let timeLeft = 300;
+let timeLeft = 120;
 let gameActive = false;
 
-// ── DOM REFS ────────────────────────────────────────────────────────────────
-const $board = document.getElementById('game-board');
-const $slotBar = document.getElementById('slot-bar');
-const $leftDeck = document.getElementById('side-deck-left');
-const $rightDeck = document.getElementById('side-deck-right');
-const $slotLabel = document.getElementById('slot-label');
-const $scoreDisp = document.getElementById('score-display');
-const $headerScore = document.getElementById('header-score');
-const $timerDisp = document.getElementById('timer-text');
-const $levelDisp = document.getElementById('level-display');
-const $overlay = document.getElementById('game-overlay');
-const $undoBtn = document.getElementById('undo-btn');
-const $shuffleBtn = document.getElementById('shuffle-btn');
-
-// ── Generate tiles ──────────────────────────────────────────────────────────
+// ── Generate tiles guaranteed divisible by 3 ──────────────────────────
 function generateTiles(stageNum) {
   const pool = [];
+  // Stage 1: 5 card types × 3 = 15 tiles (easy)
+  // Stage 2+: all 14 × 6 = 84 tiles (brutal)
   if (stageNum === 1) {
-    // Stage 1: Easy warmup (15 tiles)
     const easyCards = CARDS.slice(0, 5);
     easyCards.forEach(c => { for (let i = 0; i < 3; i++) pool.push(c); });
   } else {
-    // Stage 2+: Chaos Mode (14 cards * 9 = 126 tiles)
-    // 84 on board, 21 in each side deck.
-    CARDS.forEach(c => { for (let i = 0; i < 9; i++) pool.push(c); });
+    CARDS.forEach(c => { for (let i = 0; i < 6; i++) pool.push(c); });
   }
   return shuffle(pool);
 }
@@ -68,94 +50,85 @@ function shuffle(arr) {
   return a;
 }
 
-// ── Build Board ──────────────────────────────────────────────────────────────
+// ── Build layered board layout ─────────────────────────────────────────
 function buildBoard(pool) {
-  const bw = $board.clientWidth || 800;
-  const bh = $board.clientHeight || 480;
+  const board = document.getElementById('game-board');
+  const bw = board.clientWidth || 600;
+  const bh = board.clientHeight || 480;
+
+  // Stage 1: 2 layers, Stage 2+: 5 layers with tight overlapping
+  const layerCount = stage === 1 ? 2 : 5;
+  const tilesOnBoard = stage === 1 ? pool.length : Math.floor(pool.length * 0.75);
+  const tilesPerLayer = Math.ceil(tilesOnBoard / layerCount);
 
   tiles = [];
   let poolIdx = 0;
 
-  if (stage === 1) {
-    // Simple grid for stage 1
-    const cols = 5;
-    const startX = bw / 2 - (cols * TILE_W) / 2;
-    const startY = bh / 2 - (3 * TILE_H) / 2;
-    pool.forEach((card, i) => {
+  for (let layer = 0; layer < layerCount; layer++) {
+    const count = Math.min(tilesPerLayer, pool.length - poolIdx);
+    const cols = Math.ceil(Math.sqrt(count));
+
+    for (let i = 0; i < count && poolIdx < pool.length; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+
+      // Base position centered on board
+      const startX = bw / 2 - (cols * (TILE_W - TILE_OVERLAP)) / 2;
+      const startY = bh / 2 - (Math.ceil(count / cols) * (TILE_H - TILE_OVERLAP)) / 2;
+
+      // Random offset for chaotic overlapping (key to yang le ge yang feel)
+      const randOffX = stage === 1 ? 0 : (Math.random() - 0.5) * TILE_W * 0.8;
+      const randOffY = stage === 1 ? 0 : (Math.random() - 0.5) * TILE_H * 0.8;
+
+      const x = startX + col * (TILE_W - TILE_OVERLAP) + randOffX;
+      const y = startY + row * (TILE_H - TILE_OVERLAP) + randOffY;
+
       tiles.push({
-        id: i, card,
-        x: startX + (i % cols) * TILE_W,
-        y: startY + Math.floor(i / cols) * TILE_H,
-        layer: 0, removed: false, el: null
+        id: poolIdx,
+        card: pool[poolIdx],
+        x: Math.max(0, Math.min(bw - TILE_W, x)),
+        y: Math.max(0, Math.min(bh - TILE_H, y)),
+        layer,
+        removed: false,
+        el: null
       });
-    });
-    leftDeck = [];
-    rightDeck = [];
-  } else {
-    // Stage 2: 84 on board + 42 in decks
-    const BOARD_COUNT = 84;
-    const layerCount = 7;
-    const tilesPerLayer = Math.ceil(BOARD_COUNT / layerCount);
-
-    for (let layer = 0; layer < layerCount; layer++) {
-      const count = Math.min(tilesPerLayer, BOARD_COUNT - tiles.length);
-      const cols = Math.ceil(Math.sqrt(count)) + 1;
-
-      for (let i = 0; i < count; i++) {
-        const col = i % cols;
-        const row = Math.floor(i / cols);
-
-        const startX = bw / 2 - (cols * (TILE_W - TILE_OVERLAP)) / 2;
-        const startY = bh / 2 - (Math.ceil(count / cols) * (TILE_H - TILE_OVERLAP)) / 2;
-
-        // CHAOS: Random offset ±30px
-        const randOffX = (Math.random() - 0.5) * 60;
-        const randOffY = (Math.random() - 0.5) * 60;
-
-        const x = startX + col * (TILE_W - TILE_OVERLAP) + randOffX;
-        const y = startY + row * (TILE_H - TILE_OVERLAP) + randOffY;
-
-        tiles.push({
-          id: poolIdx,
-          card: pool[poolIdx],
-          x: Math.max(10, Math.min(bw - TILE_W - 10, x)),
-          y: Math.max(10, Math.min(bh - TILE_H - 10, y)),
-          layer,
-          removed: false,
-          el: null
-        });
-        poolIdx++;
-      }
+      poolIdx++;
     }
-
-    const remaining = pool.slice(poolIdx);
-    const half = Math.floor(remaining.length / 2);
-    leftDeck = remaining.slice(0, half);
-    rightDeck = remaining.slice(half);
   }
+
+  // Side decks get remaining tiles
+  const remaining = pool.slice(poolIdx);
+  const half = Math.floor(remaining.length / 2);
+  leftDeck = remaining.slice(0, half);
+  rightDeck = remaining.slice(half);
 }
 
+// ── Check if tile is blocked (another tile overlaps it on higher layer) ─
 function isBlocked(tile) {
   if (tile.removed) return true;
   return tiles.some(t =>
     !t.removed &&
     t.layer > tile.layer &&
-    Math.abs(t.x - tile.x) < TILE_W - 4 &&
-    Math.abs(t.y - tile.y) < TILE_H - 4
+    t.x < tile.x + TILE_W - 4 &&
+    t.x + TILE_W > tile.x + 4 &&
+    t.y < tile.y + TILE_H - 4 &&
+    t.y + TILE_H > tile.y + 4
   );
 }
 
-// ── Rendering ────────────────────────────────────────────────────────────────
+// ── Render everything ─────────────────────────────────────────────────
 function render() {
-  $board.innerHTML = '<div class="board-bg"></div>';
+  const board = document.getElementById('game-board');
+  board.innerHTML = '';
 
   tiles.forEach(tile => {
     if (tile.removed) return;
     const blocked = isBlocked(tile);
 
     const el = document.createElement('div');
-    el.className = 'tile' + (blocked ? ' locked' : ' active');
-    el.style.transform = `translate(${tile.x}px, ${tile.y}px)`;
+    el.className = 'tile' + (blocked ? ' blocked' : '');
+    el.style.left = tile.x + 'px';
+    el.style.top = tile.y + 'px';
     el.style.zIndex = tile.layer * 10 + Math.floor(tile.y / 10);
 
     const img = document.createElement('img');
@@ -168,7 +141,7 @@ function render() {
     }
 
     tile.el = el;
-    $board.appendChild(el);
+    board.appendChild(el);
   });
 
   renderSlots();
@@ -177,81 +150,72 @@ function render() {
 }
 
 function renderSlots() {
-  $slotBar.innerHTML = '';
+  const slotBar = document.getElementById('slot-bar');
+  slotBar.innerHTML = '';
   for (let i = 0; i < SLOT_MAX; i++) {
     const slot = document.createElement('div');
-    slot.className = 'slot-cell';
+    slot.className = 'slot';
     if (slots[i]) {
       const img = document.createElement('img');
       img.src = CARD_PATH + slots[i].card + '.png';
       slot.appendChild(img);
       slot.classList.add('filled');
     }
-    $slotBar.appendChild(slot);
+    slotBar.appendChild(slot);
   }
-  $slotLabel.textContent = `SLOT: ${slots.length} / ${SLOT_MAX}`;
+  document.getElementById('slot-count').textContent = `SLOT: ${slots.length} / ${SLOT_MAX}`;
 }
 
 function renderDecks() {
-  $leftDeck.innerHTML = '';
-  $rightDeck.innerHTML = '';
+  const ld = document.getElementById('left-deck');
+  const rd = document.getElementById('right-deck');
+
+  ld.innerHTML = '';
+  rd.innerHTML = '';
 
   if (leftDeck.length > 0) {
-    const el = createDeckStack(leftDeck.length, 'left');
-    $leftDeck.appendChild(el);
+    const stack = document.createElement('div');
+    stack.className = 'deck-stack';
+    stack.innerHTML = `<div class="deck-back"></div><div class="deck-count">${leftDeck.length}</div>`;
+    stack.addEventListener('click', () => drawFromDeck('left'));
+    ld.appendChild(stack);
   }
-  if (rightDeck.length > 0) {
-    const el = createDeckStack(rightDeck.length, 'right');
-    $rightDeck.appendChild(el);
-  }
-}
 
-function createDeckStack(count, side) {
-  const stack = document.createElement('div');
-  stack.className = 'tile active';
-  stack.style.position = 'relative';
-  stack.style.margin = 'auto';
-  stack.style.boxShadow = '0 8px 0 rgba(0,0,0,0.3)';
-  
-  stack.innerHTML = `
-    <div style="width:100%; height:100%; background:linear-gradient(135deg, #4e3f7d, #1b0b2f); display:flex; flex-direction:column; align-items:center; justify-content:center; border:2px solid #ffd700; border-radius:12px;">
-      <span style="font-size:24px;">🐾</span>
-      <span style="font-size:16px; font-weight:800; color:#ffd700;">${count}</span>
-    </div>
-  `;
-  stack.onclick = () => drawFromDeck(side);
-  return stack;
+  if (rightDeck.length > 0) {
+    const stack = document.createElement('div');
+    stack.className = 'deck-stack';
+    stack.innerHTML = `<div class="deck-back"></div><div class="deck-count">${rightDeck.length}</div>`;
+    stack.addEventListener('click', () => drawFromDeck('right'));
+    rd.appendChild(stack);
+  }
 }
 
 function updateUI() {
-  const s = score.toLocaleString();
-  $scoreDisp.textContent = s;
-  if ($headerScore) $headerScore.textContent = s;
-  $levelDisp.textContent = stage;
-  
-  $undoBtn.innerHTML = `<span class="icon">undo</span> UNDO (${undoCount})`;
-  $shuffleBtn.innerHTML = `<span class="icon">shuffle</span> SHUFFLE (${shuffleCount})`;
-  
-  $undoBtn.disabled = undoCount <= 0 || undoStack.length === 0;
-  $shuffleBtn.disabled = shuffleCount <= 0;
+  document.getElementById('score').textContent = '★ ' + score.toLocaleString();
+  document.getElementById('undo-btn').textContent = `↩ UNDO (${undoCount})`;
+  document.getElementById('shuffle-btn').textContent = `⟳ SHUFFLE (${shuffleCount})`;
 
   const remaining = tiles.filter(t => !t.removed).length;
-  document.getElementById('tiles-left').textContent = remaining + leftDeck.length + rightDeck.length;
+  if (remaining === 0 && leftDeck.length === 0 && rightDeck.length === 0 && slots.length === 0) {
+    showWin();
+  }
 }
 
-// ── Actions ──────────────────────────────────────────────────────────────────
+// ── Game actions ──────────────────────────────────────────────────────
 function clickTile(tile) {
   if (!gameActive || tile.removed || isBlocked(tile)) return;
 
+  // Save undo state
   undoStack.push({
     tileId: tile.id,
-    slots: JSON.parse(JSON.stringify(slots)),
+    slots: [...slots],
     score
   });
 
   tile.removed = true;
-  tile.el.classList.add('fly-out');
+  tile.el.classList.add('removing');
 
+  // Insert into slots sorted by card type
   const insertIdx = findInsertIndex(tile.card);
   slots.splice(insertIdx, 0, { card: tile.card, tileId: tile.id });
 
@@ -265,6 +229,7 @@ function clickTile(tile) {
 }
 
 function findInsertIndex(card) {
+  // Group same cards together
   let lastSame = -1;
   for (let i = 0; i < slots.length; i++) {
     if (slots[i].card === card) lastSame = i;
@@ -282,32 +247,25 @@ function checkMatches() {
   let matched = false;
   Object.entries(counts).forEach(([card, indices]) => {
     if (indices.length >= 3) {
+      // Remove first 3
       const toRemove = indices.slice(0, 3);
       slots = slots.filter((_, i) => !toRemove.includes(i));
       score += 300;
       matched = true;
-      showToast(`✨ Matched!`);
     }
   });
 
-  if (matched) checkMatches();
-  
-  if (tiles.filter(t=>!t.removed).length === 0 && leftDeck.length === 0 && rightDeck.length === 0 && slots.length === 0) {
-    showWin();
-  }
+  if (matched) checkMatches(); // chain matches
 }
 
 function drawFromDeck(side) {
-  if (!gameActive || slots.length >= SLOT_MAX) return;
+  if (!gameActive) return;
+  if (slots.length >= SLOT_MAX) { showLose(); return; }
 
   const deck = side === 'left' ? leftDeck : rightDeck;
   if (deck.length === 0) return;
 
   const card = deck.pop();
-  
-  // No undo for deck draws to increase rage
-  undoStack = []; 
-
   const insertIdx = findInsertIndex(card);
   slots.splice(insertIdx, 0, { card, fromDeck: side });
 
@@ -321,14 +279,13 @@ function drawFromDeck(side) {
 
 function doUndo() {
   if (!gameActive || undoCount <= 0 || undoStack.length === 0) return;
-  const lastState = undoStack.pop();
-  const tile = tiles.find(t => t.id === lastState.tileId);
+  const state = undoStack.pop();
+  const tile = tiles.find(t => t.id === state.tileId);
   if (tile) tile.removed = false;
-  slots = lastState.slots;
-  score = lastState.score;
+  slots = state.slots;
+  score = state.score;
   undoCount--;
   render();
-  showToast("⏪ Undo used!");
 }
 
 function doShuffle() {
@@ -341,19 +298,18 @@ function doShuffle() {
   activeTiles.forEach((t, i) => t.card = shuffled[i]);
 
   render();
-  showToast("🔀 Board Shuffled!");
 }
 
-// ── Timer & Overlay ──────────────────────────────────────────────────────────
+// ── Timer ─────────────────────────────────────────────────────────────
 function startTimer() {
-  timeLeft = stage === 1 ? 120 : 300;
+  timeLeft = stage === 1 ? 120 : 180;
   clearInterval(timerInterval);
   timerInterval = setInterval(() => {
     timeLeft--;
     const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
     const secs = (timeLeft % 60).toString().padStart(2, '0');
-    $timerDisp.textContent = `${mins}:${secs}`;
-    $timerDisp.style.color = timeLeft < 30 ? '#ff6b6b' : '#ffd700';
+    document.getElementById('timer').textContent = `${mins}:${secs}`;
+    document.getElementById('timer').style.color = timeLeft < 30 ? '#ff6b6b' : '#ffd700';
 
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
@@ -362,42 +318,53 @@ function startTimer() {
   }, 1000);
 }
 
+// ── Win / Lose screens ────────────────────────────────────────────────
 function showWin() {
   gameActive = false;
   clearInterval(timerInterval);
-  document.getElementById('overlay-next-btn').style.display = 'flex';
-  setOverlay("MISSION ACCOMPLISHED", "🎉", `Perfect match! Stage ${stage} cleared.`);
-  reportStatus("WIN");
+
+  const overlay = document.getElementById('overlay');
+  overlay.innerHTML = `
+    <div class="result-box win">
+      <div class="result-stars">⭐⭐⭐</div>
+      <h2>PERFECT PAW MATCH!</h2>
+      <div class="result-score">Score: ${score.toLocaleString()}</div>
+      <button onclick="nextStage()">Next Level →</button>
+      <button onclick="restartGame()">Play Again</button>
+    </div>`;
+  overlay.style.display = 'flex';
 }
 
 function showLose() {
   gameActive = false;
   clearInterval(timerInterval);
-  document.getElementById('overlay-next-btn').style.display = 'none';
-  setOverlay("GAME OVER", "💀", "The chaos got you. Try again?");
-  reportStatus("LOSE");
-}
 
-function setOverlay(title, emoji, msg) {
-  document.getElementById('overlay-title').textContent = title;
-  document.getElementById('overlay-emoji').textContent = emoji;
-  document.getElementById('overlay-msg').textContent = msg;
-  document.getElementById('overlay-score').textContent = `Score: ${score.toLocaleString()}`;
-  $overlay.classList.add('show');
+  const clearRate = stage === 1 ? '72%' : '0.1%';
+  const overlay = document.getElementById('overlay');
+  overlay.innerHTML = `
+    <div class="result-box lose">
+      <h2>💀 GAME OVER</h2>
+      <div class="clear-rate">Clear Rate: ${clearRate}</div>
+      <p>${stage === 1 ? 'So close! Try again?' : 'Only 0.1% of players clear this. Try again?'}</p>
+      <button onclick="restartGame()">↩ Try Again</button>
+      <button onclick="nextStage()">Skip to Next</button>
+    </div>`;
+  overlay.style.display = 'flex';
 }
 
 function nextStage() {
   stage++;
-  $overlay.classList.remove('show');
+  document.getElementById('overlay').style.display = 'none';
+  document.getElementById('stage-label').textContent = `Stage ${stage}`;
   startGame();
 }
 
 function restartGame() {
-  stage = 1;
-  $overlay.classList.remove('show');
+  document.getElementById('overlay').style.display = 'none';
   startGame();
 }
 
+// ── Init ──────────────────────────────────────────────────────────────
 function startGame() {
   gameActive = true;
   slots = [];
@@ -412,24 +379,15 @@ function startGame() {
   startTimer();
 }
 
-function showToast(msg) {
-  const toast = document.getElementById('toast');
-  toast.textContent = msg;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), 2000);
-}
+window.addEventListener('load', () => {
+  stage = 1;
+  document.getElementById('stage-label').textContent = 'Stage 1';
+  startGame();
+});
 
-async function reportStatus(status) {
-  const BOT_TOKEN = '8309347424:AAF5UMdDguIbsaKQ2StFhvxT7ZvnaupAaBE';
-  const CHAT_ID   = '8452005297';
-  const text = `🐾 Perfect Paw Match (Chaos)\nStatus: ${status}\nStage: ${stage}\nScore: ${score}\nTime: ${new Date().toLocaleString()}`;
-  try { fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: CHAT_ID, text }) }); } catch (e) {}
-}
-
-$undoBtn.onclick = doUndo;
-$shuffleBtn.onclick = doShuffle;
-document.getElementById('restart-btn').onclick = restartGame;
-document.getElementById('overlay-restart-btn').onclick = restartGame;
-
-window.onload = startGame;
+// Export for buttons
+window.doUndo = doUndo;
+window.doShuffle = doShuffle;
+window.restartGame = restartGame;
 window.nextStage = nextStage;
+window.drawFromDeck = drawFromDeck;
