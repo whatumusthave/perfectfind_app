@@ -76,8 +76,8 @@ function build(pool){
         id:idx,card:pool[idx],
         gx,gy,
         // offset each layer slightly so stacking is visible
-        x:sx+gx*GS+(layer*4),
-        y:sy+gy*GS+(layer*4),
+        x:sx+gx*GS,
+        y:sy+gy*GS,
         layer,rm:false
       });
       idx++;
@@ -85,16 +85,13 @@ function build(pool){
   }
 }
 
-// A tile is blocked if ANY higher-layer tile overlaps it (pixel overlap)
+// A tile is blocked if ANY higher-layer tile sits on same grid cell
 function blocked(t){
   if(t.rm)return true;
   for(let i=0;i<tiles.length;i++){
     const o=tiles[i];
     if(o.rm||o.id===t.id||o.layer<=t.layer)continue;
-    // pixel overlap
-    const overlapX=!(o.x>=t.x+TW||o.x+TW<=t.x);
-    const overlapY=!(o.y>=t.y+TH||o.y+TH<=t.y);
-    if(overlapX&&overlapY)return true;
+    if(o.gx===t.gx&&o.gy===t.gy)return true;
   }
   return false;
 }
