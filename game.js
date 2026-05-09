@@ -15,7 +15,7 @@ const CARDS = [
   '13zio',
   '14ziawink'
 ];
-const CP = 'assets/cards/', SM = 7, CS = 62, STEP = 31, LOFF = 16;
+const CP = '/assets/cards/', SM = 7, CS = 62, STEP = 31, LOFF = 16;
 let stage = 1, tiles = [], sideLeft = [], sideRight = [], slots = [], hist = [], undo = 2, shuf = 1, score = 0, on = false, lastClickTime = 0;
 
 // Shuffle array
