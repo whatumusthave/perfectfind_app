@@ -85,13 +85,16 @@ function build(pool){
   }
 }
 
-// A tile is blocked if ANY higher-layer tile sits on same grid cell
+// A tile is blocked if any tile in a higher layer overlaps it significantly
 function blocked(t){
   if(t.rm)return true;
   for(let i=0;i<tiles.length;i++){
     const o=tiles[i];
     if(o.rm||o.id===t.id||o.layer<=t.layer)continue;
-    if(o.gx===t.gx&&o.gy===t.gy)return true;
+    // Check for significant overlap (50% rule)
+    // If distance between centers is less than ~75% of tile size, they overlap enough to block
+    const dx=Math.abs(t.x-o.x), dy=Math.abs(t.y-o.y);
+    if(dx < TW*0.7 && dy < TH*0.7) return true;
   }
   return false;
 }
