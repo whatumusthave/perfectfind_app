@@ -1,100 +1,78 @@
-// Perfect Paw Match - Stripe Cards, No Timer, 7 Slots, Proper Blocking
+// Perfect Paw Match - Refined Engine
 const CARDS=[
-  '1amethyst_heart',
-  '2zia',
-  '3Silver_Shopping_Bag',
-  '4Terquois_cushion',
-  '5Sapphire_Paw',
-  '6fuchsia_ribbon',
-  '7jeweled_keyhole',
-  '8golden_paw ',
-  '9pinkruby_pufferfish',
-  '10crystal_ball',
-  '11celestial_potion',
-  '12royal cat bed',
-  '13zio',
-  '14indigo_bowtie',
-  '15ziawink'
+  '1amethyst_heart','3Silver_Shopping_Bag','4Terquois_cushion',
+  '5Sapphire_Paw','6fuchsia_ribbon','7jeweled_keyhole','8golden_paw ',
+  '9pinkruby_pufferfish','10crystal_ball','11celestial_potion',
+  '12royal cat bed','13zio','14indigo_bowtie','15ziawink'
 ];
-const CP='assets/cards/',SM=7,TW=64,TH=64,GS=48;
-let stage=1,tiles=[],slots=[],leftDeck=[],rightDeck=[],hist=[],undo=2,shuf=1,score=0,on=false;
+const CP='assets/cards/',SM=7,CS=62,OX=31,OY=31;
+let stage=1,tiles=[],slots=[],hist=[],undo=2,shuf=1,score=0,on=false;
 
-function sh(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
+function sh(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[b[i],b[j]]=[b[j],b[i]];}return b;}
 
-function stageConfig(){
-  if(stage===1) return {types:4, copies:3, layers:2, deckCards:0};
-  if(stage===2) return {types:6, copies:3, layers:3, deckCards:6};
-  if(stage===3) return {types:8, copies:3, layers:3, deckCards:9};
-  return {types:10, copies:3, layers:4, deckCards:12};
+function getPositions(){
+  if(stage===1)return[
+    {gx:0,gy:0,l:0},{gx:1,gy:0,l:0},{gx:2,gy:0,l:0},
+    {gx:0,gy:1,l:0},{gx:1,gy:1,l:0},{gx:2,gy:1,l:0},
+    {gx:0,gy:2,l:0},{gx:1,gy:2,l:0},{gx:2,gy:2,l:0},
+    {gx:0,gy:0,l:1},{gx:1,gy:0,l:1},{gx:2,gy:0,l:1},
+  ];
+  if(stage===2)return[
+    ...[0,1,2,3].flatMap(r=>[0,1,2,3,4].map(c=>({gx:c,gy:r,l:0}))),
+    ...[0,1,2].flatMap(r=>[1,2,3].map(c=>({gx:c,gy:r,l:1}))),
+    {gx:1,gy:0,l:2},{gx:2,gy:0,l:2},{gx:1,gy:1,l:2},{gx:2,gy:1,l:2},
+  ];
+  return[
+    ...[0,1,2,3,4].flatMap(r=>[0,1,2,3,4,5].map(c=>({gx:c,gy:r,l:0}))),
+    ...[0,1,2,3].flatMap(r=>[1,2,3,4].map(c=>({gx:c,gy:r,l:1}))),
+    ...[0,1,2].flatMap(r=>[2,3].map(c=>({gx:c,gy:r,l:2}))),
+    {gx:2,gy:1,l:3},
+  ];
 }
 
-function gen(){
-  const cfg=stageConfig();
-  const chosen=sh([...CARDS]).slice(0,cfg.types);
-  const pool=[];
-  chosen.forEach(c=>{for(let i=0;i<cfg.copies;i++)pool.push(c);});
-  const shuffled=sh(pool);
-  const boardCount=shuffled.length-cfg.deckCards;
-  const board=shuffled.slice(0,boardCount);
-  const deckAll=shuffled.slice(boardCount);
-  const half=0|deckAll.length/2;
-  return{b:board,l:deckAll.slice(0,half),r:deckAll.slice(half)};
-}
-
-function build(pool){
+function build(){
   const bd=document.getElementById('game-board');
-  const bw=bd.clientWidth||360,bh=bd.clientHeight||440;
+  const bw=bd.clientWidth||360,bh=bd.clientHeight||460;
   tiles=[];
-  const cfg=stageConfig();
-  const numLayers=cfg.layers;
 
-  // Grid dimensions per layer (centered, shrinking each layer)
-  const layerDefs=[
-    {c:6,r:5},
-    {c:4,r:4},
-    {c:3,r:3},
-    {c:2,r:2}
-  ].slice(0,numLayers);
+  const pos=getPositions();
+  const count=pos.length-pos.length%3;
+  const used=sh(pos).slice(0,count);
 
-  const COLS=6,ROWS=5;
-  const totalW=COLS*GS, totalH=ROWS*GS;
-  const sx=0|bw/2-totalW/2, sy=0|bh/2-totalH/2;
+  const numTypes=stage===1?3:stage===2?7:12;
+  const chosen=sh([...CARDS]).slice(0,numTypes);
+  const pool=[];
+  for(let i=0;i<count;i++)pool.push(chosen[i%chosen.length]);
+  const cards=sh(pool);
 
-  let idx=0;
-  for(let layer=0;layer<numLayers&&idx<pool.length;layer++){
-    const {c,r}=layerDefs[layer];
-    const offX=0|((COLS-c)/2);
-    const offY=0|((ROWS-r)/2);
-    const cells=[];
-    for(let gy=offY;gy<offY+r;gy++)
-      for(let gx=offX;gx<offX+c;gx++)
-        cells.push({gx,gy});
-    const picked=sh(cells).slice(0,Math.min(cells.length,pool.length-idx));
-    picked.forEach(({gx,gy})=>{
-      if(idx>=pool.length)return;
-      tiles.push({
-        id:idx,card:pool[idx],
-        gx,gy,
-        // offset each layer slightly so stacking is visible
-        x:sx+gx*GS,
-        y:sy+gy*GS,
-        layer,rm:false
-      });
-      idx++;
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  used.forEach(({gx,gy,l})=>{
+    const px=gx*CS+l*OX,py=gy*CS+l*OY;
+    minX=Math.min(minX,px);minY=Math.min(minY,py);
+    maxX=Math.max(maxX,px+CS);maxY=Math.max(maxY,py+CS);
+  });
+
+  const ox=Math.round(bw/2-(maxX-minX)/2-minX);
+  const oy=Math.round(bh*0.45-(maxY-minY)/2-minY);
+
+  used.forEach(({gx,gy,l},i)=>{
+    tiles.push({
+      id:i,card:cards[i],gx,gy,
+      px:gx*CS+l*OX+ox,
+      py:gy*CS+l*OY+oy,
+      layer:l,rm:false
     });
-  }
+  });
 }
 
-// A tile is blocked if any tile in a higher layer overlaps it significantly
-function blocked(t){
+function isBlocked(t){
   if(t.rm)return true;
-  for(let i=0;i<tiles.length;i++){
-    const o=tiles[i];
+  const thresh=CS*0.15;
+  for(const o of tiles){
     if(o.rm||o.id===t.id||o.layer<=t.layer)continue;
-    // Check for significant overlap (50% rule)
-    // If distance between centers is less than ~75% of tile size, they overlap enough to block
-    const dx=Math.abs(t.x-o.x), dy=Math.abs(t.y-o.y);
-    if(dx < TW*0.7 && dy < TH*0.7) return true;
+    const ox=Math.min(t.px+CS,o.px+CS)-Math.max(t.px,o.px);
+    const oy=Math.min(t.py+CS,o.py+CS)-Math.max(t.py,o.py);
+    if(ox>=thresh&&oy>=thresh)return true;
   }
   return false;
 }
@@ -102,77 +80,61 @@ function blocked(t){
 function render(){
   const bd=document.getElementById('game-board');
   bd.innerHTML='';
-  const vis=tiles.filter(t=>!t.rm)
-    .sort((a,b)=>a.layer!==b.layer?a.layer-b.layer:a.gy!==b.gy?a.gy-b.gy:a.gx-b.gx);
-  vis.forEach(t=>{
-    const bl=blocked(t);
-    const el=document.createElement('div');
-    el.className='tile'+(bl?' blocked':' free');
-    el.style.left=t.x+'px';
-    el.style.top=t.y+'px';
-    el.style.width=TW+'px';
-    el.style.height=TH+'px';
-    el.style.zIndex=t.layer*1000+t.gy*50+t.gx;
-    const img=document.createElement('img');
-    img.src=CP+t.card+'.png';
-    img.draggable=false;
-    el.appendChild(img);
-    if(!bl){
-      el.onclick=()=>click(t);
-      el.ontouchstart=e=>{e.preventDefault();click(t);};
-    }
-    bd.appendChild(el);
-  });
-  rDecks();rSlots();ui();
+  [...tiles].filter(t=>!t.rm)
+    .sort((a,b)=>a.layer-b.layer||a.gy-b.gy||a.gx-b.gx)
+    .forEach(t=>{
+      const bl=isBlocked(t);
+      const el=document.createElement('div');
+      el.style.cssText=`position:absolute;left:${t.px}px;top:${t.py}px;width:${CS}px;height:${CS}px;z-index:${t.layer*500+t.gy*20+t.gx};border-radius:8px;overflow:hidden;pointer-events:${bl?'none':'auto'};cursor:${bl?'not-allowed':'pointer'};`;
+      const img=document.createElement('img');
+      img.src=CP+t.card+'.png';
+      img.style.cssText=`width:100%;height:100%;object-fit:cover;display:block;border-radius:7px;border:${bl?'1.5px solid rgba(80,60,120,.2)':'2.5px solid rgba(255,215,0,.9)'};filter:${bl?'brightness(.2) saturate(.05)':'brightness(1)'};box-shadow:${bl?'none':'0 2px 10px rgba(255,215,0,.3)'};transition:filter .1s;`;
+      el.appendChild(img);
+      if(!bl){
+        el.onclick=()=>clickTile(t);
+        el.ontouchstart=e=>{e.preventDefault();clickTile(t);};
+      }
+      bd.appendChild(el);
+    });
+  renderSlots();
+  renderUI();
 }
 
-function rDecks(){rD('left-deck',leftDeck,'left');rD('right-deck',rightDeck,'right');}
-function rD(id,dk,sd){
-  const el=document.getElementById(id);
-  if(!dk.length){el.innerHTML='<div class="deck-empty">✓</div>';return;}
-  const top=dk[dk.length-1],sc=Math.min(dk.length-1,4);
-  let h=`<div class="deck-wrap" onclick="draw('${sd}')">`;
-  for(let i=sc;i>=1;i--)h+=`<div class="deck-back-card" style="bottom:${i*3}px;right:${i*2}px"></div>`;
-  h+=`<div class="deck-top-open"><img src="${CP}${top}.png"/></div>`;
-  h+=`<div class="deck-count">${dk.length}</div></div>`;
-  el.innerHTML=h;
-}
-
-function rSlots(){
-  const bar=document.getElementById('slot-bar');bar.innerHTML='';
+function renderSlots(){
+  const bar=document.getElementById('slot-bar');
+  bar.innerHTML='';
   for(let i=0;i<SM;i++){
     const d=document.createElement('div');
-    d.className='slot'+(slots[i]?' filled':'');
+    d.style.cssText=`width:40px;height:40px;border:2px dashed ${slots[i]?'rgba(255,215,0,.5)':'rgba(205,189,255,.5)'};border-radius:7px;background:${slots[i]?'rgba(255,215,0,.06)':'rgba(50,34,71,.3)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;`;
     if(slots[i]){
       const m=document.createElement('img');
       m.src=CP+slots[i]+'.png';
+      m.style.cssText='width:34px;height:34px;object-fit:cover;border-radius:5px;';
       d.appendChild(m);
     }
     bar.appendChild(d);
   }
-  document.getElementById('slot-count').textContent=`SLOT: ${slots.length} / ${SM}`;
+  document.getElementById('slot-count').textContent=slots.length+'/'+SM;
 }
 
-function ui(){
+function renderUI(){
   document.getElementById('score').textContent='★ '+score.toLocaleString();
-  document.getElementById('undo-btn').innerHTML=`↩<br>UNDO(${undo})`;
-  document.getElementById('shuffle-btn').innerHTML=`⟳<br>SHUF(${shuf})`;
-  if(!tiles.filter(t=>!t.rm).length&&!leftDeck.length&&!rightDeck.length&&!slots.length)win();
+  document.getElementById('undo-badge').textContent=undo;
+  document.getElementById('shuf-badge').textContent=shuf;
+  if(!tiles.filter(t=>!t.rm).length&&!slots.length)win();
 }
 
-function ins(card){
+function insertSlot(card){
   let at=slots.length;
   for(let i=slots.length-1;i>=0;i--){if(slots[i]===card){at=i+1;break;}}
   slots.splice(at,0,card);
 }
 
-function chk(){
+function checkMatch(){
   let ch=true;
-  while(ch){
-    ch=false;
-    const m={};
+  while(ch){ch=false;const m={};
     slots.forEach((c,i)=>{(m[c]=m[c]||[]).push(i);});
-    for(const[,idx]of Object.entries(m)){
+    for(const[,idx] of Object.entries(m)){
       if(idx.length>=3){
         slots=slots.filter((_,i)=>!new Set(idx.slice(0,3)).has(i));
         score+=300*stage;ch=true;break;
@@ -181,29 +143,20 @@ function chk(){
   }
 }
 
-function save(){hist.push({slots:[...slots],l:[...leftDeck],r:[...rightDeck],ts:tiles.map(t=>({id:t.id,r:t.rm})),score});}
+function saveState(){hist.push({slots:[...slots],ts:tiles.map(t=>({id:t.id,rm:t.rm})),score});}
 
-function click(t){
-  if(!on||t.rm||blocked(t))return;
-  save();t.rm=true;ins(t.card);chk();render();
-  if(slots.length>=SM)full();
-}
-
-function draw(side){
-  if(!on)return;
-  const dk=side==='left'?leftDeck:rightDeck;
-  if(!dk.length)return;
-  if(slots.length>=SM){full();return;}
-  save();ins(dk.pop());chk();render();
-  if(slots.length>=SM)full();
+function clickTile(t){
+  if(!on||t.rm||isBlocked(t))return;
+  saveState();t.rm=true;
+  insertSlot(t.card);checkMatch();render();
+  if(slots.length>=SM)showFull();
 }
 
 function doUndo(){
   if(!on||!undo||!hist.length)return;
   const s=hist.pop();
-  s.ts.forEach(ts=>{const t=tiles.find(t=>t.id===ts.id);if(t)t.rm=ts.r;});
-  slots=s.slots;leftDeck=s.l;rightDeck=s.r;score=s.score;
-  undo--;render();
+  s.ts.forEach(({id,rm})=>{const t=tiles.find(t=>t.id===id);if(t)t.rm=rm;});
+  slots=s.slots;score=s.score;undo--;render();
 }
 
 function doShuffle(){
@@ -212,47 +165,49 @@ function doShuffle(){
   a.forEach((t,i)=>t.card=c[i]);render();
 }
 
-function full(){
-  if(slots.length<SM)return;
-  on=false;
-  document.getElementById('overlay').style.display='flex';
-  document.getElementById('overlay').innerHTML=`
-    <div class="result-box lose">
-      <div style="font-size:36px">😾</div>
-      <h2>SLOTS FULL!</h2>
-      <p>Watch ad to free 3 slots!</p>
-      <button onclick="ad()" style="background:#22c55e;color:#fff">📺 Watch Ad</button>
-      <button onclick="restart()">↺ Restart</button>
-    </div>`;
+function doWithdraw(){
+  if(!on||!slots.length)return;
+  const card=slots.pop();
+  const gone=tiles.filter(t=>t.rm);
+  if(gone.length){gone[gone.length-1].rm=false;gone[gone.length-1].card=card;}
+  else slots.push(card);
+  render();
 }
 
-function ad(){
-  const ov=document.getElementById('overlay');
-  let cd=5;
-  ov.innerHTML=`<div class="result-box"><div style="font-size:48px">📺</div><h2 style="color:var(--l)">Ad...</h2><div id="acd" style="font-size:48px;color:var(--g);margin:12px 0">${cd}</div></div>`;
-  const t=setInterval(()=>{
-    cd--;
-    const e=document.getElementById('acd');if(e)e.textContent=cd;
-    if(cd<=0){clearInterval(t);slots=slots.slice(3);ov.style.display='none';on=true;render();}
+function showFull(){
+  on=false;
+  const ov=document.getElementById('overlay');ov.style.display='flex';
+  ov.innerHTML=`<div class="result-box lose"><div style="font-size:42px">😾</div><h2>SLOTS FULL!</h2>
+  <p>Watch ad to free 3 slots</p>
+  <button onclick="doAd()" style="background:#22c55e;color:#fff">📺 Watch Ad (+3)</button>
+  <button onclick="doRestart()">↺ Restart</button></div>`;
+}
+
+function doAd(){
+  const ov=document.getElementById('overlay');let cd=5;
+  ov.innerHTML=`<div class="result-box" style="text-align:center"><div style="font-size:52px">📺</div><div id="acd" style="font-size:52px;font-weight:800;color:#ffd700;margin-top:10px">${cd}</div></div>`;
+  const iv=setInterval(()=>{cd--;const e=document.getElementById('acd');if(e)e.textContent=cd;
+    if(cd<=0){clearInterval(iv);slots=slots.slice(3);ov.style.display='none';on=true;render();}
   },1000);
 }
 
 function win(){
   on=false;
-  document.getElementById('overlay').style.display='flex';
-  document.getElementById('overlay').innerHTML=`
-    <div class="result-box win"><div style="font-size:48px">👑</div><h2>PERFECT!</h2>
-    <div class="result-score">Score: ${score.toLocaleString()}</div>
-    <button onclick="next()">Next Stage →</button><button onclick="restart()">Play Again</button></div>`;
+  const ov=document.getElementById('overlay');ov.style.display='flex';
+  ov.innerHTML=`<div class="result-box win"><div style="font-size:52px">👑</div><h2>PERFECT!</h2>
+  <div style="font-size:14px;font-weight:700;margin:6px 0 14px">Score: ${score.toLocaleString()}</div>
+  <button onclick="doNext()">Next Stage →</button>
+  <button onclick="doRestart()">↺ Replay</button></div>`;
 }
 
-function next(){stage++;document.getElementById('overlay').style.display='none';document.getElementById('stage-label').textContent='Stage '+stage;go();}
-function restart(){stage=1;document.getElementById('overlay').style.display='none';document.getElementById('stage-label').textContent='Stage 1';go();}
+function doNext(){stage++;document.getElementById('overlay').style.display='none';document.getElementById('stage-label').textContent='Stage '+stage;go();}
+function doRestart(){document.getElementById('overlay').style.display='none';document.getElementById('stage-label').textContent='Stage '+stage;go();}
 
 function go(){
   on=true;slots=[];hist=[];undo=2;shuf=1;score=0;
-  const{b,l,r}=gen();leftDeck=l;rightDeck=r;build(b);render();
+  build();render();
 }
 
 window.addEventListener('load',()=>{stage=1;go();});
-window.doUndo=doUndo;window.doShuffle=doShuffle;window.restart=restart;window.next=next;window.draw=draw;window.ad=ad;
+window.doUndo=doUndo;window.doShuffle=doShuffle;window.doWithdraw=doWithdraw;
+window.doRestart=doRestart;window.doNext=doNext;window.doAd=doAd;
