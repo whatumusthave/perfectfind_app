@@ -1,9 +1,19 @@
 // Perfect Paw Match v2.1 - Fixed: 14 cards * 3, image fix, side decks 28 total, shuffle all, ghost click fix
 const CARDS = [
-  '1amethyst_heart','3Silver_Shopping_Bag','4Terquois_cushion',
-  '5Sapphire_Paw','6fuchsia_ribbon','7jeweled_keyhole','8golden_paw',
-  '9pinkruby_pufferfish','10crystal_ball','11celestial_potion',
-  '12royal cat bed','13zio','14indigo_bowtie','15ziawink'
+  '1amethyst_heart',
+  '2celestial_potion',
+  '3Silver_Shopping_Bag',
+  '4Terquois_cushion',
+  '5Sapphire_Paw',
+  '6fuchsia_ribbon',
+  '7jeweled_keyhole',
+  '8golden_paw ',
+  '9pinkruby_pufferfish',
+  '10crystal_ball',
+  '11indigo_bowtie',
+  '12royal cat bed',
+  '13zio',
+  '14ziawink'
 ];
 const CP = 'assets/cards/', SM = 7, CS = 62, STEP = 31, LOFF = 16;
 let stage = 1, tiles = [], sideLeft = [], sideRight = [], slots = [], hist = [], undo = 2, shuf = 1, score = 0, on = false, lastClickTime = 0;
