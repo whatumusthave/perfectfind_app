@@ -1,98 +1,97 @@
+// Perfect Paw Match - Stripe Cards, No Timer, 7 Slots, Proper Blocking
 const CARDS=[
-  '1amethyst_heart','3Silver_Shopping_Bag','4Terquois_cushion',
-  '5Sapphire_Paw','6fuchsia_ribbon','7jeweled_keyhole','8golden_paw ',
-  '9pinkruby_pufferfish','10crystal_ball','11celestial_potion',
-  '12royal cat bed','13zio','14indigo_bowtie','15ziawink'
+  '1amethyst_heart',
+  '2zia',
+  '3Silver_Shopping_Bag',
+  '4Terquois_cushion',
+  '5Sapphire_Paw',
+  '6fuchsia_ribbon',
+  '7jeweled_keyhole',
+  '8golden_paw ',
+  '9pinkruby_pufferfish',
+  '10crystal_ball',
+  '11celestial_potion',
+  '12royal cat bed',
+  '13zio',
+  '14indigo_bowtie',
+  '15ziawink'
 ];
-const CP='assets/cards/',SM=7;
-let stage=1,tiles=[],slots=[],hist=[],undo=2,shuf=1,score=0,on=false;
+const CP='assets/cards/',SM=7,TW=64,TH=64,GS=48;
+let stage=1,tiles=[],slots=[],leftDeck=[],rightDeck=[],hist=[],undo=2,shuf=1,score=0,on=false;
 
-function sh(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[b[i],b[j]]=[b[j],b[i]];}return b;}
+function sh(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
 
-// Card size and overlap offset per layer
-const CS=64, LAY_OX=18, LAY_OY=18; // each layer shifts right+down 18px (=~28% of 64)
-
-function getConfig(){
-  if(stage===1)return{types:3, layout:[
-    {c:3,r:3,layer:0},
-    {c:2,r:2,layer:1}
-  ]};
-  if(stage===2)return{types:7, layout:[
-    {c:6,r:4,layer:0},
-    {c:4,r:3,layer:1},
-    {c:2,r:2,layer:2}
-  ]};
-  return{types:11, layout:[
-    {c:7,r:5,layer:0},
-    {c:5,r:4,layer:1},
-    {c:3,r:3,layer:2},
-    {c:1,r:1,layer:3}
-  ]};
+function stageConfig(){
+  if(stage===1) return {types:4, copies:3, layers:2, deckCards:0};
+  if(stage===2) return {types:6, copies:3, layers:3, deckCards:6};
+  if(stage===3) return {types:8, copies:3, layers:3, deckCards:9};
+  return {types:10, copies:3, layers:4, deckCards:12};
 }
 
-function build(){
-  const bd=document.getElementById('game-board');
-  const bw=bd.clientWidth||360, bh=bd.clientHeight||500;
-  tiles=[];
-
-  const cfg=getConfig();
-  const numLayers=cfg.layout.length;
-
-  // Generate positions: each layer is a grid centered over previous
-  // Layer 0 = bottom, Layer N = top
-  // All layers share the same center point
-  // Tiles at same (gx,gy) on different layers stack on top of each other with offset
-
-  // Collect all (gx, gy, layer) combos — randomly assign cards
-  const allPos=[];
-  cfg.layout.forEach(({c,r,layer})=>{
-    // center each layer's grid within the total cols/rows
-    const maxC=cfg.layout[0].c, maxR=cfg.layout[0].r;
-    const offX=Math.floor((maxC-c)/2), offY=Math.floor((maxR-r)/2);
-    for(let gy=offY;gy<offY+r;gy++)
-      for(let gx=offX;gx<offX+c;gx++)
-        allPos.push({gx,gy,layer});
-  });
-
-  // Trim to multiple of 3
-  const count=allPos.length - allPos.length%3;
-  const used=sh(allPos).slice(0,count);
-
-  // Card pool
+function gen(){
+  const cfg=stageConfig();
   const chosen=sh([...CARDS]).slice(0,cfg.types);
   const pool=[];
-  for(let i=0;i<count;i++) pool.push(chosen[i%chosen.length]);
-  const cards=sh(pool);
-
-  // Pixel positions: base grid step = CS (no overlap between adjacent grid cells)
-  // Layer offset makes upper layers appear shifted
-  const step=CS; // full card step — no squishing between grid cells
-  const maxC=cfg.layout[0].c, maxR=cfg.layout[0].r;
-  const totalW=maxC*step+(numLayers-1)*LAY_OX;
-  const totalH=maxR*step+(numLayers-1)*LAY_OY;
-  const baseX=Math.round(bw/2 - totalW/2);
-  const baseY=Math.round(bh*0.42 - totalH/2);
-
-  used.forEach(({gx,gy,layer},i)=>{
-    tiles.push({
-      id:i, card:cards[i],
-      gx, gy, layer,
-      px: baseX + gx*step + layer*LAY_OX,
-      py: baseY + gy*step + layer*LAY_OY,
-      rm:false
-    });
-  });
+  chosen.forEach(c=>{for(let i=0;i<cfg.copies;i++)pool.push(c);});
+  const shuffled=sh(pool);
+  const boardCount=shuffled.length-cfg.deckCards;
+  const board=shuffled.slice(0,boardCount);
+  const deckAll=shuffled.slice(boardCount);
+  const half=0|deckAll.length/2;
+  return{b:board,l:deckAll.slice(0,half),r:deckAll.slice(half)};
 }
 
-// A tile is blocked if any higher-layer tile overlaps it by >= 25% in both axes
-function isBlocked(t){
+function build(pool){
+  const bd=document.getElementById('game-board');
+  const bw=bd.clientWidth||360,bh=bd.clientHeight||440;
+  tiles=[];
+  const cfg=stageConfig();
+  const numLayers=cfg.layers;
+
+  // Grid dimensions per layer (centered, shrinking each layer)
+  const layerDefs=[
+    {c:6,r:5},
+    {c:4,r:4},
+    {c:3,r:3},
+    {c:2,r:2}
+  ].slice(0,numLayers);
+
+  const COLS=6,ROWS=5;
+  const totalW=COLS*GS, totalH=ROWS*GS;
+  const sx=0|bw/2-totalW/2, sy=0|bh/2-totalH/2;
+
+  let idx=0;
+  for(let layer=0;layer<numLayers&&idx<pool.length;layer++){
+    const {c,r}=layerDefs[layer];
+    const offX=0|((COLS-c)/2);
+    const offY=0|((ROWS-r)/2);
+    const cells=[];
+    for(let gy=offY;gy<offY+r;gy++)
+      for(let gx=offX;gx<offX+c;gx++)
+        cells.push({gx,gy});
+    const picked=sh(cells).slice(0,Math.min(cells.length,pool.length-idx));
+    picked.forEach(({gx,gy})=>{
+      if(idx>=pool.length)return;
+      tiles.push({
+        id:idx,card:pool[idx],
+        gx,gy,
+        // offset each layer slightly so stacking is visible
+        x:sx+gx*GS,
+        y:sy+gy*GS,
+        layer,rm:false
+      });
+      idx++;
+    });
+  }
+}
+
+// A tile is blocked if ANY higher-layer tile sits on same grid cell
+function blocked(t){
   if(t.rm)return true;
-  const thresh=CS*0.25; // 16px
-  for(const o of tiles){
+  for(let i=0;i<tiles.length;i++){
+    const o=tiles[i];
     if(o.rm||o.id===t.id||o.layer<=t.layer)continue;
-    const ox=Math.min(t.px+CS,o.px+CS)-Math.max(t.px,o.px);
-    const oy=Math.min(t.py+CS,o.py+CS)-Math.max(t.py,o.py);
-    if(ox>=thresh&&oy>=thresh)return true;
+    if(o.gx===t.gx&&o.gy===t.gy)return true;
   }
   return false;
 }
@@ -100,148 +99,157 @@ function isBlocked(t){
 function render(){
   const bd=document.getElementById('game-board');
   bd.innerHTML='';
-  [...tiles].filter(t=>!t.rm)
-    .sort((a,b)=>a.layer-b.layer||a.gy-b.gy||a.gx-b.gx)
-    .forEach(t=>{
-      const bl=isBlocked(t);
-      const el=document.createElement('div');
-      el.style.cssText=`position:absolute;left:${t.px}px;top:${t.py}px;width:${CS}px;height:${CS}px;z-index:${t.layer*500+t.gy*20+t.gx};border-radius:8px;overflow:hidden;cursor:${bl?'not-allowed':'pointer'};`;
-      const img=document.createElement('img');
-      img.src=CP+t.card+'.png';
-      img.style.cssText=`width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;border-radius:7px;border:${bl?'1.5px solid rgba(80,60,120,.2)':'2.5px solid rgba(255,215,0,.9)'};filter:${bl?'brightness(.2) saturate(.08)':'brightness(1)'};box-shadow:${bl?'none':'0 2px 10px rgba(255,215,0,.3)'};`;
-      el.appendChild(img);
-      if(!bl){
-        el.onclick=()=>clickTile(t);
-        el.ontouchstart=e=>{e.preventDefault();clickTile(t);};
-      }
-      bd.appendChild(el);
-    });
-  renderSlots();
-  renderUI();
+  const vis=tiles.filter(t=>!t.rm)
+    .sort((a,b)=>a.layer!==b.layer?a.layer-b.layer:a.gy!==b.gy?a.gy-b.gy:a.gx-b.gx);
+  vis.forEach(t=>{
+    const bl=blocked(t);
+    const el=document.createElement('div');
+    el.className='tile'+(bl?' blocked':' free');
+    el.style.left=t.x+'px';
+    el.style.top=t.y+'px';
+    el.style.width=TW+'px';
+    el.style.height=TH+'px';
+    el.style.zIndex=t.layer*1000+t.gy*50+t.gx;
+    const img=document.createElement('img');
+    img.src=CP+t.card+'.png';
+    img.draggable=false;
+    el.appendChild(img);
+    if(!bl){
+      el.onclick=()=>click(t);
+      el.ontouchstart=e=>{e.preventDefault();click(t);};
+    }
+    bd.appendChild(el);
+  });
+  rDecks();rSlots();ui();
 }
 
-function renderSlots(){
-  const bar=document.getElementById('slot-bar');
-  bar.innerHTML='';
+function rDecks(){rD('left-deck',leftDeck,'left');rD('right-deck',rightDeck,'right');}
+function rD(id,dk,sd){
+  const el=document.getElementById(id);
+  if(!dk.length){el.innerHTML='<div class="deck-empty">✓</div>';return;}
+  const top=dk[dk.length-1],sc=Math.min(dk.length-1,4);
+  let h=`<div class="deck-wrap" onclick="draw('${sd}')">`;
+  for(let i=sc;i>=1;i--)h+=`<div class="deck-back-card" style="bottom:${i*3}px;right:${i*2}px"></div>`;
+  h+=`<div class="deck-top-open"><img src="${CP}${top}.png"/></div>`;
+  h+=`<div class="deck-count">${dk.length}</div></div>`;
+  el.innerHTML=h;
+}
+
+function rSlots(){
+  const bar=document.getElementById('slot-bar');bar.innerHTML='';
   for(let i=0;i<SM;i++){
     const d=document.createElement('div');
-    d.style.cssText=`width:40px;height:40px;border:2px dashed ${slots[i]?'rgba(255,215,0,.5)':'rgba(205,189,255,.12)'};border-radius:7px;background:${slots[i]?'rgba(255,215,0,.06)':'rgba(50,34,71,.3)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;`;
+    d.className='slot'+(slots[i]?' filled':'');
     if(slots[i]){
       const m=document.createElement('img');
       m.src=CP+slots[i]+'.png';
-      m.style.cssText='width:34px;height:34px;object-fit:cover;border-radius:5px;';
       d.appendChild(m);
     }
     bar.appendChild(d);
   }
-  document.getElementById('slot-count').textContent=slots.length+'/'+SM;
+  document.getElementById('slot-count').textContent=`SLOT: ${slots.length} / ${SM}`;
 }
 
-function renderUI(){
+function ui(){
   document.getElementById('score').textContent='★ '+score.toLocaleString();
-  document.getElementById('undo-badge').textContent=undo;
-  document.getElementById('shuf-badge').textContent=shuf;
-  const rem=tiles.filter(t=>!t.rm);
-  if(!rem.length&&!slots.length)win();
+  document.getElementById('undo-btn').innerHTML=`↩<br>UNDO(${undo})`;
+  document.getElementById('shuffle-btn').innerHTML=`⟳<br>SHUF(${shuf})`;
+  if(!tiles.filter(t=>!t.rm).length&&!leftDeck.length&&!rightDeck.length&&!slots.length)win();
 }
 
-function insertSlot(card){
-  // Insert next to existing same card for grouping
+function ins(card){
   let at=slots.length;
   for(let i=slots.length-1;i>=0;i--){if(slots[i]===card){at=i+1;break;}}
   slots.splice(at,0,card);
 }
 
-function checkMatch(){
-  let changed=true;
-  while(changed){
-    changed=false;
+function chk(){
+  let ch=true;
+  while(ch){
+    ch=false;
     const m={};
     slots.forEach((c,i)=>{(m[c]=m[c]||[]).push(i);});
-    for(const[,idx] of Object.entries(m)){
+    for(const[,idx]of Object.entries(m)){
       if(idx.length>=3){
-        const rm=new Set(idx.slice(0,3));
-        slots=slots.filter((_,i)=>!rm.has(i));
-        score+=300*stage;
-        changed=true;break;
+        slots=slots.filter((_,i)=>!new Set(idx.slice(0,3)).has(i));
+        score+=300*stage;ch=true;break;
       }
     }
   }
 }
 
-function saveState(){
-  hist.push({slots:[...slots],ts:tiles.map(t=>({id:t.id,rm:t.rm})),score});
+function save(){hist.push({slots:[...slots],l:[...leftDeck],r:[...rightDeck],ts:tiles.map(t=>({id:t.id,r:t.rm})),score});}
+
+function click(t){
+  if(!on||t.rm||blocked(t))return;
+  save();t.rm=true;ins(t.card);chk();render();
+  if(slots.length>=SM)full();
 }
 
-function clickTile(t){
-  if(!on||t.rm||isBlocked(t))return;
-  saveState();
-  t.rm=true;
-  insertSlot(t.card);
-  checkMatch();
-  render();
-  if(slots.length>=SM)showFull();
+function draw(side){
+  if(!on)return;
+  const dk=side==='left'?leftDeck:rightDeck;
+  if(!dk.length)return;
+  if(slots.length>=SM){full();return;}
+  save();ins(dk.pop());chk();render();
+  if(slots.length>=SM)full();
 }
 
 function doUndo(){
   if(!on||!undo||!hist.length)return;
   const s=hist.pop();
-  s.ts.forEach(({id,rm})=>{const t=tiles.find(t=>t.id===id);if(t)t.rm=rm;});
-  slots=s.slots;score=s.score;undo--;render();
+  s.ts.forEach(ts=>{const t=tiles.find(t=>t.id===ts.id);if(t)t.rm=ts.r;});
+  slots=s.slots;leftDeck=s.l;rightDeck=s.r;score=s.score;
+  undo--;render();
 }
 
 function doShuffle(){
   if(!on||!shuf)return;shuf--;
-  const alive=tiles.filter(t=>!t.rm);
-  const cards=sh(alive.map(t=>t.card));
-  alive.forEach((t,i)=>t.card=cards[i]);
-  render();
+  const a=tiles.filter(t=>!t.rm),c=sh(a.map(t=>t.card));
+  a.forEach((t,i)=>t.card=c[i]);render();
 }
 
-function doWithdraw(){
-  if(!on||!slots.length)return;
-  // Put last slot card back: find a removed tile to restore
-  const card=slots.pop();
-  const gone=tiles.filter(t=>t.rm);
-  if(gone.length){const t=gone[gone.length-1];t.rm=false;t.card=card;}
-  else slots.push(card);
-  render();
-}
-
-function showFull(){
+function full(){
+  if(slots.length<SM)return;
   on=false;
-  const ov=document.getElementById('overlay');ov.style.display='flex';
-  ov.innerHTML=`<div class="result-box lose"><div style="font-size:42px">😾</div><h2>SLOTS FULL!</h2>
-  <p>Watch ad to free 3 slots</p>
-  <button onclick="doAd()" style="background:#22c55e;color:#fff">📺 Watch Ad (+3)</button>
-  <button onclick="doRestart()">↺ Restart</button></div>`;
+  document.getElementById('overlay').style.display='flex';
+  document.getElementById('overlay').innerHTML=`
+    <div class="result-box lose">
+      <div style="font-size:36px">😾</div>
+      <h2>SLOTS FULL!</h2>
+      <p>Watch ad to free 3 slots!</p>
+      <button onclick="ad()" style="background:#22c55e;color:#fff">📺 Watch Ad</button>
+      <button onclick="restart()">↺ Restart</button>
+    </div>`;
 }
 
-function doAd(){
-  const ov=document.getElementById('overlay');let cd=5;
-  ov.innerHTML=`<div class="result-box" style="text-align:center"><div style="font-size:52px">📺</div><div id="acd" style="font-size:52px;font-weight:800;color:#ffd700;margin-top:10px">${cd}</div></div>`;
-  const iv=setInterval(()=>{cd--;const e=document.getElementById('acd');if(e)e.textContent=cd;
-    if(cd<=0){clearInterval(iv);slots=slots.slice(3);ov.style.display='none';on=true;render();}
+function ad(){
+  const ov=document.getElementById('overlay');
+  let cd=5;
+  ov.innerHTML=`<div class="result-box"><div style="font-size:48px">📺</div><h2 style="color:var(--l)">Ad...</h2><div id="acd" style="font-size:48px;color:var(--g);margin:12px 0">${cd}</div></div>`;
+  const t=setInterval(()=>{
+    cd--;
+    const e=document.getElementById('acd');if(e)e.textContent=cd;
+    if(cd<=0){clearInterval(t);slots=slots.slice(3);ov.style.display='none';on=true;render();}
   },1000);
 }
 
 function win(){
   on=false;
-  const ov=document.getElementById('overlay');ov.style.display='flex';
-  ov.innerHTML=`<div class="result-box win"><div style="font-size:52px">👑</div><h2>PERFECT!</h2>
-  <div style="font-size:14px;font-weight:700;margin:6px 0 14px">Score: ${score.toLocaleString()}</div>
-  <button onclick="doNext()">Next Stage →</button>
-  <button onclick="doRestart()">↺ Replay</button></div>`;
+  document.getElementById('overlay').style.display='flex';
+  document.getElementById('overlay').innerHTML=`
+    <div class="result-box win"><div style="font-size:48px">👑</div><h2>PERFECT!</h2>
+    <div class="result-score">Score: ${score.toLocaleString()}</div>
+    <button onclick="next()">Next Stage →</button><button onclick="restart()">Play Again</button></div>`;
 }
 
-function doNext(){stage++;document.getElementById('overlay').style.display='none';document.getElementById('stage-label').textContent='Stage '+stage;go();}
-function doRestart(){document.getElementById('overlay').style.display='none';document.getElementById('stage-label').textContent='Stage '+stage;go();}
+function next(){stage++;document.getElementById('overlay').style.display='none';document.getElementById('stage-label').textContent='Stage '+stage;go();}
+function restart(){stage=1;document.getElementById('overlay').style.display='none';document.getElementById('stage-label').textContent='Stage 1';go();}
 
 function go(){
   on=true;slots=[];hist=[];undo=2;shuf=1;score=0;
-  build();render();
+  const{b,l,r}=gen();leftDeck=l;rightDeck=r;build(b);render();
 }
 
 window.addEventListener('load',()=>{stage=1;go();});
-window.doUndo=doUndo;window.doShuffle=doShuffle;window.doWithdraw=doWithdraw;
-window.doRestart=doRestart;window.doNext=doNext;window.doAd=doAd;
+window.doUndo=doUndo;window.doShuffle=doShuffle;window.restart=restart;window.next=next;window.draw=draw;window.ad=ad;
