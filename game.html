@@ -143,6 +143,109 @@
       color: var(--lav);
       border: 1.5px solid rgba(205,189,255,.18);
     }
+
+    /* Tiles and Game Elements */
+    .tile {
+      position: absolute;
+      border-radius: 8px;
+      background: #f0f0f0;
+      border: 2px solid #ccc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    }
+    .tile img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .tile.blocked {
+      filter: brightness(0.5);
+      pointer-events: none;
+      border-color: #555;
+    }
+    .tile.free {
+      cursor: pointer;
+      filter: brightness(1);
+      pointer-events: auto;
+    }
+    .slot {
+      width: 44px;
+      height: 44px;
+      background: rgba(255,255,255,0.05);
+      border: 1px dashed rgba(205,189,255,0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .slot.filled {
+      background: #fff;
+      border: none;
+    }
+    .slot img {
+      width: 36px;
+      height: 36px;
+      object-fit: contain;
+    }
+    #left-deck, #right-deck {
+      position: absolute;
+      bottom: 100px;
+      width: 80px;
+      height: 100px;
+    }
+    #left-deck { left: 20px; }
+    #right-deck { right: 20px; }
+    .deck-wrap {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+    .deck-back-card {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      background: var(--panel);
+      border: 2px solid var(--gold);
+      border-radius: 8px;
+    }
+    .deck-top-open {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 64px;
+      height: 64px;
+      background: #fff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+    .deck-top-open img {
+      width: 50px;
+      height: 50px;
+    }
+    .deck-count {
+      position: absolute;
+      bottom: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: var(--gold);
+    }
+    .deck-empty {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gold);
+      font-size: 24px;
+    }
   </style>
 </head>
 <body>
@@ -152,7 +255,10 @@
     <div id="score">0</div>
   </header>
 
-  <div id="game-board"></div>
+  <div id="game-board">
+    <div id="left-deck"></div>
+    <div id="right-deck"></div>
+  </div>
 
   <div class="bottom">
     <div class="slot-row">
@@ -171,7 +277,7 @@
         <div class="act-badge"></div>
       </button>
 
-      <button class="act-btn" onclick="doUndo()" aria-label="Undo">
+      <button id="undo-btn" class="act-btn" onclick="doUndo()" aria-label="Undo">
         <svg viewBox="0 0 36 36" fill="none">
           <path d="M10 18 A8 8 0 1 1 18 26" stroke="#ffd700" stroke-width="3.5" stroke-linecap="round" fill="none"/>
           <polygon points="8,12 8,20 15,16" fill="#ffd700"/>
@@ -179,7 +285,7 @@
         <div class="act-badge"><span id="undo-badge">2</span></div>
       </button>
 
-      <button class="act-btn" onclick="doShuffle()" aria-label="Shuffle">
+      <button id="shuffle-btn" class="act-btn" onclick="doShuffle()" aria-label="Shuffle">
         <svg viewBox="0 0 36 36" fill="none">
           <path d="M6 12 L14 12 Q22 12 28 20" stroke="#ffd700" stroke-width="3" stroke-linecap="round" fill="none"/>
           <polygon points="25,16 30,20 25,24" fill="#ffd700"/>
