@@ -162,14 +162,25 @@
       object-fit: contain;
     }
     .tile.blocked {
-      filter: brightness(0.5);
+      filter: brightness(0.7) contrast(0.9);
       pointer-events: none;
-      border-color: #555;
+    }
+    .tile.blocked::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.25);
+      border-radius: 8px;
     }
     .tile.free {
       cursor: pointer;
       filter: brightness(1);
       pointer-events: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .tile.free:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
     }
     .slot {
       width: 44px;
