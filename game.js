@@ -72,12 +72,14 @@ function build(pool){
     const picked=sh(cells).slice(0,Math.min(cells.length,pool.length-idx));
     picked.forEach(({gx,gy})=>{
       if(idx>=pool.length)return;
+      // Random offset for chaotic overlap feel (±15px)
+      const rx = (Math.random() - 0.5) * 30;
+      const ry = (Math.random() - 0.5) * 30;
       tiles.push({
         id:idx,card:pool[idx],
         gx,gy,
-        // offset each layer slightly so stacking is visible
-        x:sx+gx*GS,
-        y:sy+gy*GS,
+        x:sx+gx*GS + rx,
+        y:sy+gy*GS + ry,
         layer,rm:false
       });
       idx++;
@@ -85,13 +87,17 @@ function build(pool){
   }
 }
 
-// A tile is blocked if ANY higher-layer tile sits on same grid cell
+// A tile is blocked if any tile in a higher layer overlaps it significantly (coordinate-based)
 function blocked(t){
   if(t.rm)return true;
   for(let i=0;i<tiles.length;i++){
     const o=tiles[i];
     if(o.rm||o.id===t.id||o.layer<=t.layer)continue;
-    if(o.gx===t.gx&&o.gy===t.gy)return true;
+    // Pixel-based overlap check
+    const dx = Math.abs(t.x - o.x);
+    const dy = Math.abs(t.y - o.y);
+    // Block if overlapping more than ~25% of width/height
+    if(dx < TW * 0.75 && dy < TH * 0.75) return true;
   }
   return false;
 }
@@ -101,25 +107,25 @@ function render(){
   bd.innerHTML='';
   const vis=tiles.filter(t=>!t.rm)
     .sort((a,b)=>a.layer!==b.layer?a.layer-b.layer:a.gy!==b.gy?a.gy-b.gy:a.gx-b.gx);
-  vis.forEach(t=>{
-    const bl=blocked(t);
-    const el=document.createElement('div');
-    el.className='tile'+(bl?' blocked':' free');
-    el.style.left=t.x+'px';
-    el.style.top=t.y+'px';
-    el.style.width=TW+'px';
-    el.style.height=TH+'px';
-    el.style.zIndex=t.layer*1000+t.gy*50+t.gx;
-    const img=document.createElement('img');
-    img.src=CP+t.card+'.png';
-    img.draggable=false;
-    el.appendChild(img);
-    if(!bl){
-      el.onclick=()=>click(t);
-      el.ontouchstart=e=>{e.preventDefault();click(t);};
-    }
-    bd.appendChild(el);
-  });
+    vis.forEach(t=>{
+      const bl=blocked(t);
+      const el=document.createElement('div');
+      el.className='tile'+(bl?' blocked':' free');
+      el.style.left=t.x+'px';
+      el.style.top=t.y+'px';
+      el.style.width=TW+'px';
+      el.style.height=TH+'px';
+      el.style.zIndex=t.layer*1000 + (t.y|0);
+      const img=document.createElement('img');
+      img.src=CP+t.card+'.png';
+      img.draggable=false;
+      el.appendChild(img);
+      if(!bl){
+        el.onclick=()=>click(t);
+        el.ontouchstart=e=>{e.preventDefault();click(t);};
+      }
+      bd.appendChild(el);
+    });
   rDecks();rSlots();ui();
 }
 
