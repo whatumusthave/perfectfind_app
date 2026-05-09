@@ -1,85 +1,3 @@
-
-window.CARD_IMAGE_MAP = window.CARD_IMAGE_MAP || {
-  "golden-paw": "/assets/cards/golden-paw.png",
-  "indigo-bowtie": "/assets/cards/indigo-bowtie.png",
-  "fuchsia-ribbon": "/assets/cards/fuchsia-ribbon.png",
-  "crystal-ball": "/assets/cards/crystal-ball.png",
-  "royal-cat-bed": "/assets/cards/royal-cat-bed.png",
-  "silver-bag": "/assets/cards/silver-bag.png",
-  "celestial-potion": "/assets/cards/celestial-potion.png",
-  "starry-mic": "/assets/cards/starry-mic.png",
-  "amethyst-heart": "/assets/cards/amethyst-heart.png",
-  "midnight-cushion": "/assets/cards/midnight-cushion.png",
-  "sapphire-paw": "/assets/cards/sapphire-paw.png",
-  "mystic-yarn": "/assets/cards/mystic-yarn.png",
-  "jeweled-key": "/assets/cards/jeweled-key.png",
-  "rose-crystal": "/assets/cards/rose-crystal.png"
-};
-window.cardImgSrc = window.cardImgSrc || function(key){
-  return (window.CARD_IMAGE_MAP && window.CARD_IMAGE_MAP[key]) || "/assets/cards/card-backup.png";
-};
-
-function buildStage1TilesPatched(){
-  const groups = [
-    { x: 180, y: 150, items: ["golden-paw", "indigo-bowtie", "fuchsia-ribbon"] },
-    { x: 470, y: 150, items: ["crystal-ball", "royal-cat-bed", "silver-bag"] },
-    { x: 180, y: 340, items: ["celestial-potion", "starry-mic", "amethyst-heart", "midnight-cushion"] },
-    { x: 470, y: 340, items: ["sapphire-paw", "mystic-yarn", "jeweled-key", "rose-crystal"] }
-  ];
-  const tiles = [];
-  let id = 1;
-  groups.forEach((group, gi) => {
-    group.items.forEach((key, idx) => {
-      const col = idx % 2;
-      const row = Math.floor(idx / 2);
-      let x = group.x + col * 92;
-      let y = group.y + row * 118;
-      if (gi === 2 && idx === 2) { x -= 18; y -= 22; }
-      tiles.push({
-        id: id++,
-        key,
-        x, y,
-        w: 72, h: 96,
-        z: id,
-        removed: false,
-        blocked: false,
-        free: true
-      });
-    });
-  });
-  return tiles;
-}
-
-function isOverlapPatched(a, b){
-  if (a.removed || b.removed) return false;
-  return !(
-    a.x + a.w <= b.x ||
-    b.x + b.w <= a.x ||
-    a.y + a.h <= b.y ||
-    b.y + b.h <= a.y
-  );
-}
-
-function recomputeBlockedStatePatched(tiles){
-  tiles.forEach(t => { t.blocked = false; t.free = true; });
-  for (let i = 0; i < tiles.length; i++) {
-    const a = tiles[i];
-    if (a.removed) continue;
-    let covered = false;
-    for (let j = 0; j < tiles.length; j++) {
-      if (i === j) continue;
-      const b = tiles[j];
-      if (b.removed) continue;
-      if (isOverlapPatched(a, b) && b.z > a.z) {
-        covered = true;
-        break;
-      }
-    }
-    a.blocked = covered;
-    a.free = !covered;
-  }
-}
-
 // Perfect Paw Match v2.1 - Fixed: 14 cards * 3, image fix, side decks 28 total, shuffle all, ghost click fix
 const CARDS = [
   '1amethyst_heart',
@@ -208,7 +126,7 @@ const imgCache = new Map();
 function preloadImages() {
   CARDS.forEach(card => {
     const img = new Image();
-    img.src = window.cardImgSrc(card);
+    img.src = CP + card + '.png';
     imgCache.set(card, img);
     img.onerror = () => { console.log(`Image missing: ${card}`); }; // Log missing
   });
@@ -412,18 +330,3 @@ window.addEventListener('load', () => {
 
 window.doUndo = doUndo; window.doShuffle = doShuffle; window.doWithdraw = doWithdraw;
 window.doRestart = doRestart; window.doNext = doNext; window.doAd = doAd;
-
-
-;(function(){
-  const _origBuildStage = window.buildStage || null;
-  if (_origBuildStage) {
-    window.buildStage = function(stage){
-      if (stage === 1) {
-        const tiles = buildStage1TilesPatched();
-        recomputeBlockedStatePatched(tiles);
-        return tiles;
-      }
-      return _origBuildStage(stage);
-    };
-  }
-})();

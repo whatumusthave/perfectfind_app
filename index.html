@@ -120,6 +120,7 @@
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
         }
     </style>
+  <script src="/assets/card-image-map.js"></script>
 </head>
 <body class="font-body-md text-on-surface min-h-screen flex flex-col items-center">
 <!-- Desktop Wrapper: 1280px -->
@@ -275,6 +276,12 @@
 </div>
 </div>
 </section>
+
+<section class="hero-cards-shell" style="max-width:1200px;margin:0 auto;padding:0 24px 48px;">
+  <div id="hero-card-grid" style="display:grid;grid-template-columns:repeat(4,minmax(64px,1fr));gap:14px;max-width:420px;margin:0 auto;">
+  </div>
+</section>
+
 </main>
 <!-- Footer -->
 <footer class="bg-surface-container-lowest border-t border-secondary/10 w-full py-8 mt-auto">
@@ -314,4 +321,35 @@
 </div>
 </div>
 </div>
+
+<script>
+(function(){
+  function renderHeroCards(){
+    var root = document.getElementById("hero-card-grid");
+    if(!root || !window.CARD_ORDER || !window.cardImgSrc) return;
+    root.innerHTML = "";
+    window.CARD_ORDER.forEach(function(key){
+      var img = document.createElement("img");
+      img.src = window.cardImgSrc(key);
+      img.alt = key;
+      img.loading = "lazy";
+      img.style.width = "100%";
+      img.style.aspectRatio = "3/4";
+      img.style.objectFit = "cover";
+      img.style.borderRadius = "16px";
+      img.style.border = "2px solid rgba(255,215,0,.35)";
+      img.style.boxShadow = "0 6px 18px rgba(0,0,0,.22)";
+      img.style.background = "rgba(255,255,255,.06)";
+      img.onerror = function(){ this.src = "/assets/cards/card-backup.png"; };
+      root.appendChild(img);
+    });
+  }
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", renderHeroCards);
+  } else {
+    renderHeroCards();
+  }
+})();
+</script>
+
 </body></html>
