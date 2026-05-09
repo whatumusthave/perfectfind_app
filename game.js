@@ -34,11 +34,14 @@ function gen(){
   const pool=[];
   chosen.forEach(c=>{for(let i=0;i<cfg.copies;i++)pool.push(c);});
   const shuffled=sh(pool);
-  const boardCount=shuffled.length-cfg.deckCards;
-  const board=shuffled.slice(0,boardCount);
-  const deckAll=shuffled.slice(boardCount);
-  const half=0|deckAll.length/2;
-  return{b:board,l:deckAll.slice(0,half),r:deckAll.slice(half)};
+  
+  // Side decks must also have multiples of 3 to avoid orphans
+  const perSide = Math.floor(cfg.deckCards / 2 / 3) * 3;
+  const leftDeck = shuffled.slice(0, perSide);
+  const rightDeck = shuffled.slice(perSide, perSide * 2);
+  const board = shuffled.slice(perSide * 2);
+  
+  return{b:board,l:leftDeck,r:rightDeck};
 }
 
 function build(pool){
