@@ -42,7 +42,21 @@
       padding: 3px 10px;
     }
     #stage-label { font-size: 11px; font-weight: 700; color: var(--lav); }
-    #game-board { flex: 1; position: relative; overflow: hidden; min-height: 0;  }
+    #game-board { 
+      flex: 1; 
+      position: relative; 
+      overflow: hidden; 
+      min-height: 0; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+    }
+    #board-inner {
+      position: relative;
+      width: 360px;
+      height: 460px;
+      margin: auto;
+    }
     .bottom {
       flex-shrink: 0;
       background: rgba(12,4,24,.97);
@@ -268,6 +282,7 @@
   </header>
 
   <div id="game-board">
+    <div id="board-inner" style="position:relative;width:360px;height:460px;"></div>
   </div>
 
   <div class="bottom">

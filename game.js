@@ -1,10 +1,39 @@
 const CARDS=['amethyst-heart','celestial-potion','crystal-ball','fuchsia-ribbon','golden-paw','indigo-bowtie','jeweled-key','mistic-yarn','rose-pufferfish','royal-cat-bed','sapphire-paw','silver-bag','starry-mic','turquoise-cushion'];
-const CP='asset/cards/',SM=7,CW=72,CH=72;
-let tiles=[],slots=[],hist=[],undo=2,shuf=1,score=0,on=false;
+const CP='asset/cards/',CW=72,CH=72;
+let tiles=[],slots=[],hist=[],undo=2,shuf=1,score=0,on=false,stage=1,SM=7,adUsed=false;
 
 function sh(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
 
-// 양러거양 방식: index 높을수록 위에 있음
+/* ─── 레벨 설계 ───
+  난이도 = 전체 카드 수 + 2층 비율
+  전부 3배수 → 남김 없이 클리어 가능
+  open = 1층(100% 보임, 바로 클릭), cover = 2층(겹쳐서 막힘)
+
+  Lv  total  kinds  open  cover
+  1    18     6     18     0     전부 열림
+  2    21     7     18     3     거의 다 열림
+  3    24     8     21     3     쉬움
+  4    27     9     21     6     중반
+  5    30    10     21     9     적당
+  6    33    11     24     9     꽤 있음
+  7    36    12     24    12     실전
+  8    39    13     24    15     빡셈
+  9    42    14     27    15     매우 빡셈
+  10   42    14     21    21     보스 — 절반 막힘
+*/
+const LEVELS=[
+  {total:18, kinds:6,  openCt:18, coverCt:0 },
+  {total:21, kinds:7,  openCt:18, coverCt:3 },
+  {total:24, kinds:8,  openCt:21, coverCt:3 },
+  {total:27, kinds:9,  openCt:21, coverCt:6 },
+  {total:30, kinds:10, openCt:21, coverCt:9 },
+  {total:33, kinds:11, openCt:24, coverCt:9 },
+  {total:36, kinds:12, openCt:24, coverCt:12},
+  {total:39, kinds:13, openCt:24, coverCt:15},
+  {total:42, kinds:14, openCt:27, coverCt:15},
+  {total:42, kinds:14, openCt:21, coverCt:21},
+];
+
 function checkShading(){
   for(let i=0;i<tiles.length;i++){
     const cur=tiles[i];
@@ -14,60 +43,79 @@ function checkShading(){
     for(let j=i+1;j<tiles.length;j++){
       const o=tiles[j];
       if(o.removed)continue;
-      const overlap=!(o.y+CH<=y1||o.y>=y2||o.x+CW<=x1||o.x>=x2);
-      if(overlap){cur.blocked=true;break;}
+      if(!(o.y+CH<=y1||o.y>=y2||o.x+CW<=x1||o.x>=x2)){cur.blocked=true;break;}
     }
   }
 }
 
-// Stage 1: 레이어 배치 — 아래층(넓게 펼침) + 위층(소수 겹침)
-// 결과: 초반 클릭 가능 카드 ~20장 이상 확보
-function buildStage1(){
+// 1층 격자 (겹침 제로, 보드 360x460 중앙)
+function makeGrid(count){
+  const cols=4;
+  const rows=Math.ceil(count/cols);
+  const gapX=82,gapY=58;
+  const totalW=(cols-1)*gapX+CW;
+  const totalH=(rows-1)*gapY+CH;
+  const offX=Math.round((360-totalW)/2);
+  const offY=Math.max(8,Math.round((460-totalH)/2));
+  const pos=[];
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      if(pos.length>=count)break;
+      pos.push({x:offX+c*gapX, y:offY+r*gapY});
+    }
+  }
+  return pos;
+}
+
+// 2층 — 1층 카드 사이에 겹치게 배치
+function makeCover(count, gridPos){
+  if(!count)return[];
+  const mids=[];
+  for(let i=0;i<gridPos.length;i++){
+    for(let j=i+1;j<gridPos.length;j++){
+      const dx=Math.abs(gridPos[i].x-gridPos[j].x);
+      const dy=Math.abs(gridPos[i].y-gridPos[j].y);
+      if(dx<=100&&dy<=80){
+        mids.push({
+          x:Math.round((gridPos[i].x+gridPos[j].x)/2),
+          y:Math.round((gridPos[i].y+gridPos[j].y)/2)
+        });
+      }
+    }
+  }
+  const shuffled=sh(mids);
+  const pos=[];
+  for(let i=0;i<count;i++){
+    if(i<shuffled.length){
+      pos.push(shuffled[i]);
+    } else {
+      pos.push({x:30+Math.round(Math.random()*240), y:30+Math.round(Math.random()*340)});
+    }
+  }
+  return pos;
+}
+
+function buildStage(){
+  const lv=LEVELS[Math.min(stage-1, LEVELS.length-1)];
   const pool=[];
-  const chosen=sh(CARDS).slice(0,12); // 12장 × 3 = 36장
+  const chosen=sh(CARDS).slice(0, lv.kinds);
   chosen.forEach(c=>{for(let i=0;i<3;i++)pool.push(c);});
   const shuffled=sh(pool);
 
   tiles=[];
   let idx=0;
 
-  // ── 1층: 5×4 격자, 간격 넓혀서 거의 안 겹침 (20장)
-  const cols=5, rows=4;
-  const gapX=68, gapY=74;
-  const startX=14, startY=14;
-  for(let r=0;r<rows;r++){
-    for(let c=0;c<cols;c++){
-      if(idx>=20)break;
-      tiles.push({
-        id:idx,
-        card:shuffled[idx],
-        x:startX+c*gapX,
-        y:startY+r*gapY,
-        removed:false,
-        blocked:false
-      });
-      idx++;
-    }
-  }
+  const gridPos=makeGrid(lv.openCt);
+  gridPos.forEach(pos=>{
+    if(idx>=lv.openCt)return;
+    tiles.push({id:idx, card:shuffled[idx], x:pos.x, y:pos.y, removed:false, blocked:false});
+    idx++;
+  });
 
-  // ── 2층: 나머지 16장, 1층 타일 위에 작게 겹쳐서 쌓음
-  // 2층은 z-index 높아서 막힌 타일이 생기고 난이도 올라감
-  const layer2Pos=[
-    {x:50, y:50},{x:118,y:50},{x:186,y:50},{x:254,y:50},
-    {x:50, y:124},{x:118,y:124},{x:186,y:124},{x:254,y:124},
-    {x:50, y:198},{x:118,y:198},{x:186,y:198},{x:254,y:198},
-    {x:84, y:272},{x:152,y:272},{x:220,y:272},{x:152,y:320},
-  ];
-  layer2Pos.forEach(pos=>{
-    if(idx>=36)return;
-    tiles.push({
-      id:idx,
-      card:shuffled[idx],
-      x:pos.x,
-      y:pos.y,
-      removed:false,
-      blocked:false
-    });
+  const coverPos=makeCover(lv.coverCt, gridPos);
+  coverPos.forEach(pos=>{
+    if(idx>=lv.total)return;
+    tiles.push({id:idx, card:shuffled[idx], x:pos.x, y:pos.y, removed:false, blocked:false});
     idx++;
   });
 
@@ -75,7 +123,7 @@ function buildStage1(){
 }
 
 function render(){
-  const bd=document.getElementById('game-board');
+  const bd=document.getElementById('board-inner');
   bd.innerHTML='';
   tiles.filter(t=>!t.removed).forEach((t,arrIdx)=>{
     const el=document.createElement('div');
@@ -87,7 +135,6 @@ function render(){
     el.appendChild(img);
 
     if(t.blocked){
-      // 반투명 overlay — 이미지는 보이지만 클릭 불가
       const ov=document.createElement('div');
       ov.style.cssText=`position:absolute;inset:0;background:rgba(10,5,25,0.55);border-radius:8px;z-index:${arrIdx+20};pointer-events:none;`;
       el.appendChild(ov);
@@ -124,6 +171,7 @@ function renderSlots(){
 
 function renderUI(){
   document.getElementById('score').textContent='★ '+score.toLocaleString();
+  document.getElementById('stage-label').textContent='Stage '+stage;
   if(!tiles.filter(t=>!t.removed).length&&!slots.length) win();
 }
 
@@ -145,7 +193,7 @@ function clickTile(t){
   hist.push({tiles:tiles.map(x=>({id:x.id,removed:x.removed})),slots:[...slots]});
   t.removed=true;
   slots.push(t.card);
-  checkShading(); // 즉시 재계산
+  checkShading();
   while(checkMatch());
   render();
   if(slots.length>=SM){on=false;showResult(false);}
@@ -178,27 +226,99 @@ function doWithdraw(){}
 function showResult(isWin){
   const ov=document.getElementById('overlay');
   ov.style.display='flex';
-  ov.innerHTML=`<div class="result-box ${isWin?'win':'lose'}">
-    <h2>${isWin?'🎉 PERFECT!':'😿 TOO BAD'}</h2>
-    <p>${isWin?'Score: '+score.toLocaleString():'Slots are full!'}</p>
-    <button onclick="restartGame()">${isWin?'Play Again':'Try Again'}</button>
-    <button onclick="window.location.href='index.html'">Home</button>
+  if(isWin && stage<10){
+    ov.innerHTML=`<div class="result-box win">
+      <h2>🎉 STAGE ${stage} CLEAR!</h2>
+      <p>Score: ${score.toLocaleString()}</p>
+      <button onclick="nextStage()">Next Stage →</button>
+      <button onclick="window.location.href='index.html'">Home</button>
+    </div>`;
+  } else if(isWin){
+    ov.innerHTML=`<div class="result-box win">
+      <h2>🏆 ALL CLEAR!</h2>
+      <p>Final Score: ${score.toLocaleString()}</p>
+      <button onclick="restartGame()">Play Again</button>
+      <button onclick="window.location.href='index.html'">Home</button>
+    </div>`;
+  } else {
+    // Stage 5+ → 광고로 슬롯 확장 기회
+    if(stage>=5 && !adUsed){
+      ov.innerHTML=`<div class="result-box lose">
+        <h2>😿 SLOTS FULL!</h2>
+        <p>Watch ad to get +3 slots?</p>
+        <button onclick="watchAd()">📺 Watch Ad</button>
+        <button onclick="retryStage()">Try Again</button>
+      </div>`;
+    } else {
+      ov.innerHTML=`<div class="result-box lose">
+        <h2>😿 TOO BAD</h2>
+        <p>Stage ${stage} — Slots are full!</p>
+        <button onclick="retryStage()">Try Again</button>
+        <button onclick="window.location.href='index.html'">Home</button>
+      </div>`;
+    }
+  }
+}
+
+function watchAd(){
+  const ov=document.getElementById('overlay');
+  let countdown=5;
+  ov.innerHTML=`<div class="result-box">
+    <h2>📺 Ad Playing...</h2>
+    <p style="font-size:48px;font-weight:800;color:var(--gold)">${countdown}</p>
+    <p style="font-size:12px;color:rgba(205,189,255,.5)">Please wait</p>
   </div>`;
+  const timer=setInterval(()=>{
+    countdown--;
+    if(countdown<=0){
+      clearInterval(timer);
+      SM=10; // 슬롯 7 → 10 확장
+      adUsed=true;
+      on=true;
+      ov.style.display='none';
+      render();
+    } else {
+      ov.querySelector('p[style*="font-size:48px"]').textContent=countdown;
+    }
+  },1000);
 }
 
 function win(){on=false;showResult(true);}
 
-function restartGame(){
+function nextStage(){
   document.getElementById('overlay').style.display='none';
-  tiles=[];slots=[];hist=[];undo=2;shuf=1;score=0;on=true;
+  stage++;
+  tiles=[];slots=[];hist=[];undo=2;shuf=1;on=true;SM=7;adUsed=false;
   document.getElementById('undo-badge').textContent=2;
   document.getElementById('shuf-badge').textContent=1;
-  buildStage1();
+  buildStage();
   render();
 }
 
-window.addEventListener('load',()=>{on=true;buildStage1();render();});
+function retryStage(){
+  document.getElementById('overlay').style.display='none';
+  tiles=[];slots=[];hist=[];undo=2;shuf=1;on=true;SM=7;adUsed=false;
+  document.getElementById('undo-badge').textContent=2;
+  document.getElementById('shuf-badge').textContent=1;
+  buildStage();
+  render();
+}
+
+function restartGame(){
+  document.getElementById('overlay').style.display='none';
+  stage=1;score=0;
+  tiles=[];slots=[];hist=[];undo=2;shuf=1;on=true;SM=7;adUsed=false;
+  document.getElementById('undo-badge').textContent=2;
+  document.getElementById('shuf-badge').textContent=1;
+  buildStage();
+  render();
+}
+
+window.addEventListener('load',()=>{on=true;buildStage();render();});
 window.doUndo=doUndo;
 window.doShuffle=doShuffle;
 window.doWithdraw=doWithdraw;
 window.restart=restartGame;
+window.nextStage=nextStage;
+window.retryStage=retryStage;
+window.watchAd=watchAd;
