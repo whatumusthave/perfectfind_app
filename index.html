@@ -4,74 +4,350 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Perfect Paw Match - Cosmic Puzzle Adventure</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                "on-secondary-fixed": "#1f0e4c",
+                "primary": "#fff6df",
+                "inverse-primary": "#705d00",
+                "surface-container-high": "#322247",
+                "on-secondary-fixed-variant": "#4b3d7a",
+                "inverse-on-surface": "#39294e",
+                "on-primary-container": "#705e00",
+                "on-primary-fixed": "#221b00",
+                "primary-fixed": "#ffe16d",
+                "inverse-surface": "#eedcff",
+                "on-tertiary": "#33226f",
+                "secondary-fixed": "#e8deff",
+                "tertiary": "#faf4ff",
+                "surface-container-low": "#231437",
+                "surface-container-lowest": "#150529",
+                "on-primary-fixed-variant": "#544600",
+                "surface-dim": "#1b0b2f",
+                "on-surface": "#eedcff",
+                "surface": "#1b0b2f",
+                "on-tertiary-fixed-variant": "#4a3a87",
+                "on-primary": "#3a3000",
+                "primary-container": "#ffd700",
+                "on-secondary": "#342662",
+                "secondary": "#cdbdff",
+                "outline-variant": "#4d4732",
+                "outline": "#999077",
+                "background": "#1b0b2f",
+                "on-background": "#eedcff",
+                "surface-variant": "#3d2d52",
+                "tertiary-container": "#ded4ff",
+                "on-surface-variant": "#d0c6ab",
+                "secondary-container": "#4e3f7d",
+                "surface-container-highest": "#3d2d52",
+                "on-error-container": "#ffdad6",
+                "on-tertiary-fixed": "#1e055a",
+                "secondary-fixed-dim": "#cdbdff",
+                "on-secondary-container": "#bfaef5",
+                "on-tertiary-container": "#6253a1",
+                "error-container": "#93000a",
+                "surface-container": "#27183c",
+                "surface-bright": "#423257",
+                "on-error": "#690005",
+                "error": "#ffb4ab",
+                "tertiary-fixed": "#e7deff",
+                "surface-tint": "#e9c400",
+                "primary-fixed-dim": "#e9c400",
+                "tertiary-fixed-dim": "#cbbeff"
+            },
+            "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+            },
+            "spacing": {
+                "unit": "8px",
+                "container-padding": "24px",
+                "grid-gutter": "12px",
+                "element-gap": "16px"
+            },
+            "fontFamily": {
+                "body-md": ["Plus Jakarta Sans"],
+                "label-caps": ["Plus Jakarta Sans"],
+                "headline-md": ["Plus Jakarta Sans"],
+                "title-sm": ["Plus Jakarta Sans"],
+                "display-lg": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.1em", "fontWeight": "700"}],
+                "headline-md": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                "title-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            background-color: #1b0b2f;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(45, 27, 105, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(78, 63, 125, 0.3) 0%, transparent 50%);
+        }
+        .glass-card {
+            background: rgba(45, 27, 105, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(201, 184, 255, 0.15);
+        }
+        .gold-glow {
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.15);
+        }
+        .primary-btn {
+            background: #ffd700;
+            color: #1a0a2e;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        .primary-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+        }
+    </style>
+  <script src="/assets/card-image-map.js"></script>
+</head>
+<body class="font-body-md text-on-surface min-h-screen flex flex-col items-center">
+<!-- Desktop Wrapper: 1280px -->
+<div class="w-full max-w-[1280px] bg-background flex flex-col min-h-screen shadow-2xl relative">
+<!-- Top AdSense Zone -->
+<div class="w-full flex justify-center py-4 bg-surface-container-lowest/50">
+<div class="w-[728px] h-[90px] bg-surface-variant/20 border border-outline/20 flex items-center justify-center text-label-caps text-on-surface-variant rounded-lg">
+            ADVERTISEMENT: LEADERBOARD 728x90
+        </div>
+</div>
+<!-- TopAppBar -->
+<header class="bg-surface/80 backdrop-blur-xl border-b border-secondary/20 shadow-[0_4px_20px_rgba(255,215,0,0.15)] flex justify-between items-center px-container-padding h-16 w-full sticky top-0 z-50">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container" style="font-variation-settings: 'FILL' 1;">pets</span>
+<span class="text-title-sm font-title-sm font-bold text-primary-container tracking-wider">Perfect Paw Match</span>
+</div>
+<nav class="hidden md:flex gap-6">
+<a class="text-primary-container font-bold text-label-caps font-label-caps hover:text-primary-container transition-colors" href="#">Home</a>
+<a class="text-on-surface-variant text-label-caps font-label-caps hover:text-primary-container transition-colors" href="#">Levels</a>
+<a class="text-on-surface-variant text-label-caps font-label-caps hover:text-primary-container transition-colors" href="#">Collection</a>
+<a class="text-on-surface-variant text-label-caps font-label-caps hover:text-primary-container transition-colors" href="#">Shop</a>
+</nav>
+<button class="active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined text-on-surface-variant">settings</span>
+</button>
+</header>
+<main class="flex-grow">
+<!-- Hero Section -->
+<section class="relative w-full h-[600px] overflow-hidden">
+<img alt="" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/ADBb0ujAfHPtgqaGoCfB2NyO9qOWgzwVCx3WHxBDOdocERBfSvuIeKeNvwjr3YWgEy76rBrrRcoqMsNpUszCwVRP_vlNJsi1zZHWUS-a6S_LUCqpNe9OxlXib3t59pV4HopBmm4u76kNo_0J8iWC83eJLJDn1V-TtkGThhmoUuh8m4jntKGXwsh6Cv8YQvunUclVtFeRwESp0qBMFXv7KOdR2VVBt0i0gUViGUmedmHRKWQbf1vcVffjMqDPIiS403QSmsXp6of4kmJADA" style="object-position: left center;"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
+<h1 class="font-display-lg text-display-lg text-primary-container mb-6 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">Perfect Paw Match</h1>
+<p class="text-body-md max-w-2xl mb-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-bold">Master the cosmic art of feline matching. Collect rare celestial artifacts and unlock the secrets of the star-cat constellations.</p>
+<button class="primary-btn px-10 py-4 rounded-full font-bold text-title-sm uppercase tracking-widest active:scale-95" onclick="window.location.href='game.html'">Play Now</button>
+</div>
+</section>
+<div class="mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-12 gap-12">
+<!-- Main Content: Collection -->
+<div class="lg:col-span-9">
+<div class="flex items-center justify-between mb-8">
+<h2 class="font-headline-md text-headline-md text-primary">Your Royal Collection</h2>
+<span class="text-label-caps bg-secondary-container/30 px-4 py-2 rounded-full text-secondary border border-secondary/20">14 / 14 ITEMS FOUND</span>
+</div>
+<!-- Grid 7x2 Layout -->
+<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-grid-gutter">
+<!-- Item 1 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300 gold-glow">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="A highly detailed 3D icon of a Golden Paw artifact forged from solid radiant gold, featuring intricate filigree patterns and a subtle shimmering aura. The paw glows with a warm, divine light against a deep cosmic lavender background, representing a premium collectible in a regal celestial cat game. The style is tactile and lustrous, with realistic metallic reflections and a soft golden glow." src="https://lh3.googleusercontent.com/aida/ADBb0uiOZzf6zojymMUAczoL66YPWW6ZIVDweeua_PZfIHt2F8dN07xKAP7VYj9EoXVYUk_Zb22X5F2uEYg3EiZYZ504NvLsZ9_JptpIvB6Evbp0ddypyBppRfFZDv_871Ladas2IU6jCoVbpzDLm6kp2N7moqao3q_e3DO-SC1z5-6ZfYBFvUyScZp2gAKecOCgUwnYqOUVfgvRHe6LZFMGR3yF0pAqB0WbX95XNfy5w6SBpev5xsXsHmc0gQ7phX5rHZYPwiWn55Iqzg"/>
+<p class="text-label-caps text-primary-container">Golden Paw</p>
+</div>
+<!-- Item 2 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="A luxurious silk Indigo Bowtie with fine star-pattern embroidery and golden lace edges, floating elegantly in a deep space setting. The fabric has a high-quality sheen and subtle physics, reflecting nearby nebula light. It is presented as a high-fidelity game asset for a regal cat-themed puzzle game, embodying elegance and cosmic mystery." src="https://lh3.googleusercontent.com/aida/ADBb0uihmYXsuDAEMV8kNy5iSl2V9isWTmBvGJAsG29DlWp-Ivd8bPwHMQ_tTDiteOh_OIlsu4fgBwFt0zPjBXkBnK3JhSxt5wsgcJhH8RnwmFHjQ2_6ZjI6c8POhO2Lq1DR3NJlr6ZlOe7akdPrz-wuFxiGdccqf7rQ8uQvweY3FEWSoxVrlia1zxSJCM3gsZrka8vnbkSRsd6EIy78rGLzchA-VqBA7TisOuVgTUP4Oq52CfVW2wGXmtHAFbdox8Sp7NhR1F0ipIJD5g"/>
+<p class="text-label-caps text-on-surface-variant">Indigo Bowtie</p>
+</div>
+<!-- Item 3 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="A vibrant Fuchsia Ribbon crafted from celestial energy, undulating softly like a solar flare. The ribbon is tied in an intricate royal knot and embellished with small diamond-like stars. The lighting is soft and internal, making the fuchsia glow against the dark indigo void of space. This item is a key reward in a magical feline-themed adventure." src="https://lh3.googleusercontent.com/aida/ADBb0uikTTHDg0vFdFVU7cDvf-Cs6RjbGGDcavFNHrF6gsNKcAyM-3NZAVKelfmNUPpnZdzWmk5Y14hemMUg3BgPRwDQrPc1FRRZlb86n1t1Hd2YbBbqKV0xG1PpdDBboYPcQhzzoWHMo94D3k2vxkPZE03ub_nflm2qOdL5fBXCQxyIvhpbgm0gIrPaSGoXIc-eW9npP_TVLw6Ve3YTdHBgiZmS0nBeyaXHJATL_H1NRDF7j5GEuC1dPM_bRHJPe9lnXPz89xGaLHQ6yA"/>
+<p class="text-label-caps text-on-surface-variant">Fuchsia Ribbon</p>
+</div>
+<!-- Item 4 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="A mystical Crystal Ball containing a swirling galaxy of purple and gold stardust. The glass surface is perfectly polished, showing distorted reflections of nearby cat constellations. It sits on an ornate obsidian base with golden cat-ear accents. The visual style is glassmorphic and high-fidelity, radiating a sense of infinite cosmic knowledge." src="https://lh3.googleusercontent.com/aida/ADBb0ujswipsVN4n9gII_gxMy3tZb5ru1vqM3mzaMIsK6nA9Ov3VgBQlF2rXsqcOMwdx3c4no7JefERhkjvP1JmM2SFhnL8lEIxOoDXM9EdgVOjTbqi4Ihv5SdGTnEy3_hYCUq5KXbqeBiSfb7C9Bkjf-MKq8IFRflg0Q4cBKhkdZ3L95MfO7odKM1-nSBTdsRAzH11x1i85k0WcfYeIx5E1jQvFX4QlvmIIXjc-HMFqLErotvxf8qux0abQa2YZMsPG62LbO-3W_cuucw"/>
+<p class="text-label-caps text-on-surface-variant">Crystal Ball</p>
+</div>
+<!-- Item 5 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="An opulent Royal Cat Bed made of plush velvet in a deep plum color, featuring a golden crown-shaped headboard and silk tassels. The bed appears to be floating amidst soft lavender clouds of nebula gas. It is designed for the most prestigious cats of the cosmic realm, blending comfort with regal space-age luxury." src="https://lh3.googleusercontent.com/aida/ADBb0uhYPacW8eCjdFKwOlD2s3dbknDEglJQzHIYdmU0L2SAQaxqa5Iu4J-Jjfs1xQyjMbmYgI3137_tNFj2O61SudmTGYxfDevqym75XEt77dD2XyICDpRfhja8NqrwujgrhTWqfGU19KoTuH9axMpdbGKiIL_xp2_1qz4c-LT8RdVSEM0coCiZAYhEllaonI1FfKfE49JHxbR5npigWESg8tdc6BHm1FC7vwQxYz5FueoVS_2KCc03O-RQzGrijDF5kGYRe2ZKfUcKAg"/>
+<p class="text-label-caps text-on-surface-variant">Royal Cat Bed</p>
+</div>
+<!-- Item 6 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="A sleek Silver Shopping Bag embossed with a golden paw-print logo, filled with glowing celestial items. The bag's material has a metallic, pearlescent finish that catches the light of distant stars. It represents a premium shop package in a high-end mobile puzzle game, styled with clean lines and sophisticated gold accents." src="https://lh3.googleusercontent.com/aida/ADBb0ujU1NHQ7YaTcWSEXFwZ9i_0BsHSAd5_YJna73PF5-CWHrQIdpG872jitTCGfv-6b4eL418NVaz0p0tqUru35HxI6oxt0vab5yt81Ao3efHWYwFB2BLmdZVcdmsLd0K3W5tT4TkJrgqc0LfBpBM2IbBKdrjCTB8SNAOx0r9wQEFGGe1f17OAbYGEAuN-7wz1H-6OwO5CfTsQPKmTXqAjPHtGCw3H9hM_jhLMRCwN9ows6aOqQcBuPxdMK7vyNGDGQunIfs_0WkZl"/>
+<p class="text-label-caps text-on-surface-variant">Silver Bag</p>
+</div>
+<!-- Item 7 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="A decorative glass bottle containing a Celestial Potion that glows with a shifting gradient of radiant gold and lavender. Bubbles of pure starlight rise within the liquid. The bottle is sealed with a cat-shaped crystal stopper. The aesthetic is magical and premium, evoking a sense of powerful cosmic energy and mystery." src="https://lh3.googleusercontent.com/aida/ADBb0uiRH1CRG98MtPF7bWfG1Xi8WrQADrGBWXRWLUJ4YctfrRvs_agv6eUBjWy7Ke_ByY4ytc7DIWMwsV0HjnfSmDmi125QcoZmJKoGByK66HGvPdcDUCoo0yxElniBkgQwVORcT3QuhV5JlCMz50awFRmKzE8ogSCpWLqW9Wbw8gStynVRwFdhGhzc11PUA4oCriFXIrgaGWqyMJvQXYt68ogZ45cU_aYZ6E4fR22cQJ1d_OMzhFZHcU_LBT1nLWH4PwcFwvk0ks6niw"/>
+<p class="text-label-caps text-on-surface-variant">Celestial Potion</p>
+</div>
+<!-- Item 8 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="A Starry Cat Mic featuring a handle wrapped in midnight-blue leather and a microphone head shaped like a cat's head with glowing golden eyes. Tiny star particles orbit the microphone as if it's broadcasting across the entire galaxy. The design is whimsical yet sophisticated, fitting for a cosmic feline superstar." src="https://lh3.googleusercontent.com/aida/ADBb0uh9LzASKK4c-TibxKAg3s7PEqsqrBsyfdCfUOogmvh22bNpSAr2msXpq6gWL-mIjnW9v0bSh0ll7t5_x3KdkVNtRnauStNuKzYc7mdhRkB7uqpwdlpkDz2OpzcqGq-foogoopwPjoHT690jEGbqTWUV1IEH1vaGJcmCJrwap9rUSK1WfJVHjDHh6pP2EVk8yiYrZx9E_DVkEOFNNmly_sZxEStKOU-VVFISAP0fheHEwnoQG8uEHmw1-lEcnGqYuDw3afF7fs3z"/>
+<p class="text-label-caps text-on-surface-variant">Starry Mic</p>
+</div>
+<!-- Item 9 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="A polished Amethyst Heart gemstone with deep purple facets and a warm internal glow. A tiny golden paw is etched into the center of the heart. The gemstone is suspended in a gravitational-defying cosmic environment, surrounded by soft purple nebula mists and shimmering starbits." src="https://lh3.googleusercontent.com/aida/ADBb0uigskSI9C9VdBzvr7pdvdvDGq8f5prZYn9ZqLVUnkrzXrGUFaZDfT1nHlNYp_BUxrZMneqQ9cqWpbNkdEVwsOZbQBAu760uNKizhaHASjr4gSh8EVA3xZZZoa_REQKorrz51deTcZBtfLEmhK6XK7JBwWtOc6bKJkaKEAKu6YxU9ljbqSf9As2ApfepD8v1W0MApyE5BvoR5lqpzugenBEqgPC6VCRtVEZpiNtEsTt0vCQPLsCfkxdsBuFZ7yPJZEQ8RAqT_XCf"/>
+<p class="text-label-caps text-on-surface-variant">Amethyst Heart</p>
+</div>
+<!-- Item 10 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="A luxurious Midnight Cushion made from dark silk with glowing silver constellation embroidery. It has heavy golden tassels at each corner and appears perfectly soft. The cushion floats in a serene corner of the universe, illuminated by the distant glow of a gold star, signifying ultimate comfort for cosmic pets." src="https://lh3.googleusercontent.com/aida/ADBb0ujaCCElIKayTl-WUcu6xgKw3cgPuuOWnZMCBqXEAIVNpntq1OpLmfJr9RzMA6TwvZSCRuorNIOyK1cCWvBJdMYiqB5MVpqvskul7ovL0QB6iZHaTeDSsNxretna9-rvBtHN78PLPTF0eA69bCqQIap9RmqP402fbHHPDelMYLieAl5tHeHA2aUx9g2_wpJLjKp_BEFteSoApgdNVpBj-OlmNP4vuqUUB8BTCA9cRl0EfCjuFiGCJNw7LTNaeb-qMHhdx0PhV_mu"/>
+<p class="text-label-caps text-on-surface-variant">Midnight Cushion</p>
+</div>
+<!-- Item 11 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="A Sapphire Paw pendant made from a single large blue gemstone, carved with master precision. The pendant is held by a delicate chain of liquid silver that reflects the surrounding cosmic purple hues. The lighting creates sharp, brilliant reflections on the sapphire's surface, conveying a sense of rare beauty and value." src="https://lh3.googleusercontent.com/aida/ADBb0uhlHfJdMwESM5pju1oVOp1OD2dxZEKAtkOqAXOiPtow3g2wS3N7I5NS0L7up3xzc-1VVM0lWPOWENmePvtv7ywEXB-SOS4DHwP1Vok-bBIj8bklxBK9we7mECL0yCs6OkET634MgipR9JCiMPv6NQr6xpND3hkULoKAMeAwh0eQjwABRrshyNBUDtDkRxnH-NIKW_HR4uGBZ7vK4BAFg4o9o3_jTR8OBwAHu8p1p1YJj9oAB9PlFyI4j6-yATG9CMrYa0X0-e41aw"/>
+<p class="text-label-caps text-on-surface-variant">Sapphire Paw</p>
+</div>
+<!-- Item 12 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="A Mystic Yarn Ball made from strands of pure woven moonlight and comet dust. The yarn has a soft, ethereal glow and trailing ends that dissolve into sparkles. It floats in a dark void, providing a playful yet magical element to the collection of a cosmic cat king. The style is soft, magical, and highly tactile." src="https://lh3.googleusercontent.com/aida/ADBb0ujZtO_3NNjTHWJGrmC0JbIY4g6FS_NMcs0pjBAHnahciwIx-LeMJT3M-duLf4nbmiU5lq-nMxkHrXY3bte-KfjjBEshYjviGLmIoWKxZjzslov4KlES3NGKZJ0s51S_vtC8isa_0ZTO7_5rEuQRoLpNbFxbpiWEJuimNyb3lW6bwbZ-K2qAFec_hexZpvorA1I24e7EHEXvxEoZE9L2Rja3kKjQ61-DRGP6H_HIK9dB_48X-hWMghWhBR9_-Dv2z5HDdeTpg0NHoQ"/>
+<p class="text-label-caps text-on-surface-variant">Mystic Yarn</p>
+</div>
+<!-- Item 13 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="A Jeweled Keyhole floating in space, crafted from ancient gold and encrusted with rubies and sapphires. Through the keyhole, a glimpse of a hidden celestial paradise can be seen. It represents a portal to advanced levels and secret content within a regal puzzle game. The lighting is dramatic, highlighting the rich textures of the gold and gems." src="https://lh3.googleusercontent.com/aida/ADBb0ui6ueuvEPOjOrNTcK5oHKDvhBot-wug5xVyLBHQAuumZt7v_EfGotL1q4oDAS9WPIaTXr-gRRX4RXJbnsoLNeHB7nl577nXaBs8QuSeY2TV2mn_mxMw4MJFevOSNQuiRiMKLzBRl0L8d1OERpyLu5ZCM4uDlYhtTJZWmdKGDfeQuAVHqkiusJkhqna1QUlE9qFEXHOeQdq1oAbP0nBSWyJdezEIoPVLCRG53z9FnLN3mqlsH16xT0XlVSJjVWrrGDLseLCbspeznQ"/>
+<p class="text-label-caps text-on-surface-variant">Jeweled Key</p>
+</div>
+<!-- Item 14 -->
+<div class="glass-card p-4 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all duration-300">
+<img alt="" class="w-24 h-24 mb-3 rounded-xl group-hover:scale-110 transition-transform" data-alt="A Rose Crystal Pufferfish sculpture made from semi-transparent pink quartz that glows from within. The pufferfish has delicate golden fins and wide, curious eyes. It is surrounded by a halo of tiny crystal bubbles in a deep cosmic lavender sea. The item is a whimsical and rare treasure with a unique, glass-like material finish." src="https://lh3.googleusercontent.com/aida/ADBb0ug2Z_WcC4425vbtI4XYokEhSvzSzClA7uOvRCRZaKDRmzjqd0WcugDbLxJpRNbOMExqYzjegMNKKqVa76iN2J5sq_YPHtDPFtDtTB7nY6mOO9_4bYwabuDhQwjg7mOGC6fN9cLY4P65-NunFXGtDqSScCTT5CiaiZjZxI1pwG-DLK5hjHUhuXOFwHL7DJUJE3YEH1FTSgETXMqcaWgnn87XZccW_lUN92thkyFCZT-22Xt0kkKLFzugJEtvIfFrkTijjQAxJTAfbw"/>
+<p class="text-label-caps text-on-surface-variant">Rose Crystal</p>
+</div>
+</div>
+</div>
+<!-- Sidebar Ad -->
+<aside class="lg:col-span-3 space-y-8">
+<div class="w-full flex justify-center">
+<div class="w-[300px] h-[250px] bg-surface-variant/20 border border-outline/20 flex items-center justify-center text-label-caps text-on-surface-variant rounded-lg p-4 text-center">
+                        ADVERTISEMENT: SQUARE 300x250
+                    </div>
+</div>
+<div class="glass-card p-6 rounded-2xl border-l-4 border-primary-container">
+<h3 class="text-title-sm text-primary-container mb-4">Daily Bonus</h3>
+<p class="text-body-md text-on-surface-variant mb-4">Claim your daily stardust to unlock exclusive collection pieces.</p>
+<button class="w-full py-2 bg-secondary-container/50 text-secondary border border-secondary/30 rounded-xl font-bold hover:bg-secondary-container transition-colors">Claim Reward</button>
+</div>
+</aside>
+</div>
+<!-- How to Play Section -->
+<section class="bg-surface-container-low/50 py-20">
+<div class="mx-auto px-6 text-center">
+<h2 class="font-headline-md text-headline-md text-primary-container mb-12">How to Play</h2>
+<div class="grid md:grid-cols-3 gap-12">
+<div class="flex flex-col items-center">
+<div class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center mb-6 border-2 border-secondary/30 text-secondary font-bold text-xl">1</div>
+<h4 class="text-title-sm text-primary mb-3">Stack the Tiles</h4>
+<p class="text-on-surface-variant">Select tiles from the celestial board to add them to your collection bar below.</p>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center mb-6 border-2 border-secondary/30 text-secondary font-bold text-xl">2</div>
+<h4 class="text-title-sm text-primary mb-3">Match Triplets</h4>
+<p class="text-on-surface-variant">Align 3 identical items in the bar to clear them and release their cosmic energy.</p>
+</div>
+<div class="flex flex-col items-center">
+<div class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center mb-6 border-2 border-secondary/30 text-secondary font-bold text-xl">3</div>
+<h4 class="text-title-sm text-primary mb-3">Clear the Board</h4>
+<p class="text-on-surface-variant">Clear all tiles before the bar fills up to achieve the Perfect Paw Match!</p>
+</div>
+</div>
+</div>
+</section>
 
+<section class="hero-cards-shell" style="max-width:1200px;margin:0 auto;padding:0 24px 48px;">
+  <div id="hero-card-grid" style="display:grid;grid-template-columns:repeat(4,minmax(64px,1fr));gap:14px;max-width:420px;margin:0 auto;">
+  </div>
+</section>
 
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest border-t border-secondary/10 w-full py-8 mt-auto">
+<div class="flex flex-col items-center gap-4 w-full mx-auto px-6">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary-container">pets</span>
+<span class="text-primary-container font-bold">Perfect Paw Match</span>
+</div>
+<div class="flex gap-8">
+<a class="text-label-caps font-label-caps text-secondary/60 hover:text-primary-container transition-colors" href="#">Privacy</a>
+<a class="text-label-caps font-label-caps text-secondary/60 hover:text-primary-container transition-colors" href="#">Terms</a>
+<a class="text-label-caps font-label-caps text-secondary/60 hover:text-primary-container transition-colors" href="#">Contact</a>
+</div>
+<p class="text-body-md font-body-md text-secondary mt-2 opacity-60">© 2024 Perfect Paw Match. All celestial rights reserved.</p>
+</div>
+</footer>
+</div>
+<!-- Hidden by default: Item Details Modal Placeholder -->
+<div class="fixed inset-0 z-[100] flex items-center justify-center p-6 hidden">
+<div class="absolute inset-0 bg-background/80 backdrop-blur-md"></div>
+<div class="relative glass-card max-w-lg w-full rounded-[24px] p-8 gold-glow overflow-hidden">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-12 bg-primary-container rounded-full blur-2xl opacity-20"></div>
+<button class="absolute top-4 right-4 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+<div class="flex flex-col items-center text-center">
+<div class="relative mb-6">
+<div class="absolute inset-0 bg-primary-container/20 blur-3xl rounded-full"></div>
+<img alt="" class="relative w-48 h-48 rounded-3xl" data-alt="Close up high-fidelity image of the Golden Paw artifact, showing microscopic gold textures, ancient runes etched into the surface, and a radiant aura of light emanating from its center. The background is a velvety dark space filled with sparkling stardust, emphasizing the item's royal status." src="https://lh3.googleusercontent.com/aida/ADBb0uiOZzf6zojymMUAczoL66YPWW6ZIVDweeua_PZfIHt2F8dN07xKAP7VYj9EoXVYUk_Zb22X5F2uEYg3EiZYZ504NvLsZ9_JptpIvB6Evbp0ddypyBppRfFZDv_871Ladas2IU6jCoVbpzDLm6kp2N7moqao3q_e3DO-SC1z5-6ZfYBFvUyScZp2gAKecOCgUwnYqOUVfgvRHe6LZFMGR3yF0pAqB0WbX95XNfy5w6SBpev5xsXsHmc0gQ7phX5rHZYPwiWn55Iqzg"/>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary-container mb-2">Golden Paw</h3>
+<p class="text-label-caps text-secondary mb-6 tracking-[0.2em] uppercase">Legendary Artifact</p>
+<p class="text-body-md text-on-surface/80 leading-relaxed mb-8">
+                    The legendary Golden Paw was forged in the heart of a dying star. It grants its owner the ability to manipulate gravity on the puzzle board, making it easier to find matches even in the most chaotic nebulae.
+                </p>
+<button class="primary-btn w-full py-4 rounded-2xl font-bold">Equip Artifact</button>
+</div>
+</div>
+</div>
 
 <script>
-(function () {
-  const CARD_DATA = [
-    { name: "Amethyst Heart", file: "./assets/cards/1amethyst-heart.png" },
-    { name: "Celestial Potion", file: "./assets/cards/2celestial-potion.png" },
-    { name: "Silver Shopping Bag", file: "./assets/cards/3silver-shopping-bag.png" },
-    { name: "Terquois Cushion", file: "./assets/cards/4terquois-cushion.png" },
-    { name: "Sapphire Paw", file: "./assets/cards/5sapphire-paw.png" },
-    { name: "Fuchsia Ribbon", file: "./assets/cards/6fuchsia-ribbon.png" },
-    { name: "Jeweled Keyhole", file: "./assets/cards/7jeweled-keyhole.png" },
-    { name: "Golden Paw", file: "./assets/cards/8golden-paw.png" },
-    { name: "Pinkruby Pufferfish", file: "./assets/cards/9pinkruby-pufferfish.png" },
-    { name: "Crystal Ball", file: "./assets/cards/10crystal-ball.png" },
-    { name: "Indigo Bowtie", file: "./assets/cards/11indigo-bowtie.png" },
-    { name: "Royal Cat Bed", file: "./assets/cards/12royal-cat-bed.png" },
-    { name: "Zio", file: "./assets/cards/13zio.png" },
-    { name: "Ziawink", file: "./assets/cards/14ziawink.png" }
-  ];
-
-  function renderCollectionGrid(root) {
-    if (!root || root.dataset.rendered === "1") return;
-    root.dataset.rendered = "1";
+(function(){
+  function renderHeroCardsPatched(){
+    var root = document.getElementById("hero-card-grid");
+    if(!root || !window.CARD_ORDER || !window.cardImgSrc) return;
     root.innerHTML = "";
-
-    const frag = document.createDocumentFragment();
-
-    CARD_DATA.forEach(card => {
-      const item = document.createElement("article");
-      item.className = "collection-card";
-      item.innerHTML = `
-        <div class="collection-card-image-wrap">
-          <img
-            class="collection-card-image"
-            src="${card.file}"
-            alt="${card.name}"
-            width="160"
-            height="160"
-            loading="lazy"
-            decoding="async"
-            onerror="this.onerror=null;this.src='./assets/cards/8golden-paw.png';"
-          />
-        </div>
-        <h3 class="collection-card-title">${card.name}</h3>
-      `;
-      frag.appendChild(item);
+    window.CARD_ORDER.forEach(function(key){
+      var img = document.createElement("img");
+      img.src = window.cardImgSrc(key);
+      img.alt = key;
+      img.loading = "lazy";
+      img.style.width = "100%";
+      img.style.aspectRatio = "3/4";
+      img.style.objectFit = "cover";
+      img.style.borderRadius = "16px";
+      img.style.border = "2px solid rgba(255,215,0,.35)";
+      img.style.boxShadow = "0 6px 18px rgba(0,0,0,.22)";
+      img.style.background = "rgba(255,255,255,.06)";
+      img.onerror = function(){ this.src = "./assets/cards/card-backup.png"; };
+      root.appendChild(img);
     });
-
-    root.appendChild(frag);
   }
-
-  function boot() {
-    const targets = [
-      document.querySelector("#collection-grid"),
-      document.querySelector(".collection-grid"),
-      document.querySelector("[data-collection-grid]"),
-      document.querySelector("#royal-collection-grid")
-    ].filter(Boolean);
-
-    targets.forEach(renderCollectionGrid);
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", renderHeroCardsPatched);
   } else {
-    boot();
+    renderHeroCardsPatched();
   }
 })();
 </script>
