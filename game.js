@@ -617,3 +617,40 @@ window.__stage1PatchApplied = true;
   patchBuildStageLoop();
   patchRenderLoop();
 })();
+
+function checkShading() {
+  const cards = window.gameCards || [];
+  for (let i = 0; i < cards.length; i++) {
+    const cur = cards[i];
+    if (cur.removed) continue;
+    cur.blocked = false;
+    const x1 = cur.x, y1 = cur.y, x2 = x1 + (cur.w || 80), y2 = y1 + (cur.h || 80);
+    for (let j = i + 1; j < cards.length; j++) {
+      const o = cards[j];
+      if (o.removed) continue;
+      const ow = o.w || 80, oh = o.h || 80;
+      if (!(o.y + oh <= y1 || o.y >= y2 || o.x + ow <= x1 || o.x >= x2)) {
+        cur.blocked = true;
+        break;
+      }
+    }
+  }
+  applyBlockedState();
+}
+
+function applyBlockedState() {
+  const cards = window.gameCards || [];
+  const els = document.querySelectorAll('.tile, .card-item, [data-card-id]');
+  cards.forEach((card, i) => {
+    const el = els[i];
+    if (!el || card.removed) return;
+    el.querySelectorAll('.blocked-overlay').forEach(e => e.remove());
+    el.style.pointerEvents = card.blocked ? 'none' : 'auto';
+    el.style.filter = card.blocked ? 'brightness(0.62) saturate(0.7)' : 'brightness(1) saturate(1)';
+    el.style.zIndex = String(i + 10);
+  });
+}
+
+function scheduleShadowUpdate() {
+  requestAnimationFrame(() => { checkShading(); });
+}
