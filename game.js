@@ -23,10 +23,7 @@ window.CARD_IMAGE_MAP = {
   "rose-crystal": "/assets/cards/rose-crystal.png"
 };
 
-window.cardImgSrc = function(key) {
-  // Try mapping first, then fallback to direct path
-  if (window.CARD_IMAGE_MAP && window.CARD_IMAGE_MAP[key]) return window.CARD_IMAGE_MAP[key];
-  return `/assets/cards/${key}.png`;
+.png`;
 };
 
 const CP = '/assets/cards/', SM = 7, CS = 62, LOFF = 16;
