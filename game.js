@@ -44,7 +44,7 @@ window.cardImgSrc = function(key){
       for (let i = 0; i < window.tiles.length; i++) {
         const other = window.tiles[i];
         if (!other || other === t || other.removed) continue;
-        if (overlaps(t, other) && (other.z > t.z)) {
+        if (overlaps(t, other) && (other.z < t.z)) {
           covered = true;
           break;
         }
