@@ -21,7 +21,7 @@ function checkShading(){
 }
 
 // Stage 1: 분산 배치 (4개 그룹, 겹침 최소화)
-function buildStage1(){
+function buildStage1(){const bd=document.getElementById("game-board");const bw=bd.offsetWidth||360,bh=bd.offsetHeight||500;const mcx=bw/2,mcy=bh/2;
   const pool=[];
   const chosen=sh(CARDS).slice(0,12); // 12장 = 4세트
   chosen.forEach(c=>{for(let i=0;i<3;i++)pool.push(c);});
@@ -29,10 +29,10 @@ function buildStage1(){
 
   // 4개 그룹 위치 (board 360x460 기준)
   const groups=[
-    {cx:90, cy:110},   // 좌상
-    {cx:270,cy:110},   // 우상
-    {cx:90, cy:300},   // 좌하
-    {cx:270,cy:300},   // 우하
+    {cx:mcx-150, cy:mcy-130},
+    {cx:mcx+150, cy:mcy-130},
+    {cx:mcx-150, cy:mcy+100},
+    {cx:mcx+150, cy:mcy+100},
   ];
 
   const offsets=[
