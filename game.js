@@ -1,322 +1,255 @@
-// Perfect Paw Match - Unified Clean Engine v2.6
-// Fixed: Numbered assets (1-14) with hyphens, consolidated map
-
-const CARDS = [
-  '1amethyst-heart', '2celestial-potion', '3silver-shopping-bag', '4terquois-cushion',
-  '5sapphire-paw', '6fuchsia-ribbon', '7jeweled-keyhole', '8golden-paw',
-  '9pinkruby-pufferfish', '10crystal-ball', '11indigo-bowtie', '12royal-cat-bed',
-  '13zio', '14ziawink'
+// Perfect Paw Match - Stripe Cards, No Timer, 7 Slots, Proper Blocking
+const CARDS=[
+  '1amethyst_heart',
+  '2zia',
+  '3Silver_Shopping_Bag',
+  '4Terquois_cushion',
+  '5Sapphire_Paw',
+  '6fuchsia_ribbon',
+  '7jeweled_keyhole',
+  '8golden_paw ',
+  '9pinkruby_pufferfish',
+  '10crystal_ball',
+  '11celestial_potion',
+  '12royal cat bed',
+  '13zio',
+  '14indigo_bowtie',
+  '15ziawink'
 ];
+const CP='assets/cards/',SM=7,TW=64,TH=64,GS=48;
+let stage=1,tiles=[],slots=[],leftDeck=[],rightDeck=[],hist=[],undo=2,shuf=1,score=0,on=false;
 
-window.CARD_IMAGE_MAP = {
-  "amethyst-heart":     "/assets/cards/1amethyst-heart.png",
-  "celestial-potion":   "/assets/cards/2celestial-potion.png",
-  "silver-shopping-bag":"/assets/cards/3silver-shopping-bag.png",
-  "terquois-cushion":   "/assets/cards/4terquois-cushion.png",
-  "sapphire-paw":       "/assets/cards/5sapphire-paw.png",
-  "fuchsia-ribbon":     "/assets/cards/6fuchsia-ribbon.png",
-  "jeweled-keyhole":    "/assets/cards/7jeweled-keyhole.png",
-  "golden-paw":         "/assets/cards/8golden-paw.png",
-  "pinkruby-pufferfish":"/assets/cards/9pinkruby-pufferfish.png",
-  "crystal-ball":       "/assets/cards/10crystal-ball.png",
-  "indigo-bowtie":      "/assets/cards/11indigo-bowtie.png",
-  "royal-cat-bed":      "/assets/cards/12royal-cat-bed.png",
-  "zio":                "/assets/cards/13zio.png",
-  "ziawink":            "/assets/cards/14ziawink.png"
-};
+function sh(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
 
-window.cardImgSrc = function(key) {
-  if (window.CARD_IMAGE_MAP && window.CARD_IMAGE_MAP[key]) return window.CARD_IMAGE_MAP[key];
-  // If key already has number (like in CARDS array), just append extension
-  if (/^\d+/.test(key)) return `/assets/cards/${key}.png`;
-  return `/assets/cards/8golden-paw.png`;
-};
-
-const CP = '/assets/cards/', SM = 7, CS = 62, LOFF = 16;
-let stage = 1, tiles = [], sideLeft = [], sideRight = [], slots = [], hist = [], undo = 2, shuf = 1, score = 0, on = false, lastClickTime = 0;
-
-function sh(a) {
-  const b = [...a];
-  for (let i = b.length - 1; i > 0; i--) {
-    const j = Math.random() * (i + 1) | 0;
-    [b[i], b[j]] = [b[j], b[i]];
-  }
-  return b;
+function stageConfig(){
+  if(stage===1) return {types:4, copies:3, layers:2, deckCards:0};
+  if(stage===2) return {types:6, copies:3, layers:3, deckCards:6};
+  if(stage===3) return {types:8, copies:3, layers:3, deckCards:9};
+  return {types:10, copies:3, layers:4, deckCards:12};
 }
 
-function getPositions() {
-  if (stage === 1) return [
-    {gx:0,gy:0,l:0},{gx:1,gy:0,l:0},{gx:2,gy:0,l:0},
-    {gx:0,gy:1,l:0},{gx:1,gy:1,l:0},{gx:2,gy:1,l:0},
-    {gx:0,gy:2,l:0},{gx:1,gy:2,l:0},{gx:2,gy:2,l:0},
-    {gx:0,gy:0,l:1},{gx:1,gy:0,l:1},{gx:2,gy:0,l:1},
-  ];
-  if (stage === 2) return [
-    ...[0,1,2,3].flatMap(r => [0,1,2,3,4].map(c => ({gx:c,gy:r,l:0}))),
-    ...[0,1,2].flatMap(r => [1,2,3].map(c => ({gx:c,gy:r,l:1}))),
-    {gx:1,gy:0,l:2},{gx:2,gy:0,l:2},{gx:1,gy:1,l:2},{gx:2,gy:1,l:2},
-  ];
-  return [
-    ...[0,1,2,3,4].flatMap(r => [0,1,2,3,4,5].map(c => ({gx:c,gy:r,l:0}))),
-    ...[0,1,2,3].flatMap(r => [1,2,3,4].map(c => ({gx:c,gy:r,l:1}))),
-    ...[0,1,2].flatMap(r => [2,3].map(c => ({gx:c,gy:r,l:2}))),
-    {gx:2,gy:1,l:3},
-  ];
+function gen(){
+  const cfg=stageConfig();
+  const chosen=sh([...CARDS]).slice(0,cfg.types);
+  const pool=[];
+  chosen.forEach(c=>{for(let i=0;i<cfg.copies;i++)pool.push(c);});
+  const shuffled=sh(pool);
+  const boardCount=shuffled.length-cfg.deckCards;
+  const board=shuffled.slice(0,boardCount);
+  const deckAll=shuffled.slice(boardCount);
+  const half=0|deckAll.length/2;
+  return{b:board,l:deckAll.slice(0,half),r:deckAll.slice(half)};
 }
 
-function rStep() { return Math.round(CS * (0.25 + Math.random() * 0.5)); }
+function build(pool){
+  const bd=document.getElementById('game-board');
+  const bw=bd.clientWidth||360,bh=bd.clientHeight||440;
+  tiles=[];
+  const cfg=stageConfig();
+  const numLayers=cfg.layers;
 
-function build() {
-  const bd = document.getElementById('game-board');
-  const bw = bd.offsetWidth || 360, bh = bd.offsetHeight || 460;
-  tiles = []; sideLeft = []; sideRight = [];
+  // Grid dimensions per layer (centered, shrinking each layer)
+  const layerDefs=[
+    {c:6,r:5},
+    {c:4,r:4},
+    {c:3,r:3},
+    {c:2,r:2}
+  ].slice(0,numLayers);
 
-  const pos = getPositions();
-  const count = pos.length - pos.length % 3;
-  const used = sh(pos).slice(0, count);
+  const COLS=6,ROWS=5;
+  const totalW=COLS*GS, totalH=ROWS*GS;
+  const sx=0|bw/2-totalW/2, sy=0|bh/2-totalH/2;
 
-  const chosen = sh([...CARDS]).slice(0, 14);
-  const pool = [];
-  for (let i = 0; i < count; i++) pool.push(chosen[i % 14]);
-  const boardCards = sh(pool);
-
-  if (stage >= 2) {
-    const sidePool = sh([...CARDS]).slice(0, 14);
-    sideLeft = sidePool.map((card, i) => ({id: `L${i}`, card, visible: i === 0, px: -80, py: 50 + i * 10, layer: 0}));
-    sideRight = sidePool.map((card, i) => ({id: `R${i}`, card, visible: i === 0, px: bw - 20, py: 50 + i * 10, layer: 0}));
-  }
-
-  const colSteps = [], rowSteps = [];
-  for (let i = 0; i < 10; i++) { colSteps.push(rStep()); rowSteps.push(rStep()); }
-
-  const pxArr = [];
-  used.forEach(({gx, gy, l}) => {
-    let px = 0, py = 0;
-    for (let c = 0; c < gx; c++) px += colSteps[c % colSteps.length];
-    for (let r = 0; r < gy; r++) py += rowSteps[r % rowSteps.length];
-    px += l * LOFF; py += l * LOFF;
-    pxArr.push({px, py});
-  });
-
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  pxArr.forEach(({px, py}) => {
-    minX = Math.min(minX, px); minY = Math.min(minY, py);
-    maxX = Math.max(maxX, px + CS); maxY = Math.max(maxY, py + CS);
-  });
-  const ox = Math.round(bw / 2 - (maxX - minX) / 2 - minX);
-  const oy = Math.round(bh * 0.45 - (maxY - minY) / 2 - minY);
-
-  used.forEach(({gx, gy, l}, i) => {
-    tiles.push({
-      id: i, card: boardCards[i], gx, gy,
-      px: pxArr[i].px + ox, py: pxArr[i].py + oy,
-      layer: l, rm: false, visible: true
+  let idx=0;
+  for(let layer=0;layer<numLayers&&idx<pool.length;layer++){
+    const {c,r}=layerDefs[layer];
+    const offX=0|((COLS-c)/2);
+    const offY=0|((ROWS-r)/2);
+    const cells=[];
+    for(let gy=offY;gy<offY+r;gy++)
+      for(let gx=offX;gx<offX+c;gx++)
+        cells.push({gx,gy});
+    const picked=sh(cells).slice(0,Math.min(cells.length,pool.length-idx));
+    picked.forEach(({gx,gy})=>{
+      if(idx>=pool.length)return;
+      tiles.push({
+        id:idx,card:pool[idx],
+        gx,gy,
+        // offset each layer slightly so stacking is visible
+        x:sx+gx*GS,
+        y:sy+gy*GS,
+        layer,rm:false
+      });
+      idx++;
     });
-  });
+  }
 }
 
-function isBlocked(t) {
-  if (t.rm || t.id.toString().startsWith('L') || t.id.toString().startsWith('R')) return false;
-  const thresh = CS * 0.15;
-  for (const o of tiles) {
-    if (o.rm || o.id === t.id || o.layer <= t.layer) continue;
-    const ox = Math.min(t.px + CS, o.px + CS) - Math.max(t.px, o.px);
-    const oy = Math.min(t.py + CS, o.py + CS) - Math.max(t.py, o.py);
-    if (ox >= thresh && oy >= thresh) return true;
+// A tile is blocked if ANY higher-layer tile sits on same grid cell
+function blocked(t){
+  if(t.rm)return true;
+  for(let i=0;i<tiles.length;i++){
+    const o=tiles[i];
+    if(o.rm||o.id===t.id||o.layer<=t.layer)continue;
+    if(o.gx===t.gx&&o.gy===t.gy)return true;
   }
   return false;
 }
 
-const imgCache = new Map();
-function preloadImages() {
-  CARDS.forEach(card => {
-    const img = new Image();
-    img.src = window.cardImgSrc(card);
-    imgCache.set(card, img);
-  });
-}
-
-function render() {
-  const bd = document.getElementById('game-board');
-  bd.innerHTML = '';
-
-  const allTiles = [...tiles, ...sideLeft, ...sideRight].filter(t => !t.rm);
-  allTiles.sort((a, b) => a.layer - b.layer || a.py - b.py || a.px - b.px);
-
-  allTiles.forEach(t => {
-    const bl = isBlocked(t);
-    const el = document.createElement('div');
-    el.style.cssText = `position:absolute;left:${t.px}px;top:${t.py}px;width:${CS}px;height:${CS}px;z-index:${t.layer*500 + t.py*20 + (t.px|0)};border-radius:8px;overflow:hidden;pointer-events:${bl ? 'none' : 'auto'};cursor:${bl ? 'not-allowed' : 'pointer'};`;
-
-    const img = document.createElement('img');
-    const useCard = t.visible ? t.card : 'card_back';
-    img.src = imgCache.has(useCard) ? imgCache.get(useCard).src : window.cardImgSrc(useCard);
-    img.style.cssText = `width:100%;height:100%;object-fit:cover;display:block;border-radius:7px;border:${bl ? '1.5px solid rgba(120,90,170,.4)' : '2.5px solid rgba(255,215,0,.9)'};filter:${bl ? 'brightness(.55) saturate(0.7)' : 'brightness(1)'};box-shadow:${bl ? 'none' : '0 2px 10px rgba(255,215,0,.3)'};transition:filter .1s, box-shadow .1s;`;
-    img.onerror = () => { img.style.background = '#4caf50'; img.src = window.cardImgSrc('8golden-paw'); };
-
+function render(){
+  const bd=document.getElementById('game-board');
+  bd.innerHTML='';
+  const vis=tiles.filter(t=>!t.rm)
+    .sort((a,b)=>a.layer!==b.layer?a.layer-b.layer:a.gy!==b.gy?a.gy-b.gy:a.gx-b.gx);
+  vis.forEach(t=>{
+    const bl=blocked(t);
+    const el=document.createElement('div');
+    el.className='tile'+(bl?' blocked':' free');
+    el.style.left=t.x+'px';
+    el.style.top=t.y+'px';
+    el.style.width=TW+'px';
+    el.style.height=TH+'px';
+    el.style.zIndex=t.layer*1000+t.gy*50+t.gx;
+    const img=document.createElement('img');
+    img.src=CP+t.card+'.png';
+    img.draggable=false;
     el.appendChild(img);
-    if (!bl) {
-      el.onclick = () => clickTile(t);
-      el.ontouchstart = e => { e.preventDefault(); clickTile(t); };
+    if(!bl){
+      el.onclick=()=>click(t);
+      el.ontouchstart=e=>{e.preventDefault();click(t);};
     }
     bd.appendChild(el);
   });
-
-  renderSlots();
-  renderUI();
+  rDecks();rSlots();ui();
 }
 
-function renderSlots() {
-  const bar = document.getElementById('slot-bar');
-  bar.innerHTML = '';
-  for (let i = 0; i < SM; i++) {
-    const d = document.createElement('div');
-    d.style.cssText = `width:40px;height:40px;border:2px dashed ${slots[i]?'rgba(255,215,0,.5)':'rgba(205,189,255,.5)'};border-radius:7px;background:${slots[i]?'rgba(255,215,0,.06)':'rgba(50,34,71,.3)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;`;
-    if (slots[i]) {
-      const m = document.createElement('img');
-      m.src = window.cardImgSrc(slots[i]);
-      m.style.cssText = 'width:34px;height:34px;object-fit:cover;border-radius:5px;';
+function rDecks(){rD('left-deck',leftDeck,'left');rD('right-deck',rightDeck,'right');}
+function rD(id,dk,sd){
+  const el=document.getElementById(id);
+  if(!dk.length){el.innerHTML='<div class="deck-empty">✓</div>';return;}
+  const top=dk[dk.length-1],sc=Math.min(dk.length-1,4);
+  let h=`<div class="deck-wrap" onclick="draw('${sd}')">`;
+  for(let i=sc;i>=1;i--)h+=`<div class="deck-back-card" style="bottom:${i*3}px;right:${i*2}px"></div>`;
+  h+=`<div class="deck-top-open"><img src="${CP}${top}.png"/></div>`;
+  h+=`<div class="deck-count">${dk.length}</div></div>`;
+  el.innerHTML=h;
+}
+
+function rSlots(){
+  const bar=document.getElementById('slot-bar');bar.innerHTML='';
+  for(let i=0;i<SM;i++){
+    const d=document.createElement('div');
+    d.className='slot'+(slots[i]?' filled':'');
+    if(slots[i]){
+      const m=document.createElement('img');
+      m.src=CP+slots[i]+'.png';
       d.appendChild(m);
     }
     bar.appendChild(d);
   }
-  document.getElementById('slot-count').textContent = slots.length + '/' + SM;
+  document.getElementById('slot-count').textContent=`SLOT: ${slots.length} / ${SM}`;
 }
 
-function renderUI() {
-  document.getElementById('score').textContent = '★ ' + score.toLocaleString();
-  const ub = document.getElementById('undo-badge'), sb = document.getElementById('shuf-badge');
-  if(ub) ub.textContent = undo;
-  if(sb) sb.textContent = shuf;
-  if (!tiles.filter(t => !t.rm).length && !sideLeft.length && !sideRight.length && !slots.length) win();
+function ui(){
+  document.getElementById('score').textContent='★ '+score.toLocaleString();
+  document.getElementById('undo-btn').innerHTML=`↩<br>UNDO(${undo})`;
+  document.getElementById('shuffle-btn').innerHTML=`⟳<br>SHUF(${shuf})`;
+  if(!tiles.filter(t=>!t.rm).length&&!leftDeck.length&&!rightDeck.length&&!slots.length)win();
 }
 
-function insertSlot(card) {
-  let at = slots.length;
-  for (let i = slots.length - 1; i >= 0; i--) { if (slots[i] === card) { at = i + 1; break; } }
-  slots.splice(at, 0, card);
+function ins(card){
+  let at=slots.length;
+  for(let i=slots.length-1;i>=0;i--){if(slots[i]===card){at=i+1;break;}}
+  slots.splice(at,0,card);
 }
 
-function checkMatch() {
-  let ch = true;
-  while (ch) {
-    ch = false;
-    const m = {};
-    slots.forEach((c, i) => { (m[c] = m[c] || []).push(i); });
-    for (const [, idx] of Object.entries(m)) {
-      if (idx.length >= 3) {
-        slots = slots.filter((_, i) => !new Set(idx.slice(0, 3)).has(i));
-        score += 300 * stage;
-        ch = true;
-        break;
+function chk(){
+  let ch=true;
+  while(ch){
+    ch=false;
+    const m={};
+    slots.forEach((c,i)=>{(m[c]=m[c]||[]).push(i);});
+    for(const[,idx]of Object.entries(m)){
+      if(idx.length>=3){
+        slots=slots.filter((_,i)=>!new Set(idx.slice(0,3)).has(i));
+        score+=300*stage;ch=true;break;
       }
     }
   }
 }
 
-function saveState() {
-  hist.push({
-    slots: [...slots],
-    ts: tiles.map(t => ({id: t.id, rm: t.rm})),
-    sideL: sideLeft.map(t => ({id: t.id, rm: t.rm, visible: t.visible})),
-    sideR: sideRight.map(t => ({id: t.id, rm: t.rm, visible: t.visible})),
-    score
-  });
+function save(){hist.push({slots:[...slots],l:[...leftDeck],r:[...rightDeck],ts:tiles.map(t=>({id:t.id,r:t.rm})),score});}
+
+function click(t){
+  if(!on||t.rm||blocked(t))return;
+  save();t.rm=true;ins(t.card);chk();render();
+  if(slots.length>=SM)full();
 }
 
-function clickTile(t) {
-  const now = Date.now();
-  if (!on || now - lastClickTime < 120 || t.rm || isBlocked(t) || (!t.visible && (t.id.toString().startsWith('L') || t.id.toString().startsWith('R')))) return;
-  lastClickTime = now;
-
-  saveState();
-  t.rm = true;
-  if (t.id.toString().startsWith('L')) {
-    const idx = sideLeft.indexOf(t);
-    if (idx < sideLeft.length - 1) sideLeft[idx+1].visible = true;
-  } else if (t.id.toString().startsWith('R')) {
-    const idx = sideRight.indexOf(t);
-    if (idx < sideRight.length - 1) sideRight[idx+1].visible = true;
-  }
-
-  insertSlot(t.card);
-  checkMatch();
-  render();
-  if (slots.length >= SM) showFull();
+function draw(side){
+  if(!on)return;
+  const dk=side==='left'?leftDeck:rightDeck;
+  if(!dk.length)return;
+  if(slots.length>=SM){full();return;}
+  save();ins(dk.pop());chk();render();
+  if(slots.length>=SM)full();
 }
 
-function doUndo() {
-  if (!on || !undo || !hist.length) return;
-  const s = hist.pop();
-  s.ts.forEach(({id, rm}) => { const t = tiles.find(t => t.id === id); if (t) t.rm = rm; });
-  s.sideL?.forEach(({id, rm, visible}) => { const t = sideLeft.find(t => t.id === id); if (t) { t.rm = rm; t.visible = visible; } });
-  s.sideR?.forEach(({id, rm, visible}) => { const t = sideRight.find(t => t.id === id); if (t) { t.rm = rm; t.visible = visible; } });
-  slots = s.slots; score = s.score; undo--; render();
+function doUndo(){
+  if(!on||!undo||!hist.length)return;
+  const s=hist.pop();
+  s.ts.forEach(ts=>{const t=tiles.find(t=>t.id===ts.id);if(t)t.rm=ts.r;});
+  slots=s.slots;leftDeck=s.l;rightDeck=s.r;score=s.score;
+  undo--;render();
 }
 
-function doShuffle() {
-  if (!on || !shuf) return;
-  shuf--;
-  const allCards = tiles.filter(t => !t.rm).map(t => t.card);
-  if (sideLeft.length) allCards.push(...sideLeft.filter(t=>!t.rm).map(t => t.card));
-  if (sideRight.length) allCards.push(...sideRight.filter(t=>!t.rm).map(t => t.card));
-  const shuffled = sh(allCards);
-  let idx = 0;
-  tiles.filter(t => !t.rm).forEach(t => t.card = shuffled[idx++]);
-  sideLeft.filter(t=>!t.rm).forEach(t => t.card = shuffled[idx++]);
-  sideRight.filter(t=>!t.rm).forEach(t => t.card = shuffled[idx++]);
-  render();
+function doShuffle(){
+  if(!on||!shuf)return;shuf--;
+  const a=tiles.filter(t=>!t.rm),c=sh(a.map(t=>t.card));
+  a.forEach((t,i)=>t.card=c[i]);render();
 }
 
-function doWithdraw() {
-  if (!on || !slots.length) return;
-  const card = slots.pop();
-  const gone = tiles.filter(t => t.rm);
-  if (gone.length) { gone[gone.length - 1].rm = false; gone[gone.length - 1].card = card; }
-  else slots.push(card);
-  render();
+function full(){
+  if(slots.length<SM)return;
+  on=false;
+  document.getElementById('overlay').style.display='flex';
+  document.getElementById('overlay').innerHTML=`
+    <div class="result-box lose">
+      <div style="font-size:36px">😾</div>
+      <h2>SLOTS FULL!</h2>
+      <p>Watch ad to free 3 slots!</p>
+      <button onclick="ad()" style="background:#22c55e;color:#fff">📺 Watch Ad</button>
+      <button onclick="restart()">↺ Restart</button>
+    </div>`;
 }
 
-function showFull() {
-  on = false;
-  const ov = document.getElementById('overlay'); ov.style.display = 'flex';
-  ov.innerHTML = `<div class="result-box lose"><div style="font-size:42px">😾</div><h2>SLOTS FULL!</h2>
-  <p>Watch ad to free 3 slots</p>
-  <button onclick="doAd()" style="background:#22c55e;color:#fff">📺 Watch Ad (+3)</button>
-  <button onclick="doRestart()">↺ Restart</button></div>`;
+function ad(){
+  const ov=document.getElementById('overlay');
+  let cd=5;
+  ov.innerHTML=`<div class="result-box"><div style="font-size:48px">📺</div><h2 style="color:var(--l)">Ad...</h2><div id="acd" style="font-size:48px;color:var(--g);margin:12px 0">${cd}</div></div>`;
+  const t=setInterval(()=>{
+    cd--;
+    const e=document.getElementById('acd');if(e)e.textContent=cd;
+    if(cd<=0){clearInterval(t);slots=slots.slice(3);ov.style.display='none';on=true;render();}
+  },1000);
 }
 
-function doAd() {
-  const ov = document.getElementById('overlay'); let cd = 5;
-  ov.innerHTML = `<div class="result-box" style="text-align:center"><div style="font-size:52px">📺</div><div id="acd" style="font-size:52px;font-weight:800;color:#ffd700;margin-top:10px">${cd}</div></div>`;
-  const iv = setInterval(() => {
-    cd--; const e = document.getElementById('acd'); if (e) e.textContent = cd;
-    if (cd <= 0) { clearInterval(iv); slots = slots.slice(3); ov.style.display = 'none'; on = true; render(); }
-  }, 1000);
+function win(){
+  on=false;
+  document.getElementById('overlay').style.display='flex';
+  document.getElementById('overlay').innerHTML=`
+    <div class="result-box win"><div style="font-size:48px">👑</div><h2>PERFECT!</h2>
+    <div class="result-score">Score: ${score.toLocaleString()}</div>
+    <button onclick="next()">Next Stage →</button><button onclick="restart()">Play Again</button></div>`;
 }
 
-function win() {
-  on = false;
-  const ov = document.getElementById('overlay'); ov.style.display = 'flex';
-  ov.innerHTML = `<div class="result-box win"><div style="font-size:52px">👑</div><h2>PERFECT!</h2>
-  <div style="font-size:14px;font-weight:700;margin:6px 0 14px">Score: ${score.toLocaleString()}</div>
-  <button onclick="doNext()">Next Stage →</button>
-  <button onclick="doRestart()">↺ Replay</button></div>`;
+function next(){stage++;document.getElementById('overlay').style.display='none';document.getElementById('stage-label').textContent='Stage '+stage;go();}
+function restart(){stage=1;document.getElementById('overlay').style.display='none';document.getElementById('stage-label').textContent='Stage 1';go();}
+
+function go(){
+  on=true;slots=[];hist=[];undo=2;shuf=1;score=0;
+  const{b,l,r}=gen();leftDeck=l;rightDeck=r;build(b);render();
 }
 
-function doNext() { stage++; document.getElementById('overlay').style.display = 'none'; document.getElementById('stage-label').textContent = 'Stage ' + stage; go(); }
-function doRestart() { document.getElementById('overlay').style.display = 'none'; document.getElementById('stage-label').textContent = 'Stage ' + stage; go(); }
-
-function go() {
-  on = true; slots = []; hist = []; undo = 2; shuf = 1; score = 0;
-  build(); render();
-}
-
-window.addEventListener('load', () => {
-  preloadImages();
-  stage = 1;
-  go();
-});
-
-window.doUndo = doUndo; window.doShuffle = doShuffle; window.doWithdraw = doWithdraw;
-window.doRestart = doRestart; window.doNext = doNext; window.doAd = doAd;
+window.addEventListener('load',()=>{stage=1;go();});
+window.doUndo=doUndo;window.doShuffle=doShuffle;window.restart=restart;window.next=next;window.draw=draw;window.ad=ad;
