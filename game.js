@@ -36,9 +36,9 @@ function buildStage1(){const bd=document.getElementById("game-board");const bw=b
   ];
 
   const offsets=[
-    [-76,-76],[-76,0],[-76,76],
-    [0,-76],  [0,0],  [0,76],
-    [76,-76], [76,0], [76,76],
+    [-25,-25],[-25,0],[-25,25],
+    [0,-25],  [0,0],  [0,25],
+    [25,-25], [25,0], [25,25],
   ];
 
   tiles=[];
