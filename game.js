@@ -16,7 +16,7 @@ const CARDS=[
   '14indigo_bowtie',
   '15ziawink'
 ];
-const CP='assets/cards/',SM=7,TW=64,TH=64,GS=48;
+const CP='asset/cards/',SM=7,TW=64,TH=64,GS=48;
 let stage=1,tiles=[],slots=[],leftDeck=[],rightDeck=[],hist=[],undo=2,shuf=1,score=0,on=false;
 
 function sh(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=0|Math.random()*(i+1);[b[i],b[j]]=[b[j],b[i]];}return b;}
