@@ -1,25 +1,25 @@
 window.CARD_IMAGE_MAP = {
-  "golden-paw": "./assets/cards/golden-paw.png",
-  "indigo-bowtie": "./assets/cards/indigo-bowtie.png",
-  "fuchsia-ribbon": "./assets/cards/fuchsia-ribbon.png",
-  "crystal-ball": "./assets/cards/crystal-ball.png",
-  "royal-cat-bed": "./assets/cards/royal-cat-bed.png",
-  "silver-bag": "./assets/cards/silver-bag.png",
-  "celestial-potion": "./assets/cards/celestial-potion.png",
-  "starry-mic": "./assets/cards/starry-mic.png",
-  "amethyst-heart": "./assets/cards/amethyst-heart.png",
-  "midnight-cushion": "./assets/cards/midnight-cushion.png",
-  "sapphire-paw": "./assets/cards/sapphire-paw.png",
-  "mystic-yarn": "./assets/cards/mystic-yarn.png",
-  "jeweled-key": "./assets/cards/jeweled-key.png",
-  "rose-crystal": "./assets/cards/rose-crystal.png"
+  "amethyst-heart":     "./assets/cards/1amethyst-heart.png",
+  "celestial-potion":   "./assets/cards/2celestial-potion.png",
+  "silver-shopping-bag":"./assets/cards/3silver-shopping-bag.png",
+  "terquois-cushion":   "./assets/cards/4terquois-cushion.png",
+  "sapphire-paw":       "./assets/cards/5sapphire-paw.png",
+  "fuchsia-ribbon":     "./assets/cards/6fuchsia-ribbon.png",
+  "jeweled-keyhole":    "./assets/cards/7jeweled-keyhole.png",
+  "golden-paw":         "./assets/cards/8golden-paw.png",
+  "pinkruby-pufferfish":"./assets/cards/9pinkruby-pufferfish.png",
+  "crystal-ball":       "./assets/cards/10crystal-ball.png",
+  "indigo-bowtie":      "./assets/cards/11indigo-bowtie.png",
+  "royal-cat-bed":      "./assets/cards/12royal-cat-bed.png",
+  "zio":                "./assets/cards/13zio.png",
+  "ziawink":            "./assets/cards/14ziawink.png"
 };
 window.CARD_ORDER = [
-  "golden-paw","indigo-bowtie","fuchsia-ribbon","crystal-ball",
-  "royal-cat-bed","silver-bag","celestial-potion","starry-mic",
-  "amethyst-heart","midnight-cushion","sapphire-paw","mystic-yarn",
-  "jeweled-key","rose-crystal"
+  "amethyst-heart","celestial-potion","silver-shopping-bag","terquois-cushion",
+  "sapphire-paw","fuchsia-ribbon","jeweled-keyhole","golden-paw",
+  "pinkruby-pufferfish","crystal-ball","indigo-bowtie","royal-cat-bed",
+  "zio","ziawink"
 ];
 window.cardImgSrc = function(key){
-  return (window.CARD_IMAGE_MAP && window.CARD_IMAGE_MAP[key]) || "./assets/cards/card-backup.png";
+  return (window.CARD_IMAGE_MAP && window.CARD_IMAGE_MAP[key]) || "./assets/cards/8golden-paw.png";
 };
