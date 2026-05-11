@@ -1,252 +1,37 @@
-
-window.CARD_IMAGE_MAP = window.CARD_IMAGE_MAP || {
-  "golden-paw": "/assets/cards/golden-paw.png",
-  "indigo-bowtie": "/assets/cards/indigo-bowtie.png",
-  "fuchsia-ribbon": "/assets/cards/fuchsia-ribbon.png",
-  "crystal-ball": "/assets/cards/crystal-ball.png",
-  "royal-cat-bed": "/assets/cards/royal-cat-bed.png",
-  "silver-bag": "/assets/cards/silver-bag.png",
-  "celestial-potion": "/assets/cards/celestial-potion.png",
-  "starry-mic": "/assets/cards/starry-mic.png",
-  "amethyst-heart": "/assets/cards/amethyst-heart.png",
-  "midnight-cushion": "/assets/cards/midnight-cushion.png",
-  "sapphire-paw": "/assets/cards/sapphire-paw.png",
-  "mystic-yarn": "/assets/cards/mystic-yarn.png",
-  "jeweled-key": "/assets/cards/jeweled-key.png",
-  "rose-crystal": "/assets/cards/rose-crystal.png"
-};
-window.cardImgSrc = function(key){
-  return (window.CARD_IMAGE_MAP && window.CARD_IMAGE_MAP[key]) || "/assets/cards/card-backup.png";
-};
-
-(function(){
-  if (window.__PAW_BLOCK_PATCH_V2__) return;
-  window.__PAW_BLOCK_PATCH_V2__ = true;
-
-  function overlaps(a,b){
-    return !(
-      a.x + a.w <= b.x ||
-      b.x + b.w <= a.x ||
-      a.y + a.h <= b.y ||
-      b.y + b.h <= a.y
-    );
-  }
-
-  function recomputeBlockedFromTiles(){
-    if (!Array.isArray(window.tiles)) return;
-    window.tiles.forEach(function(t){
-      if (t.removed) {
-        t.blocked = false;
-        t.free = false;
-        return;
-      }
-      let covered = false;
-      for (let i = 0; i < window.tiles.length; i++) {
-        const other = window.tiles[i];
-        if (!other || other === t || other.removed) continue;
-        if (overlaps(t, other) && (other.z < t.z)) {
-          covered = true;
-          break;
-        }
-      }
-      t.blocked = covered;
-      t.free = !covered;
-    });
-  }
-
-  function syncDomFromTiles(){
-    if (!Array.isArray(window.tiles)) return;
-    const els = Array.from(document.querySelectorAll('.tile,.card'));
-    els.forEach(function(el, idx){
-      const t = window.tiles[idx];
-      if (!t || t.removed) return;
-      el.classList.remove('blocked','free');
-      el.style.pointerEvents = '';
-      el.style.filter = '';
-      el.style.boxShadow = '';
-      el.style.zIndex = String(t.z || 1);
-
-      const old = el.querySelector('.blocked-overlay');
-      if (old) old.remove();
-
-      if (t.blocked) {
-        el.classList.add('blocked');
-        el.style.pointerEvents = 'none';
-        const ov = document.createElement('div');
-        ov.className = 'blocked-overlay';
-        ov.style.position = 'absolute';
-        ov.style.inset = '0';
-        ov.style.borderRadius = '14px';
-        ov.style.background = 'rgba(24,12,44,.38)';
-        ov.style.pointerEvents = 'none';
-        ov.style.zIndex = '2';
-        el.appendChild(ov);
-        const img = el.querySelector('img');
-        if (img) img.style.filter = 'brightness(.72) saturate(.82)';
-      } else {
-        el.classList.add('free');
-        el.style.zIndex = String((t.z || 1) + 1000);
-        el.style.boxShadow = '0 0 0 3px rgba(255,215,0,.95), 0 8px 22px rgba(255,208,0,.24)';
-        const img = el.querySelector('img');
-        if (img) img.style.filter = 'brightness(1.04) saturate(1.04)';
-      }
-    });
-  }
-
-  function refreshBlockedState(){
-    recomputeBlockedFromTiles();
-    syncDomFromTiles();
-  }
-
-  const _rafRefresh = function(){
-    requestAnimationFrame(refreshBlockedState);
-  };
-
-  const hookNames = ['render','renderBoard','drawBoard','updateBoard','layoutTiles','renderTiles'];
-  hookNames.forEach(function(name){
-    if (typeof window[name] === 'function' && !window[name].__pawWrapped) {
-      const orig = window[name];
-      const wrapped = function(){
-        const out = orig.apply(this, arguments);
-        _rafRefresh();
-        return out;
-      };
-      wrapped.__pawWrapped = true;
-      window[name] = wrapped;
-    }
-  });
-
-  const clickHookNames = ['onTileClick','handleTileClick','selectTile','pickTile'];
-  clickHookNames.forEach(function(name){
-    if (typeof window[name] === 'function' && !window[name].__pawWrapped) {
-      const orig = window[name];
-      const wrapped = function(){
-        const out = orig.apply(this, arguments);
-        _rafRefresh();
-        return out;
-      };
-      wrapped.__pawWrapped = true;
-      window[name] = wrapped;
-    }
-  });
-
-  document.addEventListener('DOMContentLoaded', function(){
-    _rafRefresh();
-
-    const mo = new MutationObserver(function(){
-      _rafRefresh();
-    });
-    mo.observe(document.body, { childList: true, subtree: true, attributes: true });
-
-    document.body.addEventListener('click', function(){
-      _rafRefresh();
-    }, true);
-  });
-})();
-
-
-window.CARD_IMAGE_MAP = window.CARD_IMAGE_MAP || {
-  "golden-paw": "/assets/cards/golden-paw.png",
-  "indigo-bowtie": "/assets/cards/indigo-bowtie.png",
-  "fuchsia-ribbon": "/assets/cards/fuchsia-ribbon.png",
-  "crystal-ball": "/assets/cards/crystal-ball.png",
-  "royal-cat-bed": "/assets/cards/royal-cat-bed.png",
-  "silver-bag": "/assets/cards/silver-bag.png",
-  "celestial-potion": "/assets/cards/celestial-potion.png",
-  "starry-mic": "/assets/cards/starry-mic.png",
-  "amethyst-heart": "/assets/cards/amethyst-heart.png",
-  "midnight-cushion": "/assets/cards/midnight-cushion.png",
-  "sapphire-paw": "/assets/cards/sapphire-paw.png",
-  "mystic-yarn": "/assets/cards/mystic-yarn.png",
-  "jeweled-key": "/assets/cards/jeweled-key.png",
-  "rose-crystal": "/assets/cards/rose-crystal.png"
-};
-window.cardImgSrc = window.cardImgSrc || function(key){
-  return (window.CARD_IMAGE_MAP && window.CARD_IMAGE_MAP[key]) || "/assets/cards/card-backup.png";
-};
-
-function buildStage1TilesPatched(){
-  const groups = [
-    { x: 180, y: 150, items: ["golden-paw", "indigo-bowtie", "fuchsia-ribbon"] },
-    { x: 470, y: 150, items: ["crystal-ball", "royal-cat-bed", "silver-bag"] },
-    { x: 180, y: 340, items: ["celestial-potion", "starry-mic", "amethyst-heart", "midnight-cushion"] },
-    { x: 470, y: 340, items: ["sapphire-paw", "mystic-yarn", "jeweled-key", "rose-crystal"] }
-  ];
-  const tiles = [];
-  let id = 1;
-  groups.forEach((group, gi) => {
-    group.items.forEach((key, idx) => {
-      const col = idx % 2;
-      const row = Math.floor(idx / 2);
-      let x = group.x + col * 92;
-      let y = group.y + row * 118;
-      if (gi === 2 && idx === 2) { x -= 18; y -= 22; }
-      tiles.push({
-        id: id++,
-        key,
-        x, y,
-        w: 72, h: 96,
-        z: id,
-        removed: false,
-        blocked: false,
-        free: true
-      });
-    });
-  });
-  return tiles;
-}
-
-function isOverlapPatched(a, b){
-  if (a.removed || b.removed) return false;
-  return !(
-    a.x + a.w <= b.x ||
-    b.x + b.w <= a.x ||
-    a.y + a.h <= b.y ||
-    b.y + b.h <= a.y
-  );
-}
-
-function recomputeBlockedStatePatched(tiles){
-  tiles.forEach(t => { t.blocked = false; t.free = true; });
-  for (let i = 0; i < tiles.length; i++) {
-    const a = tiles[i];
-    if (a.removed) continue;
-    let covered = false;
-    for (let j = 0; j < tiles.length; j++) {
-      if (i === j) continue;
-      const b = tiles[j];
-      if (b.removed) continue;
-      if (isOverlapPatched(a, b) && b.z > a.z) {
-        covered = true;
-        break;
-      }
-    }
-    a.blocked = covered;
-    a.free = !covered;
-  }
-}
-
-// Perfect Paw Match v2.1 - Fixed: 14 cards * 3, image fix, side decks 28 total, shuffle all, ghost click fix
+// Perfect Paw Match - Unified Clean Engine v2.5
 const CARDS = [
-  '1amethyst_heart',
-  '2celestial_potion',
-  '3Silver_Shopping_Bag',
-  '4Terquois_cushion',
-  '5Sapphire_Paw',
-  '6fuchsia_ribbon',
-  '7jeweled_keyhole',
-  '8golden_paw ',
-  '9pinkruby_pufferfish',
-  '10crystal_ball',
-  '11indigo_bowtie',
-  '12royal cat bed',
-  '13zio',
-  '14ziawink'
+  '1amethyst-heart', '2celestial-potion', '3silver-shopping-bag', '4terquois-cushion',
+  '5sapphire-paw', '6fuchsia-ribbon', '7jeweled-keyhole', '8golden-paw',
+  '9pinkruby-pufferfish', '10crystal-ball', '11indigo-bowtie', '12royal-cat-bed',
+  '13zio', '14ziawink'
 ];
-const CP = '/assets/cards/', SM = 7, CS = 62, STEP = 31, LOFF = 16;
+
+window.CARD_IMAGE_MAP = {
+  "golden-paw": "/assets/cards/golden-paw.png",
+  "indigo-bowtie": "/assets/cards/indigo-bowtie.png",
+  "fuchsia-ribbon": "/assets/cards/fuchsia-ribbon.png",
+  "crystal-ball": "/assets/cards/crystal-ball.png",
+  "royal-cat-bed": "/assets/cards/royal-cat-bed.png",
+  "silver-bag": "/assets/cards/silver-bag.png",
+  "celestial-potion": "/assets/cards/celestial-potion.png",
+  "starry-mic": "/assets/cards/starry-mic.png",
+  "amethyst-heart": "/assets/cards/amethyst-heart.png",
+  "midnight-cushion": "/assets/cards/midnight-cushion.png",
+  "sapphire-paw": "/assets/cards/sapphire-paw.png",
+  "mystic-yarn": "/assets/cards/mystic-yarn.png",
+  "jeweled-key": "/assets/cards/jeweled-key.png",
+  "rose-crystal": "/assets/cards/rose-crystal.png"
+};
+
+window.cardImgSrc = function(key) {
+  // Try mapping first, then fallback to direct path
+  if (window.CARD_IMAGE_MAP && window.CARD_IMAGE_MAP[key]) return window.CARD_IMAGE_MAP[key];
+  return `/assets/cards/${key}.png`;
+};
+
+const CP = '/assets/cards/', SM = 7, CS = 62, LOFF = 16;
 let stage = 1, tiles = [], sideLeft = [], sideRight = [], slots = [], hist = [], undo = 2, shuf = 1, score = 0, on = false, lastClickTime = 0;
 
-// Shuffle array
 function sh(a) {
   const b = [...a];
   for (let i = b.length - 1; i > 0; i--) {
@@ -256,7 +41,6 @@ function sh(a) {
   return b;
 }
 
-// Get board positions (visible tiles only)
 function getPositions() {
   if (stage === 1) return [
     {gx:0,gy:0,l:0},{gx:1,gy:0,l:0},{gx:2,gy:0,l:0},
@@ -277,7 +61,6 @@ function getPositions() {
   ];
 }
 
-// Random step 25%-75% of CS
 function rStep() { return Math.round(CS * (0.25 + Math.random() * 0.5)); }
 
 function build() {
@@ -285,30 +68,24 @@ function build() {
   const bw = bd.offsetWidth || 360, bh = bd.offsetHeight || 460;
   tiles = []; sideLeft = []; sideRight = [];
 
-  // Visible board
   const pos = getPositions();
-  const count = pos.length - pos.length % 3; // Always multiple of 3
+  const count = pos.length - pos.length % 3;
   const used = sh(pos).slice(0, count);
 
-  // Exactly 14 cards, shuffled, repeat exactly 3x for no remainder
-  const chosen = sh([...CARDS]).slice(0, 14); // 14 unique cards
+  const chosen = sh([...CARDS]).slice(0, 14);
   const pool = [];
-  for (let i = 0; i < count; i++) pool.push(chosen[i % 14]); // Repeat cycle
+  for (let i = 0; i < count; i++) pool.push(chosen[i % 14]);
   const boardCards = sh(pool);
 
-  // Side decks for stage 2+: 14 each side, top visible
   if (stage >= 2) {
-    const sidePool = sh([...CARDS]).slice(0, 14); // 14 cards each
+    const sidePool = sh([...CARDS]).slice(0, 14);
     sideLeft = sidePool.map((card, i) => ({id: `L${i}`, card, visible: i === 0, px: -80, py: 50 + i * 10, layer: 0}));
     sideRight = sidePool.map((card, i) => ({id: `R${i}`, card, visible: i === 0, px: bw - 20, py: 50 + i * 10, layer: 0}));
-    sideLeft[0].visible = true; sideRight[0].visible = true; // Top always open
   }
 
-  // Pre-compute random steps
   const colSteps = [], rowSteps = [];
   for (let i = 0; i < 10; i++) { colSteps.push(rStep()); rowSteps.push(rStep()); }
 
-  // Pixel positions
   const pxArr = [];
   used.forEach(({gx, gy, l}) => {
     let px = 0, py = 0;
@@ -318,7 +95,6 @@ function build() {
     pxArr.push({px, py});
   });
 
-  // Bounding box & offset
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   pxArr.forEach(({px, py}) => {
     minX = Math.min(minX, px); minY = Math.min(minY, py);
@@ -327,7 +103,6 @@ function build() {
   const ox = Math.round(bw / 2 - (maxX - minX) / 2 - minX);
   const oy = Math.round(bh * 0.45 - (maxY - minY) / 2 - minY);
 
-  // Build tiles
   used.forEach(({gx, gy, l}, i) => {
     tiles.push({
       id: i, card: boardCards[i], gx, gy,
@@ -338,7 +113,7 @@ function build() {
 }
 
 function isBlocked(t) {
-  if (t.rm || t.id.toString().startsWith('L') || t.id.toString().startsWith('R')) return false; // Sides always clickable if visible
+  if (t.rm || t.id.toString().startsWith('L') || t.id.toString().startsWith('R')) return false;
   const thresh = CS * 0.15;
   for (const o of tiles) {
     if (o.rm || o.id === t.id || o.layer <= t.layer) continue;
@@ -349,18 +124,15 @@ function isBlocked(t) {
   return false;
 }
 
-// Image load fix: preload + error fallback
 const imgCache = new Map();
 function preloadImages() {
   CARDS.forEach(card => {
     const img = new Image();
     img.src = window.cardImgSrc(card);
     imgCache.set(card, img);
-    img.onerror = () => { console.log(`Image missing: ${card}`); }; // Log missing
   });
-  // Note: card_back.png might not exist yet, but we'll try
   const backImg = new Image();
-  backImg.src = CP + 'card_back.png';
+  backImg.src = CP + 'card-backup.png'; // Updated to hyphen
   imgCache.set('card_back', backImg);
 }
 
@@ -368,7 +140,6 @@ function render() {
   const bd = document.getElementById('game-board');
   bd.innerHTML = '';
 
-  // Render tiles (board + sides)
   const allTiles = [...tiles, ...sideLeft, ...sideRight].filter(t => !t.rm);
   allTiles.sort((a, b) => a.layer - b.layer || a.py - b.py || a.px - b.px);
 
@@ -379,9 +150,9 @@ function render() {
 
     const img = document.createElement('img');
     const useCard = t.visible ? t.card : 'card_back';
-    img.src = imgCache.has(useCard) ? imgCache.get(useCard).src : CP + useCard + '.png';
+    img.src = imgCache.has(useCard) ? imgCache.get(useCard).src : window.cardImgSrc(useCard);
     img.style.cssText = `width:100%;height:100%;object-fit:cover;display:block;border-radius:7px;border:${bl ? '1.5px solid rgba(120,90,170,.4)' : '2.5px solid rgba(255,215,0,.9)'};filter:${bl ? 'brightness(.55) saturate(0.7)' : 'brightness(1)'};box-shadow:${bl ? 'none' : '0 2px 10px rgba(255,215,0,.3)'};transition:filter .1s, box-shadow .1s;`;
-    img.onerror = () => { img.style.background = '#4caf50'; img.src = ''; }; // Fallback green
+    img.onerror = () => { img.style.background = '#4caf50'; img.src = ''; };
 
     el.appendChild(img);
     if (!bl) {
@@ -403,7 +174,7 @@ function renderSlots() {
     d.style.cssText = `width:40px;height:40px;border:2px dashed ${slots[i]?'rgba(255,215,0,.5)':'rgba(205,189,255,.5)'};border-radius:7px;background:${slots[i]?'rgba(255,215,0,.06)':'rgba(50,34,71,.3)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;`;
     if (slots[i]) {
       const m = document.createElement('img');
-      m.src = CP + slots[i] + '.png';
+      m.src = window.cardImgSrc(slots[i]);
       m.style.cssText = 'width:34px;height:34px;object-fit:cover;border-radius:5px;';
       d.appendChild(m);
     }
@@ -414,10 +185,9 @@ function renderSlots() {
 
 function renderUI() {
   document.getElementById('score').textContent = '★ ' + score.toLocaleString();
-  const undoBadge = document.getElementById('undo-badge');
-  const shufBadge = document.getElementById('shuf-badge');
-  if(undoBadge) undoBadge.textContent = undo;
-  if(shufBadge) shufBadge.textContent = shuf;
+  const ub = document.getElementById('undo-badge'), sb = document.getElementById('shuf-badge');
+  if(ub) ub.textContent = undo;
+  if(sb) sb.textContent = shuf;
   if (!tiles.filter(t => !t.rm).length && !sideLeft.length && !sideRight.length && !slots.length) win();
 }
 
@@ -461,7 +231,6 @@ function clickTile(t) {
 
   saveState();
   t.rm = true;
-  // If it was a side deck card, reveal the next one
   if (t.id.toString().startsWith('L')) {
     const idx = sideLeft.indexOf(t);
     if (idx < sideLeft.length - 1) sideLeft[idx+1].visible = true;
@@ -473,7 +242,6 @@ function clickTile(t) {
   insertSlot(t.card);
   checkMatch();
   render();
-
   if (slots.length >= SM) showFull();
 }
 
@@ -483,22 +251,16 @@ function doUndo() {
   s.ts.forEach(({id, rm}) => { const t = tiles.find(t => t.id === id); if (t) t.rm = rm; });
   s.sideL?.forEach(({id, rm, visible}) => { const t = sideLeft.find(t => t.id === id); if (t) { t.rm = rm; t.visible = visible; } });
   s.sideR?.forEach(({id, rm, visible}) => { const t = sideRight.find(t => t.id === id); if (t) { t.rm = rm; t.visible = visible; } });
-  slots = s.slots;
-  score = s.score;
-  undo--;
-  render();
+  slots = s.slots; score = s.score; undo--; render();
 }
 
 function doShuffle() {
   if (!on || !shuf) return;
   shuf--;
-  // Shuffle ALL: board + sides
   const allCards = tiles.filter(t => !t.rm).map(t => t.card);
   if (sideLeft.length) allCards.push(...sideLeft.filter(t=>!t.rm).map(t => t.card));
   if (sideRight.length) allCards.push(...sideRight.filter(t=>!t.rm).map(t => t.card));
   const shuffled = sh(allCards);
-
-  // Reassign to visible positions
   let idx = 0;
   tiles.filter(t => !t.rm).forEach(t => t.card = shuffled[idx++]);
   sideLeft.filter(t=>!t.rm).forEach(t => t.card = shuffled[idx++]);
@@ -558,99 +320,3 @@ window.addEventListener('load', () => {
 
 window.doUndo = doUndo; window.doShuffle = doShuffle; window.doWithdraw = doWithdraw;
 window.doRestart = doRestart; window.doNext = doNext; window.doAd = doAd;
-
-
-;(function(){
-  const _origBuildStage = window.buildStage || null;
-  if (_origBuildStage) {
-    window.buildStage = function(stage){
-      if (stage === 1) {
-        const tiles = buildStage1TilesPatched();
-        recomputeBlockedStatePatched(tiles);
-        return tiles;
-      }
-      return _origBuildStage(stage);
-    };
-  }
-})();
-
-
-window.__stage1PatchApplied = true;
-(function(){
-  function patchBuildStageLoop(){
-    if (typeof window.buildStage === "function" && !window.__origBuildStagePatched) {
-      window.__origBuildStagePatched = window.buildStage;
-      window.buildStage = function(stage){
-        if (stage === 1) {
-          const tiles = buildStage1TilesPatched();
-          recomputeBlockedStatePatched(tiles);
-          return tiles;
-        }
-        return window.__origBuildStagePatched(stage);
-      };
-    }
-  }
-
-  function patchRenderLoop(){
-    const scan = function(){
-      const cards = document.querySelectorAll('.tile,.card');
-      cards.forEach(function(el){
-        const blocked = el.classList.contains('blocked');
-        const free = el.classList.contains('free');
-        if (blocked) {
-          el.style.pointerEvents = 'none';
-          let ov = el.querySelector('.tile-shadow,.card-shadow,.blocked-overlay');
-          if (!ov) {
-            ov = document.createElement('div');
-            ov.className = 'blocked-overlay';
-            el.appendChild(ov);
-          }
-        }
-        if (free) {
-          el.style.zIndex = '999';
-        }
-      });
-    };
-    setInterval(scan, 500);
-  }
-
-  patchBuildStageLoop();
-  patchRenderLoop();
-})();
-
-function checkShading() {
-  const cards = window.gameCards || [];
-  for (let i = 0; i < cards.length; i++) {
-    const cur = cards[i];
-    if (cur.removed) continue;
-    cur.blocked = false;
-    const x1 = cur.x, y1 = cur.y, x2 = x1 + (cur.w || 80), y2 = y1 + (cur.h || 80);
-    for (let j = i + 1; j < cards.length; j++) {
-      const o = cards[j];
-      if (o.removed) continue;
-      const ow = o.w || 80, oh = o.h || 80;
-      if (!(o.y + oh <= y1 || o.y >= y2 || o.x + ow <= x1 || o.x >= x2)) {
-        cur.blocked = true;
-        break;
-      }
-    }
-  }
-  applyBlockedState();
-}
-
-function applyBlockedState() {
-  const cards = window.gameCards || [];
-  const els = document.querySelectorAll('.tile, .card-item, [data-card-id]');
-  cards.forEach((card, i) => {
-    const el = els[i];
-    if (!el || card.removed) return;
-    el.querySelectorAll('.blocked-overlay').forEach(e => e.remove());
-    el.style.pointerEvents = card.blocked ? 'none' : 'auto';
-    el.style.filter = card.blocked ? 'brightness(0.62) saturate(0.7)' : 'brightness(1) saturate(1)';
-    el.style.zIndex = String(i + 10);
-  });
-}
-
-function scheduleShadowUpdate() {
-  requestAnimationFrame(() => { checkShading(); });
-}
