@@ -15,6 +15,152 @@ window.CARD_IMAGE_MAP = window.CARD_IMAGE_MAP || {
   "jeweled-key": "/assets/cards/jeweled-key.png",
   "rose-crystal": "/assets/cards/rose-crystal.png"
 };
+window.cardImgSrc = function(key){
+  return (window.CARD_IMAGE_MAP && window.CARD_IMAGE_MAP[key]) || "/assets/cards/card-backup.png";
+};
+
+(function(){
+  if (window.__PAW_BLOCK_PATCH_V2__) return;
+  window.__PAW_BLOCK_PATCH_V2__ = true;
+
+  function overlaps(a,b){
+    return !(
+      a.x + a.w <= b.x ||
+      b.x + b.w <= a.x ||
+      a.y + a.h <= b.y ||
+      b.y + b.h <= a.y
+    );
+  }
+
+  function recomputeBlockedFromTiles(){
+    if (!Array.isArray(window.tiles)) return;
+    window.tiles.forEach(function(t){
+      if (t.removed) {
+        t.blocked = false;
+        t.free = false;
+        return;
+      }
+      let covered = false;
+      for (let i = 0; i < window.tiles.length; i++) {
+        const other = window.tiles[i];
+        if (!other || other === t || other.removed) continue;
+        if (overlaps(t, other) && (other.z > t.z)) {
+          covered = true;
+          break;
+        }
+      }
+      t.blocked = covered;
+      t.free = !covered;
+    });
+  }
+
+  function syncDomFromTiles(){
+    if (!Array.isArray(window.tiles)) return;
+    const els = Array.from(document.querySelectorAll('.tile,.card'));
+    els.forEach(function(el, idx){
+      const t = window.tiles[idx];
+      if (!t || t.removed) return;
+      el.classList.remove('blocked','free');
+      el.style.pointerEvents = '';
+      el.style.filter = '';
+      el.style.boxShadow = '';
+      el.style.zIndex = String(t.z || 1);
+
+      const old = el.querySelector('.blocked-overlay');
+      if (old) old.remove();
+
+      if (t.blocked) {
+        el.classList.add('blocked');
+        el.style.pointerEvents = 'none';
+        const ov = document.createElement('div');
+        ov.className = 'blocked-overlay';
+        ov.style.position = 'absolute';
+        ov.style.inset = '0';
+        ov.style.borderRadius = '14px';
+        ov.style.background = 'rgba(24,12,44,.38)';
+        ov.style.pointerEvents = 'none';
+        ov.style.zIndex = '2';
+        el.appendChild(ov);
+        const img = el.querySelector('img');
+        if (img) img.style.filter = 'brightness(.72) saturate(.82)';
+      } else {
+        el.classList.add('free');
+        el.style.zIndex = String((t.z || 1) + 1000);
+        el.style.boxShadow = '0 0 0 3px rgba(255,215,0,.95), 0 8px 22px rgba(255,208,0,.24)';
+        const img = el.querySelector('img');
+        if (img) img.style.filter = 'brightness(1.04) saturate(1.04)';
+      }
+    });
+  }
+
+  function refreshBlockedState(){
+    recomputeBlockedFromTiles();
+    syncDomFromTiles();
+  }
+
+  const _rafRefresh = function(){
+    requestAnimationFrame(refreshBlockedState);
+  };
+
+  const hookNames = ['render','renderBoard','drawBoard','updateBoard','layoutTiles','renderTiles'];
+  hookNames.forEach(function(name){
+    if (typeof window[name] === 'function' && !window[name].__pawWrapped) {
+      const orig = window[name];
+      const wrapped = function(){
+        const out = orig.apply(this, arguments);
+        _rafRefresh();
+        return out;
+      };
+      wrapped.__pawWrapped = true;
+      window[name] = wrapped;
+    }
+  });
+
+  const clickHookNames = ['onTileClick','handleTileClick','selectTile','pickTile'];
+  clickHookNames.forEach(function(name){
+    if (typeof window[name] === 'function' && !window[name].__pawWrapped) {
+      const orig = window[name];
+      const wrapped = function(){
+        const out = orig.apply(this, arguments);
+        _rafRefresh();
+        return out;
+      };
+      wrapped.__pawWrapped = true;
+      window[name] = wrapped;
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', function(){
+    _rafRefresh();
+
+    const mo = new MutationObserver(function(){
+      _rafRefresh();
+    });
+    mo.observe(document.body, { childList: true, subtree: true, attributes: true });
+
+    document.body.addEventListener('click', function(){
+      _rafRefresh();
+    }, true);
+  });
+})();
+
+
+window.CARD_IMAGE_MAP = window.CARD_IMAGE_MAP || {
+  "golden-paw": "/assets/cards/golden-paw.png",
+  "indigo-bowtie": "/assets/cards/indigo-bowtie.png",
+  "fuchsia-ribbon": "/assets/cards/fuchsia-ribbon.png",
+  "crystal-ball": "/assets/cards/crystal-ball.png",
+  "royal-cat-bed": "/assets/cards/royal-cat-bed.png",
+  "silver-bag": "/assets/cards/silver-bag.png",
+  "celestial-potion": "/assets/cards/celestial-potion.png",
+  "starry-mic": "/assets/cards/starry-mic.png",
+  "amethyst-heart": "/assets/cards/amethyst-heart.png",
+  "midnight-cushion": "/assets/cards/midnight-cushion.png",
+  "sapphire-paw": "/assets/cards/sapphire-paw.png",
+  "mystic-yarn": "/assets/cards/mystic-yarn.png",
+  "jeweled-key": "/assets/cards/jeweled-key.png",
+  "rose-crystal": "/assets/cards/rose-crystal.png"
+};
 window.cardImgSrc = window.cardImgSrc || function(key){
   return (window.CARD_IMAGE_MAP && window.CARD_IMAGE_MAP[key]) || "/assets/cards/card-backup.png";
 };
