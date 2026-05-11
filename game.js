@@ -1,4 +1,6 @@
-// Perfect Paw Match - Unified Clean Engine v2.5
+// Perfect Paw Match - Unified Clean Engine v2.6
+// Fixed: Numbered assets (1-14) with hyphens, consolidated map
+
 const CARDS = [
   '1amethyst-heart', '2celestial-potion', '3silver-shopping-bag', '4terquois-cushion',
   '5sapphire-paw', '6fuchsia-ribbon', '7jeweled-keyhole', '8golden-paw',
@@ -7,23 +9,27 @@ const CARDS = [
 ];
 
 window.CARD_IMAGE_MAP = {
-  "golden-paw": "/assets/cards/golden-paw.png",
-  "indigo-bowtie": "/assets/cards/indigo-bowtie.png",
-  "fuchsia-ribbon": "/assets/cards/fuchsia-ribbon.png",
-  "crystal-ball": "/assets/cards/crystal-ball.png",
-  "royal-cat-bed": "/assets/cards/royal-cat-bed.png",
-  "silver-bag": "/assets/cards/silver-bag.png",
-  "celestial-potion": "/assets/cards/celestial-potion.png",
-  "starry-mic": "/assets/cards/starry-mic.png",
-  "amethyst-heart": "/assets/cards/amethyst-heart.png",
-  "midnight-cushion": "/assets/cards/midnight-cushion.png",
-  "sapphire-paw": "/assets/cards/sapphire-paw.png",
-  "mystic-yarn": "/assets/cards/mystic-yarn.png",
-  "jeweled-key": "/assets/cards/jeweled-key.png",
-  "rose-crystal": "/assets/cards/rose-crystal.png"
+  "amethyst-heart":     "/assets/cards/1amethyst-heart.png",
+  "celestial-potion":   "/assets/cards/2celestial-potion.png",
+  "silver-shopping-bag":"/assets/cards/3silver-shopping-bag.png",
+  "terquois-cushion":   "/assets/cards/4terquois-cushion.png",
+  "sapphire-paw":       "/assets/cards/5sapphire-paw.png",
+  "fuchsia-ribbon":     "/assets/cards/6fuchsia-ribbon.png",
+  "jeweled-keyhole":    "/assets/cards/7jeweled-keyhole.png",
+  "golden-paw":         "/assets/cards/8golden-paw.png",
+  "pinkruby-pufferfish":"/assets/cards/9pinkruby-pufferfish.png",
+  "crystal-ball":       "/assets/cards/10crystal-ball.png",
+  "indigo-bowtie":      "/assets/cards/11indigo-bowtie.png",
+  "royal-cat-bed":      "/assets/cards/12royal-cat-bed.png",
+  "zio":                "/assets/cards/13zio.png",
+  "ziawink":            "/assets/cards/14ziawink.png"
 };
 
-.png`;
+window.cardImgSrc = function(key) {
+  if (window.CARD_IMAGE_MAP && window.CARD_IMAGE_MAP[key]) return window.CARD_IMAGE_MAP[key];
+  // If key already has number (like in CARDS array), just append extension
+  if (/^\d+/.test(key)) return `/assets/cards/${key}.png`;
+  return `/assets/cards/8golden-paw.png`;
 };
 
 const CP = '/assets/cards/', SM = 7, CS = 62, LOFF = 16;
@@ -128,9 +134,6 @@ function preloadImages() {
     img.src = window.cardImgSrc(card);
     imgCache.set(card, img);
   });
-  const backImg = new Image();
-  backImg.src = CP + 'card-backup.png'; // Updated to hyphen
-  imgCache.set('card_back', backImg);
 }
 
 function render() {
@@ -149,7 +152,7 @@ function render() {
     const useCard = t.visible ? t.card : 'card_back';
     img.src = imgCache.has(useCard) ? imgCache.get(useCard).src : window.cardImgSrc(useCard);
     img.style.cssText = `width:100%;height:100%;object-fit:cover;display:block;border-radius:7px;border:${bl ? '1.5px solid rgba(120,90,170,.4)' : '2.5px solid rgba(255,215,0,.9)'};filter:${bl ? 'brightness(.55) saturate(0.7)' : 'brightness(1)'};box-shadow:${bl ? 'none' : '0 2px 10px rgba(255,215,0,.3)'};transition:filter .1s, box-shadow .1s;`;
-    img.onerror = () => { img.style.background = '#4caf50'; img.src = ''; };
+    img.onerror = () => { img.style.background = '#4caf50'; img.src = window.cardImgSrc('8golden-paw'); };
 
     el.appendChild(img);
     if (!bl) {
