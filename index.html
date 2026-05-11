@@ -324,37 +324,6 @@
 
 <script>
 (function(){
-  function renderHeroCards(){
-    var root = document.getElementById("hero-card-grid");
-    if(!root || !window.CARD_ORDER || !window.cardImgSrc) return;
-    root.innerHTML = "";
-    window.CARD_ORDER.forEach(function(key){
-      var img = document.createElement("img");
-      img.src = window.cardImgSrc(key);
-      img.alt = key;
-      img.loading = "lazy";
-      img.style.width = "100%";
-      img.style.aspectRatio = "3/4";
-      img.style.objectFit = "cover";
-      img.style.borderRadius = "16px";
-      img.style.border = "2px solid rgba(255,215,0,.35)";
-      img.style.boxShadow = "0 6px 18px rgba(0,0,0,.22)";
-      img.style.background = "rgba(255,255,255,.06)";
-      img.onerror = function(){ this.src = "/assets/cards/card-backup.png"; };
-      root.appendChild(img);
-    });
-  }
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", renderHeroCards);
-  } else {
-    renderHeroCards();
-  }
-})();
-</script>
-
-
-<script>
-(function(){
   function renderHeroCardsPatched(){
     var root = document.getElementById("hero-card-grid");
     if(!root || !window.CARD_ORDER || !window.cardImgSrc) return;
