@@ -20,44 +20,57 @@ function checkShading(){
   }
 }
 
-// Stage 1: 분산 배치 (4개 그룹, 겹침 최소화)
-function buildStage1(){const bd=document.getElementById("game-board");const bw=bd.offsetWidth||360,bh=bd.offsetHeight||500;const mcx=bw/2,mcy=bh/2;
+// Stage 1: 레이어 배치 — 아래층(넓게 펼침) + 위층(소수 겹침)
+// 결과: 초반 클릭 가능 카드 ~20장 이상 확보
+function buildStage1(){
   const pool=[];
-  const chosen=sh(CARDS).slice(0,12); // 12장 = 4세트
+  const chosen=sh(CARDS).slice(0,12); // 12장 × 3 = 36장
   chosen.forEach(c=>{for(let i=0;i<3;i++)pool.push(c);});
   const shuffled=sh(pool);
 
-  // 4개 그룹 위치 (board 360x460 기준)
-  const groups=[
-    {cx:mcx-150, cy:mcy-130},
-    {cx:mcx+150, cy:mcy-130},
-    {cx:mcx-150, cy:mcy+100},
-    {cx:mcx+150, cy:mcy+100},
-  ];
-
-  const offsets=[
-    [-25,-25],[-25,0],[-25,25],
-    [0,-25],  [0,0],  [0,25],
-    [25,-25], [25,0], [25,25],
-  ];
-
   tiles=[];
   let idx=0;
-  groups.forEach((g,gi)=>{
-    for(let k=0;k<9;k++){
-      if(idx>=36)break;
-      const [dx,dy]=offsets[k];
+
+  // ── 1층: 5×4 격자, 간격 넓혀서 거의 안 겹침 (20장)
+  const cols=5, rows=4;
+  const gapX=68, gapY=74;
+  const startX=14, startY=14;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      if(idx>=20)break;
       tiles.push({
         id:idx,
-        card:shuffled[idx]||CARDS[idx%CARDS.length],
-        x:g.cx+dx-CW/2,
-        y:g.cy+dy-CH/2,
+        card:shuffled[idx],
+        x:startX+c*gapX,
+        y:startY+r*gapY,
         removed:false,
         blocked:false
       });
       idx++;
     }
+  }
+
+  // ── 2층: 나머지 16장, 1층 타일 위에 작게 겹쳐서 쌓음
+  // 2층은 z-index 높아서 막힌 타일이 생기고 난이도 올라감
+  const layer2Pos=[
+    {x:50, y:50},{x:118,y:50},{x:186,y:50},{x:254,y:50},
+    {x:50, y:124},{x:118,y:124},{x:186,y:124},{x:254,y:124},
+    {x:50, y:198},{x:118,y:198},{x:186,y:198},{x:254,y:198},
+    {x:84, y:272},{x:152,y:272},{x:220,y:272},{x:152,y:320},
+  ];
+  layer2Pos.forEach(pos=>{
+    if(idx>=36)return;
+    tiles.push({
+      id:idx,
+      card:shuffled[idx],
+      x:pos.x,
+      y:pos.y,
+      removed:false,
+      blocked:false
+    });
+    idx++;
   });
+
   checkShading();
 }
 
