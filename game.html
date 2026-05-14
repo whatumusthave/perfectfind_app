@@ -42,35 +42,7 @@
       padding: 3px 10px;
     }
     #stage-label { font-size: 11px; font-weight: 700; color: var(--lav); }
-    
-    .game-container {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-height: 0;
-      padding: 8px;
-    }
-    
-    #left-deck, #right-deck {
-      width: 70px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    #game-board { 
-      flex: 0 0 360px;
-      height: 460px;
-      position: relative;
-    }
-    #board-inner {
-      position: relative;
-      width: 360px;
-      height: 460px;
-    }
-    
+    #game-board { flex: 1; position: relative; overflow: hidden; min-height: 0; }
     .bottom {
       flex-shrink: 0;
       background: rgba(12,4,24,.97);
@@ -180,13 +152,7 @@
     <div id="score">0</div>
   </header>
 
-  <div class="game-container">
-    <div id="left-deck"></div>
-    <div id="game-board">
-      <div id="board-inner"></div>
-    </div>
-    <div id="right-deck"></div>
-  </div>
+  <div id="game-board"></div>
 
   <div class="bottom">
     <div class="slot-row">
@@ -205,7 +171,7 @@
         <div class="act-badge"></div>
       </button>
 
-      <button id="undo-btn" class="act-btn" onclick="doUndo()" aria-label="Undo">
+      <button class="act-btn" onclick="doUndo()" aria-label="Undo">
         <svg viewBox="0 0 36 36" fill="none">
           <path d="M10 18 A8 8 0 1 1 18 26" stroke="#ffd700" stroke-width="3.5" stroke-linecap="round" fill="none"/>
           <polygon points="8,12 8,20 15,16" fill="#ffd700"/>
@@ -213,7 +179,7 @@
         <div class="act-badge"><span id="undo-badge">2</span></div>
       </button>
 
-      <button id="shuffle-btn" class="act-btn" onclick="doShuffle()" aria-label="Shuffle">
+      <button class="act-btn" onclick="doShuffle()" aria-label="Shuffle">
         <svg viewBox="0 0 36 36" fill="none">
           <path d="M6 12 L14 12 Q22 12 28 20" stroke="#ffd700" stroke-width="3" stroke-linecap="round" fill="none"/>
           <polygon points="25,16 30,20 25,24" fill="#ffd700"/>
