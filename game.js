@@ -210,7 +210,7 @@ function buildStage(){
 
 // ── 렌더링 ──
 function render(){
-  const bd=document.getElementById('board-inner');
+  const bd=document.getElementById('game-board');
   bd.innerHTML='';
   tiles.filter(t=>!t.removed).forEach((t,ai)=>{
     const el=document.createElement('div');
@@ -301,7 +301,7 @@ function renderDecks(){
 
   // BC덱: board-inner 아래 중앙에 절대위치로 렌더
   if(deckBC.length){
-    const bd=document.getElementById('board-inner');
+    const bd=document.getElementById('game-board');
     const bcEl=makeDeckEl(deckBC,()=>drawDeck('BC'));
     bcEl.style.position='absolute';
     bcEl.style.bottom='-40px';
