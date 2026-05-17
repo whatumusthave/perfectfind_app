@@ -1,14 +1,17 @@
-// Perfect Paw Match — 전체 규칙 완전 반영판
+// Perfect Paw Match — 최종판
 // 카드풀: 14종 × 6배 = 126장 (3배수)
-// Lv1: 보드 18장, 덱 없음, 겹침 최소 (튜토리얼)
-// Lv2~10: 보드 98장 + 양쪽 덱 4군데 (좌상/좌하/우상/우하) 각 7장씩 = 총 28장
-// 보드: STEP=36px 격자, 중앙 밀집, 레이어별 겹쳐 쌓기
-// 겹침판정: 4분할(2×2) 기준 25%단위, 최대 75%까지만 가림
-// 100% 오픈 카드만 밝게+gold테두리+클릭가능
-// 그림자 카드: 어둡게, 카드 종류 보임, 클릭 불가
-// 슬롯 7칸, 3매치 자동 제거
-// 5단계부터 슬롯 풀 시 광고 → +3칸
-// undo 2번, 셔플 1번 (보드+덱+가려진카드 전부)
+// Lv1: 보드 9장(3×3 살짝겹침), 덱 없음
+// Lv2~10: 보드 98장 + 덱 28장 = 126장
+// 보드 구조: 바닥=가운데 1칸 비운 8장 링, 위로 레이어 쌓기
+// 겹침판정: 4분할(2×2) 기준 25%, 최대 75%까지만 가림
+// 100% 오픈만 밝게+gold+클릭가능
+// 슬롯 7칸, 3매치 자동제거
+// 5단계~슬롯풀 → 광고 +3칸
+// undo 2, shuffle 1 (보드+덱+가려진카드 전부)
+// 덱 배분:
+//   Lv2~3: 4덱 (TL:10, BL:4, TR:10, BR:4)
+//   Lv4~6: 3덱 (TL:10, TR:10, BC:8) - BC=하단중앙
+//   Lv7~10: 2덱 (L:14, R:14)
 
 const CARDS=[
   'amethyst-heart','celestial-potion','crystal-ball','fuchsia-ribbon',
@@ -20,26 +23,23 @@ const CP='asset/cards/', CW=72, CH=72, STEP=36;
 const BW=360, BH=460;
 
 // 레벨 설정
-// deckCount: 덱 4군데 각 장수 (총 deckCount×4장)
-// boardCount + deckCount×4 = 126 (3배수)
 const LEVELS=[
-  {boardCount:18, deckCount:0,  layers:1}, // Lv1: 튜토리얼, 덱없음
-  {boardCount:98, deckCount:7,  layers:2}, // Lv2
-  {boardCount:98, deckCount:7,  layers:2}, // Lv3
-  {boardCount:98, deckCount:7,  layers:3}, // Lv4
-  {boardCount:98, deckCount:7,  layers:3}, // Lv5
-  {boardCount:98, deckCount:7,  layers:4}, // Lv6
-  {boardCount:98, deckCount:7,  layers:4}, // Lv7
-  {boardCount:98, deckCount:7,  layers:5}, // Lv8
-  {boardCount:98, deckCount:7,  layers:5}, // Lv9
-  {boardCount:98, deckCount:7,  layers:6}, // Lv10 보스
+  {boardCount:9,  deckMode:0, layers:1}, // Lv1: 튜토리얼
+  {boardCount:98, deckMode:4, layers:2}, // Lv2
+  {boardCount:98, deckMode:4, layers:3}, // Lv3
+  {boardCount:98, deckMode:3, layers:3}, // Lv4
+  {boardCount:98, deckMode:3, layers:4}, // Lv5
+  {boardCount:98, deckMode:3, layers:4}, // Lv6
+  {boardCount:98, deckMode:2, layers:5}, // Lv7
+  {boardCount:98, deckMode:2, layers:5}, // Lv8
+  {boardCount:98, deckMode:2, layers:6}, // Lv9
+  {boardCount:98, deckMode:2, layers:6}, // Lv10 보스
 ];
-// 98 + 7×4 = 126 ✓
 
 let tiles=[], slots=[], hist=[],
     undo=2, shuf=1, score=0, on=false, stage=1,
     SM=7, adUsed=false,
-    deckTL=[], deckBL=[], deckTR=[], deckBR=[];
+    deckTL=[], deckBL=[], deckTR=[], deckBR=[], deckBC=[];
 
 function makePool(){
   const pool=[];
@@ -56,9 +56,8 @@ function shuffle(a){
   return b;
 }
 
-// ── Lv1 전용: 3×3 격자 살짝 겹침 ──
+// ── Lv1: 3×3, 아래행이 위행 위에 살짝 겹침 ──
 function buildLv1(){
-  // 3행×3열, 행간격=CH-18(살짝겹침), 열간격=CW+4
   const cols=3, rows=3;
   const gapX=CW+4, gapY=CH-16;
   const totalW=(cols-1)*gapX+CW;
@@ -68,46 +67,50 @@ function buildLv1(){
   const result=[];
   for(let r=0;r<rows;r++)
     for(let c=0;c<cols;c++)
-      result.push({x:ox+c*gapX, y:oy+r*gapY, layer:r}); // 아래행이 위행 위에
+      result.push({x:ox+c*gapX, y:oy+r*gapY, layer:r});
   return result;
 }
 
-// ── 50% 겹침 격자 슬롯 생성 (9×11=99슬롯) ──
-function makeGridSlots(){
-  const totalH=(11-1)*STEP+CH;
-  const oy=Math.round((BH-totalH)/2);
-  const slots=[];
-  for(let r=0;r<11;r++)
-    for(let c=0;c<9;c++)
-      slots.push({x:c*STEP, y:oy+r*STEP});
-  return slots;
-}
-
-// ── 보드 배치: 중앙 밀집, layers층 쌓기 ──
+// ── Lv2~: 링 구조 보드 ──
+// 바닥(L0): 가운데 1칸 비운 8장 링 (3×3 - 중앙)
+// STEP=36px 격자
+// 위 레이어는 아래 레이어 위에 STEP 오프셋으로 퍼지며 쌓임
 function buildBoard(count, layers){
-  const gridSlots=makeGridSlots();
-  const cx=BW/2, cy=BH/2;
-  const sorted=[...gridSlots].sort((a,b)=>
-    Math.hypot(a.x+CW/2-cx,a.y+CH/2-cy)-Math.hypot(b.x+CW/2-cx,b.y+CH/2-cy)
-  );
-
   const allTiles=[];
+
+  // 바닥층 링: 3×3에서 중앙(1,1) 제외 = 8포지션
+  const ring3x3=[
+    {r:0,c:0},{r:0,c:1},{r:0,c:2},
+    {r:1,c:0},          {r:1,c:2},
+    {r:2,c:0},{r:2,c:1},{r:2,c:2},
+  ];
+
+  // 링을 보드 중앙에 배치
+  const cx=BW/2, cy=BH/2;
+  const ringW=2*STEP+CW, ringH=2*STEP+CH;
+  const ox=Math.round(cx-ringW/2);
+  const oy=Math.round(cy-ringH/2);
+
+  // 1층: 8장 링
   const perLayer=Math.ceil(count/layers);
+  const l0count=Math.min(perLayer, 8);
+  const shuffledRing=shuffle(ring3x3).slice(0,l0count);
+  shuffledRing.forEach(p=>{
+    allTiles.push({x:ox+p.c*STEP, y:oy+p.r*STEP, layer:0});
+  });
 
-  // 1층: 중앙 밀집 슬롯
-  const base0=shuffle(sorted.slice(0, Math.min(perLayer, sorted.length)));
-  base0.forEach(s=>allTiles.push({x:s.x, y:s.y, layer:0}));
-
-  // 2층~: 아래층 위에 STEP 오프셋으로 쌓기
+  // 2층~: 아래층 카드들 위에 STEP 오프셋으로 쌓기, 보드 중심 쪽으로 밀집
   const dirs=[
     [STEP,0],[-STEP,0],[0,STEP],[0,-STEP],
     [STEP,STEP],[-STEP,STEP],[STEP,-STEP],[-STEP,-STEP]
   ];
+
   for(let L=1;L<layers;L++){
     const remaining=count-allTiles.length;
     if(remaining<=0) break;
     const thisCount=Math.min(perLayer, remaining);
     const prevLayer=shuffle(allTiles.filter(t=>t.layer===L-1));
+
     for(let i=0;i<thisCount;i++){
       const base=prevLayer[i%prevLayer.length];
       let placed=false;
@@ -120,6 +123,15 @@ function buildBoard(count, layers){
       }
       if(!placed) allTiles.push({x:base.x,y:base.y,layer:L});
     }
+  }
+
+  while(allTiles.length<count){
+    const base=allTiles[0|Math.random()*allTiles.length];
+    const L=base.layer+1;
+    const d=[[36,0],[-36,0],[0,36],[0,-36]][0|Math.random()*4];
+    const nx=Math.max(0,Math.min(288,Math.round((base.x+d[0])/36)*36));
+    const ny=Math.max(0,Math.min(388,Math.round((base.y+d[1])/36)*36));
+    allTiles.push({x:nx,y:ny,layer:L});
   }
   allTiles.sort((a,b)=>a.layer-b.layer);
   return allTiles;
@@ -153,13 +165,34 @@ function checkShading(){
   }
 }
 
-// ── 스테이지 빌드 ──
+// ── 덱 배분 ──
+function assignDecks(pool, offset, deckMode){
+  deckTL=[]; deckBL=[]; deckTR=[]; deckBR=[]; deckBC=[];
+  let idx=offset;
+  if(deckMode===4){
+    // TL:10, BL:4, TR:10, BR:4
+    for(let i=0;i<10;i++) deckTL.push(pool[idx++]);
+    for(let i=0;i<4;i++)  deckBL.push(pool[idx++]);
+    for(let i=0;i<10;i++) deckTR.push(pool[idx++]);
+    for(let i=0;i<4;i++)  deckBR.push(pool[idx++]);
+  } else if(deckMode===3){
+    // TL:10, TR:10, BC:8
+    for(let i=0;i<10;i++) deckTL.push(pool[idx++]);
+    for(let i=0;i<10;i++) deckTR.push(pool[idx++]);
+    for(let i=0;i<8;i++)  deckBC.push(pool[idx++]);
+  } else if(deckMode===2){
+    // L:14, R:14
+    for(let i=0;i<14;i++) deckTL.push(pool[idx++]);
+    for(let i=0;i<14;i++) deckTR.push(pool[idx++]);
+  }
+}
+
 function buildStage(){
   const lv=LEVELS[Math.min(stage-1,LEVELS.length-1)];
   const pool=makePool();
-  tiles=[]; deckTL=[]; deckBL=[]; deckTR=[]; deckBR=[];
+  tiles=[];
 
-  const positions=lv.layers===1&&lv.boardCount===18
+  const positions=lv.boardCount===9
     ? buildLv1()
     : buildBoard(lv.boardCount, lv.layers);
 
@@ -171,15 +204,7 @@ function buildStage(){
     });
   }
 
-  // 덱 4군데: TL, BL, TR, BR 각 deckCount장
-  const dc=lv.deckCount;
-  if(dc>0){
-    let idx=lv.boardCount;
-    for(let i=0;i<dc;i++) deckTL.push(pool[idx++]);
-    for(let i=0;i<dc;i++) deckBL.push(pool[idx++]);
-    for(let i=0;i<dc;i++) deckTR.push(pool[idx++]);
-    for(let i=0;i<dc;i++) deckBR.push(pool[idx++]);
-  }
+  assignDecks(pool, lv.boardCount, lv.deckMode);
   checkShading();
 }
 
@@ -220,9 +245,9 @@ function render(){
 }
 
 // ── 덱 1개 렌더링 ──
-function renderDeck(deck, onclick){
+function makeDeckEl(deck, onclick){
   const wrap=document.createElement('div');
-  wrap.style.cssText='position:relative;width:62px;height:82px;cursor:pointer;flex-shrink:0;';
+  wrap.style.cssText='position:relative;width:62px;height:82px;cursor:pointer;';
   wrap.onclick=onclick;
   const showCount=Math.min(6,deck.length);
   for(let i=showCount-1;i>=0;i--){
@@ -233,7 +258,6 @@ function renderDeck(deck, onclick){
       `border:1px solid rgba(255,255,255,.2);border-radius:6px;`;
     wrap.appendChild(back);
   }
-  // 맨앞장 100% 오픈
   const off=(showCount-1)*2;
   const front=document.createElement('div');
   front.style.cssText=
@@ -254,34 +278,42 @@ function renderDeck(deck, onclick){
   return wrap;
 }
 
-// ── 양쪽 덱 영역 렌더링 ──
-// 좌: left-deck (위아래 2개), 우: right-deck (위아래 2개)
 function renderDecks(){
   const ld=document.getElementById('left-deck');
   const rd=document.getElementById('right-deck');
   ld.innerHTML=''; rd.innerHTML='';
 
-  if(!deckTL.length&&!deckBL.length&&!deckTR.length&&!deckBR.length) return;
+  // 왼쪽: TL(위)+BL(아래) 세로
+  const lv=LEVELS[Math.min(stage-1,LEVELS.length-1)];
+  if(lv.deckMode===0) return;
 
-  // 왼쪽: TL(위), BL(아래) 세로 배치
   const leftWrap=document.createElement('div');
   leftWrap.style.cssText='display:flex;flex-direction:column;gap:16px;align-items:center;';
-  if(deckTL.length) leftWrap.appendChild(renderDeck(deckTL,()=>drawFromDeck('TL')));
-  if(deckBL.length) leftWrap.appendChild(renderDeck(deckBL,()=>drawFromDeck('BL')));
+  if(deckTL.length) leftWrap.appendChild(makeDeckEl(deckTL,()=>drawDeck('TL')));
+  if(deckBL.length) leftWrap.appendChild(makeDeckEl(deckBL,()=>drawDeck('BL')));
   ld.appendChild(leftWrap);
 
-  // 오른쪽: TR(위), BR(아래) 세로 배치
   const rightWrap=document.createElement('div');
   rightWrap.style.cssText='display:flex;flex-direction:column;gap:16px;align-items:center;';
-  if(deckTR.length) rightWrap.appendChild(renderDeck(deckTR,()=>drawFromDeck('TR')));
-  if(deckBR.length) rightWrap.appendChild(renderDeck(deckBR,()=>drawFromDeck('BR')));
+  if(deckTR.length) rightWrap.appendChild(makeDeckEl(deckTR,()=>drawDeck('TR')));
+  if(deckBR.length) rightWrap.appendChild(makeDeckEl(deckBR,()=>drawDeck('BR')));
   rd.appendChild(rightWrap);
+
+  // BC덱: board-inner 아래 중앙에 절대위치로 렌더
+  if(deckBC.length){
+    const bd=document.getElementById('board-inner');
+    const bcEl=makeDeckEl(deckBC,()=>drawDeck('BC'));
+    bcEl.style.position='absolute';
+    bcEl.style.bottom='-40px';
+    bcEl.style.left='50%';
+    bcEl.style.transform='translateX(-50%)';
+    bd.appendChild(bcEl);
+  }
 }
 
-// ── 덱에서 카드 꺼내기 ──
-function drawFromDeck(which){
+function drawDeck(which){
   if(!on) return;
-  const map={TL:deckTL,BL:deckBL,TR:deckTR,BR:deckBR};
+  const map={TL:deckTL,BL:deckBL,TR:deckTR,BR:deckBR,BC:deckBC};
   const deck=map[which];
   if(!deck||!deck.length) return;
   if(slots.length>=SM){on=false;showResult(false);return;}
@@ -292,7 +324,6 @@ function drawFromDeck(which){
   if(slots.length>=SM){on=false;showResult(false);}
 }
 
-// ── 슬롯 렌더링 ──
 function renderSlots(){
   const bar=document.getElementById('slot-bar');
   bar.innerHTML='';
@@ -316,11 +347,10 @@ function renderSlots(){
 function renderUI(){
   document.getElementById('score').textContent='★ '+score.toLocaleString();
   document.getElementById('stage-label').textContent='Stage '+stage;
-  const allDecksEmpty=!deckTL.length&&!deckBL.length&&!deckTR.length&&!deckBR.length;
-  if(!tiles.filter(t=>!t.removed).length&&allDecksEmpty&&!slots.length) win();
+  const allEmpty=!deckTL.length&&!deckBL.length&&!deckTR.length&&!deckBR.length&&!deckBC.length;
+  if(!tiles.filter(t=>!t.removed).length&&allEmpty&&!slots.length) win();
 }
 
-// ── 3매치 ──
 function checkMatch(){
   const m={};
   slots.forEach((c,i)=>{(m[c]=m[c]||[]).push(i);});
@@ -340,7 +370,7 @@ function saveHist(){
     tiles:tiles.map(x=>({id:x.id,removed:x.removed})),
     slots:[...slots],
     deckTL:[...deckTL],deckBL:[...deckBL],
-    deckTR:[...deckTR],deckBR:[...deckBR],
+    deckTR:[...deckTR],deckBR:[...deckBR],deckBC:[...deckBC],
     score
   });
 }
@@ -366,7 +396,7 @@ function doUndo(){
   });
   slots=[...s.slots];
   deckTL=[...s.deckTL]; deckBL=[...s.deckBL];
-  deckTR=[...s.deckTR]; deckBR=[...s.deckBR];
+  deckTR=[...s.deckTR]; deckBR=[...s.deckBR]; deckBC=[...s.deckBC];
   score=s.score;
   undo--;
   document.getElementById('undo-badge').textContent=undo;
@@ -379,18 +409,16 @@ function doShuffle(){
   shuf--;
   document.getElementById('shuf-badge').textContent=shuf;
   const alive=tiles.filter(t=>!t.removed);
-  const all=[
-    ...alive.map(t=>t.card),
-    ...deckTL,...deckBL,...deckTR,...deckBR
-  ];
+  const all=[...alive.map(t=>t.card),...deckTL,...deckBL,...deckTR,...deckBR,...deckBC];
   const shuffled=shuffle(all);
   let idx=0;
   alive.forEach(t=>{t.card=shuffled[idx++];});
-  const tl=deckTL.length,bl=deckBL.length,tr=deckTR.length,br=deckBR.length;
+  const tl=deckTL.length,bl=deckBL.length,tr=deckTR.length,br=deckBR.length,bc=deckBC.length;
   deckTL=shuffled.slice(idx,idx+tl); idx+=tl;
   deckBL=shuffled.slice(idx,idx+bl); idx+=bl;
   deckTR=shuffled.slice(idx,idx+tr); idx+=tr;
-  deckBR=shuffled.slice(idx,idx+br);
+  deckBR=shuffled.slice(idx,idx+br); idx+=br;
+  deckBC=shuffled.slice(idx,idx+bc);
   checkShading();
   render();
 }
@@ -459,7 +487,7 @@ function _reset(keepStage){
   if(!keepStage){stage=1;score=0;}
   tiles=[];slots=[];hist=[];
   undo=2;shuf=1;on=true;SM=7;adUsed=false;
-  deckTL=[];deckBL=[];deckTR=[];deckBR=[];
+  deckTL=[];deckBL=[];deckTR=[];deckBR=[];deckBC=[];
   document.getElementById('undo-badge').textContent=2;
   document.getElementById('shuf-badge').textContent=1;
   buildStage();render();
