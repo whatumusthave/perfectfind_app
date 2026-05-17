@@ -161,7 +161,7 @@ function buildStage(){
 }
 
 function render(){
-  const bd=document.getElementById('game-board');
+  const bd=document.getElementById('board-inner');
   bd.innerHTML='';
   tiles.filter(t=>!t.removed).forEach((t,ai)=>{
     const el=document.createElement('div');
