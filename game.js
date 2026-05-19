@@ -59,15 +59,16 @@ function shuffle(a){
 // ── Lv1: 3×3, 아래행이 위행 위에 살짝 겹침 ──
 function buildLv1(){
   const cols=3, rows=3;
-  const gapX=CW+4, gapY=CH-16;
+  const gapX=CW+4;
+  const gapY=CH-20;
   const totalW=(cols-1)*gapX+CW;
   const totalH=(rows-1)*gapY+CH;
   const ox=Math.round((BW-totalW)/2);
-  const oy=Math.round((BH-totalH)/2)-20;
+  const oy=Math.round((BH-totalH)/2)-30;
   const result=[];
   for(let r=0;r<rows;r++)
     for(let c=0;c<cols;c++)
-      result.push({x:ox+c*gapX, y:oy+r*gapY, layer:r});
+      result.push({x:ox+c*gapX, y:oy+r*gapY, layer:rows-1-r});
   return result;
 }
 
@@ -187,9 +188,16 @@ function assignDecks(pool, offset, deckMode){
   }
 }
 
+function makeLv1Pool(){
+  const pick=[];
+  const shuffled=shuffle([...CARDS]);
+  for(let i=0;i<3;i++) for(let j=0;j<3;j++) pick.push(shuffled[i]);
+  return shuffle(pick);
+}
+
 function buildStage(){
   const lv=LEVELS[Math.min(stage-1,LEVELS.length-1)];
-  const pool=makePool();
+  const pool=lv.boardCount===9 ? makeLv1Pool() : makePool();
   tiles=[];
 
   const positions=lv.boardCount===9
