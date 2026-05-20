@@ -1,17 +1,6 @@
-// Perfect Paw Match — 최종판
-// 카드풀: 14종 × 6배 = 126장 (3배수)
-// Lv1: 보드 9장(3×3 살짝겹침), 덱 없음
-// Lv2~10: 보드 98장 + 덱 28장 = 126장
-// 보드 구조: 바닥=가운데 1칸 비운 8장 링, 위로 레이어 쌓기
-// 겹침판정: 4분할(2×2) 기준 25%, 최대 75%까지만 가림
-// 100% 오픈만 밝게+gold+클릭가능
-// 슬롯 7칸, 3매치 자동제거
-// 5단계~슬롯풀 → 광고 +3칸
-// undo 2, shuffle 1 (보드+덱+가려진카드 전부)
-// 덱 배분:
-//   Lv2~3: 4덱 (TL:10, BL:4, TR:10, BR:4)
-//   Lv4~6: 3덱 (TL:10, TR:10, BC:8) - BC=하단중앙
-//   Lv7~10: 2덱 (L:14, R:14)
+// Perfect Paw Match — 최종 완벽판
+// HTML 구조: #game-board > #board-inner (360×460, position:relative)
+// 반드시 getElementById('board-inner') 사용
 
 const CARDS=[
   'amethyst-heart','celestial-potion','crystal-ball','fuchsia-ribbon',
@@ -22,18 +11,20 @@ const CARDS=[
 const CP='asset/cards/', CW=72, CH=72, STEP=36;
 const BW=360, BH=460;
 
-// 레벨 설정
+// ── 레벨 설정 ──
+// boardCount+deckTotal = 항상 3배수
+// deckMode: 0=없음, 2=양쪽각14장, 3=TL10+TR10+BC8, 4=TL10+BL4+TR10+BR4
 const LEVELS=[
-  {boardCount:9,  deckMode:0, layers:1}, // Lv1: 튜토리얼
-  {boardCount:98, deckMode:4, layers:2}, // Lv2
-  {boardCount:98, deckMode:4, layers:3}, // Lv3
-  {boardCount:98, deckMode:3, layers:3}, // Lv4
-  {boardCount:98, deckMode:3, layers:4}, // Lv5
-  {boardCount:98, deckMode:3, layers:4}, // Lv6
-  {boardCount:98, deckMode:2, layers:5}, // Lv7
-  {boardCount:98, deckMode:2, layers:5}, // Lv8
-  {boardCount:98, deckMode:2, layers:6}, // Lv9
-  {boardCount:98, deckMode:2, layers:6}, // Lv10 보스
+  {boardCount:9,  deckMode:0, layers:3},  // Lv1 튜토리얼: 3종×3장=9장
+  {boardCount:98, deckMode:4, layers:3},  // Lv2
+  {boardCount:98, deckMode:4, layers:4},  // Lv3
+  {boardCount:98, deckMode:3, layers:4},  // Lv4
+  {boardCount:98, deckMode:3, layers:5},  // Lv5
+  {boardCount:98, deckMode:3, layers:5},  // Lv6
+  {boardCount:98, deckMode:2, layers:6},  // Lv7
+  {boardCount:98, deckMode:2, layers:6},  // Lv8
+  {boardCount:98, deckMode:2, layers:7},  // Lv9
+  {boardCount:98, deckMode:2, layers:8},  // Lv10 보스
 ];
 
 let tiles=[], slots=[], hist=[],
@@ -41,12 +32,7 @@ let tiles=[], slots=[], hist=[],
     SM=7, adUsed=false,
     deckTL=[], deckBL=[], deckTR=[], deckBR=[], deckBC=[];
 
-function makePool(){
-  const pool=[];
-  for(let r=0;r<6;r++) CARDS.forEach(c=>pool.push(c));
-  return shuffle(pool);
-}
-
+// ── 유틸 ──
 function shuffle(a){
   const b=[...a];
   for(let i=b.length-1;i>0;i--){
@@ -56,84 +42,131 @@ function shuffle(a){
   return b;
 }
 
-// ── Lv1: 3×3, 아래행이 위행 위에 살짝 겹침 ──
+// ── 풀 생성 ──
+function makePool(){
+  // 14종×6배=84장 + 14종×3배=42장 = 126장... 아님
+  // 정확히: 14종×9배=126장 (126/3=42 매치)
+  // 근데 boardCount 98 + deck 28 = 126
+  // 126 = 14종 × 9배 ✓ (3배수)
+  const pool=[];
+  for(let r=0;r<9;r++) CARDS.forEach(c=>pool.push(c));
+  return shuffle(pool);
+}
+
+function makeLv1Pool(){
+  // 3종 × 3장 = 9장
+  const picked=shuffle([...CARDS]).slice(0,3);
+  const pool=[];
+  for(let i=0;i<3;i++) for(let j=0;j<3;j++) pool.push(picked[i]);
+  return shuffle(pool);
+}
+
+// ── Lv1 보드: 3×3, 아래행이 위행 위에 겹침 ──
+// 사진 기준: 3행3열, 행 간 20px 정도 겹침
+// layer: 아래행(row2)이 layer 높음 → 맨 아래행만 클릭 가능
 function buildLv1(){
   const cols=3, rows=3;
-  const gapX=CW+4;
-  const gapY=CH-20;
+  const gapX=CW+4; // 76px 열간격 (겹침 없음)
+  const gapY=CH-20; // 52px 행간격 (20px 겹침)
   const totalW=(cols-1)*gapX+CW;
   const totalH=(rows-1)*gapY+CH;
   const ox=Math.round((BW-totalW)/2);
-  const oy=Math.round((BH-totalH)/2)-30;
+  const oy=Math.round((BH-totalH)/2)-20;
   const result=[];
   for(let r=0;r<rows;r++)
     for(let c=0;c<cols;c++)
-      result.push({x:ox+c*gapX, y:oy+r*gapY, layer:rows-1-r});
+      result.push({x:ox+c*gapX, y:oy+r*gapY, layer:r});
+  // layer 0=1행(맨위), layer 2=3행(맨아래)
+  // 3행이 2행 위에, 2행이 1행 위에
   return result;
 }
 
-// ── Lv2~: 링 구조 보드 ──
-// 바닥(L0): 가운데 1칸 비운 8장 링 (3×3 - 중앙)
-// STEP=36px 격자
-// 위 레이어는 아래 레이어 위에 STEP 오프셋으로 퍼지며 쌓임
+// ── Lv2~10 보드: 중앙 밀집 피라미드 ──
+// 바닥: 넓은 격자, 위로 갈수록 좁아짐
+// 격자: STEP(36px) 간격
 function buildBoard(count, layers){
   const allTiles=[];
+  
+  // 각 레이어별 장수 계산: 바닥이 가장 많고 위로 갈수록 줄어듦
+  const layerCounts=[];
+  let remaining=count;
+  for(let L=0;L<layers;L++){
+    const ratio=(layers-L)/layers; // 1.0, 0.83, 0.67, ...
+    const c=L===layers-1 ? remaining : Math.round(count*ratio/layers);
+    const actual=Math.min(c, remaining);
+    layerCounts.push(actual);
+    remaining-=actual;
+  }
+  // 남은거 바닥에 추가
+  if(remaining>0) layerCounts[0]+=remaining;
 
-  // 바닥층 링: 3×3에서 중앙(1,1) 제외 = 8포지션
-  const ring3x3=[
-    {r:0,c:0},{r:0,c:1},{r:0,c:2},
-    {r:1,c:0},          {r:1,c:2},
-    {r:2,c:0},{r:2,c:1},{r:2,c:2},
-  ];
+  // 바닥층 격자 크기 계산
+  const baseCols=Math.ceil(Math.sqrt(layerCounts[0]*1.3));
+  const baseRows=Math.ceil(layerCounts[0]/baseCols);
+  
+  // 전체 격자를 보드 중앙에 배치
+  const totalW=(baseCols-1)*STEP+CW;
+  const totalH=(baseRows-1)*STEP+CH;
+  const baseOx=Math.round((BW-totalW)/2);
+  const baseOy=Math.round((BH-totalH)/2);
 
-  // 링을 보드 중앙에 배치
-  const cx=BW/2, cy=BH/2;
-  const ringW=2*STEP+CW, ringH=2*STEP+CH;
-  const ox=Math.round(cx-ringW/2);
-  const oy=Math.round(cy-ringH/2);
+  // 바닥층 슬롯 생성
+  const baseSlots=[];
+  for(let r=0;r<baseRows;r++)
+    for(let c=0;c<baseCols;c++)
+      baseSlots.push({x:baseOx+c*STEP, y:baseOy+r*STEP});
 
-  // 1층: 8장 링
-  const perLayer=Math.ceil(count/layers);
-  const l0count=Math.min(perLayer, 8);
-  const shuffledRing=shuffle(ring3x3).slice(0,l0count);
-  shuffledRing.forEach(p=>{
-    allTiles.push({x:ox+p.c*STEP, y:oy+p.r*STEP, layer:0});
-  });
+  // 바닥층 배치
+  const shuffledBase=shuffle(baseSlots).slice(0,layerCounts[0]);
+  shuffledBase.forEach(s=>allTiles.push({x:s.x,y:s.y,layer:0}));
 
-  // 2층~: 아래층 카드들 위에 STEP 오프셋으로 쌓기, 보드 중심 쪽으로 밀집
-  const dirs=[
-    [STEP,0],[-STEP,0],[0,STEP],[0,-STEP],
-    [STEP,STEP],[-STEP,STEP],[STEP,-STEP],[-STEP,-STEP]
-  ];
-
+  // 위층들: 아래층보다 안쪽으로 좁혀서 배치
   for(let L=1;L<layers;L++){
-    const remaining=count-allTiles.length;
-    if(remaining<=0) break;
-    const thisCount=Math.min(perLayer, remaining);
-    const prevLayer=shuffle(allTiles.filter(t=>t.layer===L-1));
-
-    for(let i=0;i<thisCount;i++){
-      const base=prevLayer[i%prevLayer.length];
-      let placed=false;
-      const triedDirs=shuffle(dirs);
-      for(const d of triedDirs){
-        const nx=Math.max(0,Math.min(BW-CW,Math.round((base.x+d[0])/STEP)*STEP));
-        const ny=Math.max(0,Math.min(BH-CH,Math.round((base.y+d[1])/STEP)*STEP));
-        const dup=allTiles.some(t=>t.layer===L&&t.x===nx&&t.y===ny);
-        if(!dup){allTiles.push({x:nx,y:ny,layer:L});placed=true;break;}
-      }
-      if(!placed) allTiles.push({x:base.x,y:base.y,layer:L});
-    }
+    const thisCount=layerCounts[L];
+    if(thisCount<=0) continue;
+    
+    // 이전 층의 범위에서 STEP 안쪽으로 좁힘
+    const prevTiles=allTiles.filter(t=>t.layer===L-1);
+    if(!prevTiles.length) continue;
+    
+    const minX=Math.min(...prevTiles.map(t=>t.x));
+    const maxX=Math.max(...prevTiles.map(t=>t.x));
+    const minY=Math.min(...prevTiles.map(t=>t.y));
+    const maxY=Math.max(...prevTiles.map(t=>t.y));
+    
+    // 이 범위 내의 격자 슬롯 생성
+    const layerSlots=[];
+    for(let y=minY;y<=maxY;y+=STEP)
+      for(let x=minX;x<=maxX;x+=STEP)
+        layerSlots.push({x,y});
+    
+    // 중앙 가까운 순 정렬
+    const cx=(minX+maxX)/2, cy=(minY+maxY)/2;
+    layerSlots.sort((a,b)=>
+      Math.hypot(a.x-cx,a.y-cy)-Math.hypot(b.x-cx,b.y-cy)
+    );
+    
+    // STEP/2 오프셋 적용 (위층은 아래층과 반칸 어긋남)
+    const offset=STEP/2;
+    const placed=shuffle(layerSlots).slice(0,thisCount);
+    placed.forEach(s=>{
+      let nx=s.x+offset, ny=s.y+offset;
+      nx=Math.max(0,Math.min(BW-CW,nx));
+      ny=Math.max(0,Math.min(BH-CH,ny));
+      allTiles.push({x:nx,y:ny,layer:L});
+    });
   }
 
+  // 부족분 강제 채우기
   while(allTiles.length<count){
     const base=allTiles[0|Math.random()*allTiles.length];
     const L=base.layer+1;
-    const d=[[36,0],[-36,0],[0,36],[0,-36]][0|Math.random()*4];
-    const nx=Math.max(0,Math.min(288,Math.round((base.x+d[0])/36)*36));
-    const ny=Math.max(0,Math.min(388,Math.round((base.y+d[1])/36)*36));
+    const d=[[STEP,0],[-STEP,0],[0,STEP],[0,-STEP]][0|Math.random()*4];
+    const nx=Math.max(0,Math.min(BW-CW,base.x+d[0]));
+    const ny=Math.max(0,Math.min(BH-CH,base.y+d[1]));
     allTiles.push({x:nx,y:ny,layer:L});
   }
+
   allTiles.sort((a,b)=>a.layer-b.layer);
   return allTiles;
 }
@@ -171,43 +204,34 @@ function assignDecks(pool, offset, deckMode){
   deckTL=[]; deckBL=[]; deckTR=[]; deckBR=[]; deckBC=[];
   let idx=offset;
   if(deckMode===4){
-    // TL:10, BL:4, TR:10, BR:4
     for(let i=0;i<10;i++) deckTL.push(pool[idx++]);
     for(let i=0;i<4;i++)  deckBL.push(pool[idx++]);
     for(let i=0;i<10;i++) deckTR.push(pool[idx++]);
     for(let i=0;i<4;i++)  deckBR.push(pool[idx++]);
   } else if(deckMode===3){
-    // TL:10, TR:10, BC:8
     for(let i=0;i<10;i++) deckTL.push(pool[idx++]);
     for(let i=0;i<10;i++) deckTR.push(pool[idx++]);
     for(let i=0;i<8;i++)  deckBC.push(pool[idx++]);
   } else if(deckMode===2){
-    // L:14, R:14
     for(let i=0;i<14;i++) deckTL.push(pool[idx++]);
     for(let i=0;i<14;i++) deckTR.push(pool[idx++]);
   }
 }
 
-function makeLv1Pool(){
-  const pick=[];
-  const shuffled=shuffle([...CARDS]);
-  for(let i=0;i<3;i++) for(let j=0;j<3;j++) pick.push(shuffled[i]);
-  return shuffle(pick);
-}
-
+// ── 스테이지 빌드 ──
 function buildStage(){
   const lv=LEVELS[Math.min(stage-1,LEVELS.length-1)];
-  const pool=lv.boardCount===9 ? makeLv1Pool() : makePool();
+  const isLv1=lv.boardCount===9;
+  const pool=isLv1 ? makeLv1Pool() : makePool();
   tiles=[];
 
-  const positions=lv.boardCount===9
-    ? buildLv1()
-    : buildBoard(lv.boardCount, lv.layers);
+  const positions=isLv1 ? buildLv1() : buildBoard(lv.boardCount, lv.layers);
 
   for(let i=0;i<lv.boardCount;i++){
     tiles.push({
       id:i, card:pool[i],
       x:positions[i].x, y:positions[i].y,
+      layer:positions[i].layer,
       removed:false, blocked:false, coverage:0
     });
   }
@@ -218,7 +242,7 @@ function buildStage(){
 
 // ── 렌더링 ──
 function render(){
-  const bd=document.getElementById('game-board');
+  const bd=document.getElementById('board-inner');
   bd.innerHTML='';
   tiles.filter(t=>!t.removed).forEach((t,ai)=>{
     const el=document.createElement('div');
@@ -254,6 +278,7 @@ function render(){
 
 // ── 덱 1개 렌더링 ──
 function makeDeckEl(deck, onclick){
+  if(!deck.length) return null;
   const wrap=document.createElement('div');
   wrap.style.cssText='position:relative;width:62px;height:82px;cursor:pointer;';
   wrap.onclick=onclick;
@@ -290,33 +315,20 @@ function renderDecks(){
   const ld=document.getElementById('left-deck');
   const rd=document.getElementById('right-deck');
   ld.innerHTML=''; rd.innerHTML='';
-
-  // 왼쪽: TL(위)+BL(아래) 세로
   const lv=LEVELS[Math.min(stage-1,LEVELS.length-1)];
   if(lv.deckMode===0) return;
 
   const leftWrap=document.createElement('div');
   leftWrap.style.cssText='display:flex;flex-direction:column;gap:16px;align-items:center;';
-  if(deckTL.length) leftWrap.appendChild(makeDeckEl(deckTL,()=>drawDeck('TL')));
-  if(deckBL.length) leftWrap.appendChild(makeDeckEl(deckBL,()=>drawDeck('BL')));
+  if(deckTL.length){const el=makeDeckEl(deckTL,()=>drawDeck('TL'));if(el)leftWrap.appendChild(el);}
+  if(deckBL.length){const el=makeDeckEl(deckBL,()=>drawDeck('BL'));if(el)leftWrap.appendChild(el);}
   ld.appendChild(leftWrap);
 
   const rightWrap=document.createElement('div');
   rightWrap.style.cssText='display:flex;flex-direction:column;gap:16px;align-items:center;';
-  if(deckTR.length) rightWrap.appendChild(makeDeckEl(deckTR,()=>drawDeck('TR')));
-  if(deckBR.length) rightWrap.appendChild(makeDeckEl(deckBR,()=>drawDeck('BR')));
+  if(deckTR.length){const el=makeDeckEl(deckTR,()=>drawDeck('TR'));if(el)rightWrap.appendChild(el);}
+  if(deckBR.length){const el=makeDeckEl(deckBR,()=>drawDeck('BR'));if(el)rightWrap.appendChild(el);}
   rd.appendChild(rightWrap);
-
-  // BC덱: board-inner 아래 중앙에 절대위치로 렌더
-  if(deckBC.length){
-    const bd=document.getElementById('game-board');
-    const bcEl=makeDeckEl(deckBC,()=>drawDeck('BC'));
-    bcEl.style.position='absolute';
-    bcEl.style.bottom='-40px';
-    bcEl.style.left='50%';
-    bcEl.style.transform='translateX(-50%)';
-    bd.appendChild(bcEl);
-  }
 }
 
 function drawDeck(which){
