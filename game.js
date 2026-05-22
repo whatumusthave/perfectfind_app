@@ -249,26 +249,10 @@ function buildStage(){
   }
   assignDecks(pool, lv.boardCount, lv.deckMode);
   checkShading();
-  if(!isLv1) guaranteeMatch();
 }
 
 // 클릭 가능한 카드 중 같은 종류 3장 보장
-function guaranteeMatch(){
-  const free=tiles.filter(t=>!t.removed&&!t.blocked);
-  if(free.length<3) return;
-  // 클릭 가능한 카드 중 10쌍(30장) 강제 매치 보장
-  const pairs=Math.min(12, Math.floor(free.length/3));
-  const cardTypes=[];
-  for(let i=0;i<pairs;i++) cardTypes.push(CARDS[i%CARDS.length]);
-  let idx=0;
-  for(let p=0;p<pairs;p++){
-    if(idx+2>=free.length) break;
-    free[idx].card=cardTypes[p];
-    free[idx+1].card=cardTypes[p];
-    free[idx+2].card=cardTypes[p];
-    idx+=3;
-  }
-}
+
 
 // ── 렌더링 ──
 function render(){
