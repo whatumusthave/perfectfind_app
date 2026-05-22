@@ -155,12 +155,12 @@ tailwind.config = {
       <div class="w-full flex justify-center">
         <div class="w-[300px] h-[250px] bg-[#3d2d52]/20 border border-[#999077]/20 flex items-center justify-center text-xs text-[#d0c6ab] rounded-lg p-4 text-center tracking-widest font-bold">ADVERTISEMENT: SQUARE 300x250</div>
       </div>
-      <div class="glass-card p-6 rounded-2xl border-l-4 border-[#ffd700]">
-        <h3 class="text-lg font-bold text-[#ffd700] mb-1">Daily Bonus</h3>
-        <p class="text-sm text-[#ffd700]/70 font-bold mb-3">+100 ⭐ Points</p>
-        <p class="text-sm text-[#d0c6ab] mb-4">Come back every day to claim your free stardust!</p>
-        <div class="text-xs text-[#cdbdff] mb-3">Your Points: <span id="home-pts" class="text-[#ffd700] font-bold">0</span> ⭐</div>
-        <button id="home-bonus-btn" class="w-full py-2 bg-[#4e3f7d]/50 text-[#cdbdff] border border-[#cdbdff]/30 rounded-xl font-bold hover:bg-[#4e3f7d]" onclick="claimBonus()">Claim 100 ⭐</button>
+      <div class="glass-card rounded-2xl border border-[#ffd700]/30 overflow-hidden">
+        <img src="./asset/site front page/daily-bonus-page.png" alt="Daily Bonus" style="width:100%;display:block;"/>
+        <div class="p-4">
+          <div class="text-xs text-[#cdbdff] mb-3">Your Points: <span id="home-pts" class="text-[#ffd700] font-bold">0</span> ⭐</div>
+          <button id="home-bonus-btn" class="w-full py-2 bg-[#ffd700] text-[#1a0a2e] rounded-xl font-bold hover:opacity-90" onclick="claimBonus()">Claim 100 ⭐</button>
+        </div>
       </div>
     </aside>
   </div>
