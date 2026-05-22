@@ -257,7 +257,7 @@ function guaranteeMatch(){
   const free=tiles.filter(t=>!t.removed&&!t.blocked);
   if(free.length<3) return;
   // 클릭 가능한 카드 중 10쌍(30장) 강제 매치 보장
-  const pairs=Math.min(10, Math.floor(free.length/3));
+  const pairs=Math.min(12, Math.floor(free.length/3));
   const cardTypes=[];
   for(let i=0;i<pairs;i++) cardTypes.push(CARDS[i%CARDS.length]);
   let idx=0;
