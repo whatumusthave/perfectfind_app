@@ -12,10 +12,8 @@ const CP='asset/cards/', CW=72, CH=72, STEP=36;
 const BW=360, BH=460;
 
 // ── 레벨 설정 ──
-// boardCount+deckTotal = 항상 3배수
-// deckMode: 0=없음, 2=양쪽각14장, 3=TL10+TR10+BC8, 4=TL10+BL4+TR10+BR4
 const LEVELS=[
-  {boardCount:9,  deckMode:0, layers:3},  // Lv1 튜토리얼: 3종×3장=9장
+  {boardCount:9,  deckMode:0, layers:3},  // Lv1 튜토리얼
   {boardCount:98, deckMode:4, layers:3},  // Lv2
   {boardCount:98, deckMode:4, layers:4},  // Lv3
   {boardCount:98, deckMode:3, layers:4},  // Lv4
@@ -32,6 +30,37 @@ let tiles=[], slots=[], hist=[],
     SM=7, adUsed=false,
     deckTL=[], deckBL=[], deckTR=[], deckBR=[], deckBC=[];
 
+// ── 포인트 시스템 ──
+function getPts(){ return parseInt(localStorage.getItem('ppm_points')||'0'); }
+function setPts(n){ localStorage.setItem('ppm_points', n); }
+function addPts(n){
+  setPts(getPts()+n);
+  showPtToast('+'+n+' ⭐');
+}
+function showPtToast(msg){
+  let t=document.getElementById('pt-toast');
+  if(!t){
+    t=document.createElement('div');
+    t.id='pt-toast';
+    t.style.cssText='position:fixed;top:80px;right:16px;background:#ffd700;color:#1a0a2e;'+
+      'padding:8px 18px;border-radius:999px;font-weight:800;font-size:14px;'+
+      'z-index:9999;pointer-events:none;transition:opacity 0.4s;';
+    document.body.appendChild(t);
+  }
+  t.textContent=msg;
+  t.style.opacity='1';
+  clearTimeout(t._tid);
+  t._tid=setTimeout(()=>{ t.style.opacity='0'; },1200);
+}
+
+// Shop에서 구매한 Undo/Shuffle 로드
+function loadShopItems(){
+  const su=parseInt(localStorage.getItem('ppm_undo')||'0');
+  const ss=parseInt(localStorage.getItem('ppm_shuffle')||'0');
+  if(su>0){ undo+=su; localStorage.removeItem('ppm_undo'); }
+  if(ss>0){ shuf+=ss; localStorage.removeItem('ppm_shuffle'); }
+}
+
 // ── 유틸 ──
 function shuffle(a){
   const b=[...a];
@@ -44,30 +73,23 @@ function shuffle(a){
 
 // ── 풀 생성 ──
 function makePool(){
-  // 14종×6배=84장 + 14종×3배=42장 = 126장... 아님
-  // 정확히: 14종×9배=126장 (126/3=42 매치)
-  // 근데 boardCount 98 + deck 28 = 126
-  // 126 = 14종 × 9배 ✓ (3배수)
   const pool=[];
   for(let r=0;r<9;r++) CARDS.forEach(c=>pool.push(c));
   return shuffle(pool);
 }
 
 function makeLv1Pool(){
-  // 3종 × 3장 = 9장
   const picked=shuffle([...CARDS]).slice(0,3);
   const pool=[];
   for(let i=0;i<3;i++) for(let j=0;j<3;j++) pool.push(picked[i]);
   return shuffle(pool);
 }
 
-// ── Lv1 보드: 3×3, 아래행이 위행 위에 겹침 ──
-// 사진 기준: 3행3열, 행 간 20px 정도 겹침
-// layer: 아래행(row2)이 layer 높음 → 맨 아래행만 클릭 가능
+// ── Lv1 보드 ──
 function buildLv1(){
   const cols=3, rows=3;
-  const gapX=CW+4; // 76px 열간격 (겹침 없음)
-  const gapY=CH-20; // 52px 행간격 (20px 겹침)
+  const gapX=CW+4;
+  const gapY=CH-20;
   const totalW=(cols-1)*gapX+CW;
   const totalH=(rows-1)*gapY+CH;
   const ox=Math.round((BW-totalW)/2);
@@ -76,77 +98,51 @@ function buildLv1(){
   for(let r=0;r<rows;r++)
     for(let c=0;c<cols;c++)
       result.push({x:ox+c*gapX, y:oy+r*gapY, layer:r});
-  // layer 0=1행(맨위), layer 2=3행(맨아래)
-  // 3행이 2행 위에, 2행이 1행 위에
   return result;
 }
 
-// ── Lv2~10 보드: 중앙 밀집 피라미드 ──
-// 바닥: 넓은 격자, 위로 갈수록 좁아짐
-// 격자: STEP(36px) 간격
+// ── Lv2~10 보드 ──
 function buildBoard(count, layers){
   const allTiles=[];
-  
-  // 각 레이어별 장수 계산: 바닥이 가장 많고 위로 갈수록 줄어듦
   const layerCounts=[];
   let remaining=count;
   for(let L=0;L<layers;L++){
-    const ratio=(layers-L)/layers; // 1.0, 0.83, 0.67, ...
+    const ratio=(layers-L)/layers;
     const c=L===layers-1 ? remaining : Math.round(count*ratio/layers);
     const actual=Math.min(c, remaining);
     layerCounts.push(actual);
     remaining-=actual;
   }
-  // 남은거 바닥에 추가
   if(remaining>0) layerCounts[0]+=remaining;
 
-  // 바닥층 격자 크기 계산
   const baseCols=Math.ceil(Math.sqrt(layerCounts[0]*1.3));
   const baseRows=Math.ceil(layerCounts[0]/baseCols);
-  
-  // 전체 격자를 보드 중앙에 배치
   const totalW=(baseCols-1)*STEP+CW;
   const totalH=(baseRows-1)*STEP+CH;
   const baseOx=Math.round((BW-totalW)/2);
   const baseOy=Math.round((BH-totalH)/2);
 
-  // 바닥층 슬롯 생성
   const baseSlots=[];
   for(let r=0;r<baseRows;r++)
     for(let c=0;c<baseCols;c++)
       baseSlots.push({x:baseOx+c*STEP, y:baseOy+r*STEP});
 
-  // 바닥층 배치
   const shuffledBase=shuffle(baseSlots).slice(0,layerCounts[0]);
   shuffledBase.forEach(s=>allTiles.push({x:s.x,y:s.y,layer:0}));
 
-  // 위층들: 아래층보다 안쪽으로 좁혀서 배치
   for(let L=1;L<layers;L++){
     const thisCount=layerCounts[L];
     if(thisCount<=0) continue;
-    
-    // 이전 층의 범위에서 STEP 안쪽으로 좁힘
     const prevTiles=allTiles.filter(t=>t.layer===L-1);
     if(!prevTiles.length) continue;
-    
     const minX=Math.min(...prevTiles.map(t=>t.x));
     const maxX=Math.max(...prevTiles.map(t=>t.x));
     const minY=Math.min(...prevTiles.map(t=>t.y));
     const maxY=Math.max(...prevTiles.map(t=>t.y));
-    
-    // 이 범위 내의 격자 슬롯 생성
     const layerSlots=[];
     for(let y=minY;y<=maxY;y+=STEP)
       for(let x=minX;x<=maxX;x+=STEP)
         layerSlots.push({x,y});
-    
-    // 중앙 가까운 순 정렬
-    const cx=(minX+maxX)/2, cy=(minY+maxY)/2;
-    layerSlots.sort((a,b)=>
-      Math.hypot(a.x-cx,a.y-cy)-Math.hypot(b.x-cx,b.y-cy)
-    );
-    
-    // STEP/2 오프셋 적용 (위층은 아래층과 반칸 어긋남)
     const offset=STEP/2;
     const placed=shuffle(layerSlots).slice(0,thisCount);
     placed.forEach(s=>{
@@ -157,7 +153,6 @@ function buildBoard(count, layers){
     });
   }
 
-  // 부족분 강제 채우기
   while(allTiles.length<count){
     const base=allTiles[0|Math.random()*allTiles.length];
     const L=base.layer+1;
@@ -171,7 +166,7 @@ function buildBoard(count, layers){
   return allTiles;
 }
 
-// ── 겹침판정: 4분할(2×2), 최대 75% ──
+// ── 겹침판정 ──
 function checkShading(){
   for(let i=0;i<tiles.length;i++){
     const c=tiles[i];
@@ -224,9 +219,7 @@ function buildStage(){
   const isLv1=lv.boardCount===9;
   const pool=isLv1 ? makeLv1Pool() : makePool();
   tiles=[];
-
   const positions=isLv1 ? buildLv1() : buildBoard(lv.boardCount, lv.layers);
-
   for(let i=0;i<lv.boardCount;i++){
     tiles.push({
       id:i, card:pool[i],
@@ -235,7 +228,6 @@ function buildStage(){
       removed:false, blocked:false, coverage:0
     });
   }
-
   assignDecks(pool, lv.boardCount, lv.deckMode);
   checkShading();
 }
@@ -276,7 +268,7 @@ function render(){
   renderUI();
 }
 
-// ── 덱 1개 렌더링 ──
+// ── 덱 렌더링 ──
 function makeDeckEl(deck, onclick){
   if(!deck.length) return null;
   const wrap=document.createElement('div');
@@ -317,13 +309,11 @@ function renderDecks(){
   ld.innerHTML=''; rd.innerHTML='';
   const lv=LEVELS[Math.min(stage-1,LEVELS.length-1)];
   if(lv.deckMode===0) return;
-
   const leftWrap=document.createElement('div');
   leftWrap.style.cssText='display:flex;flex-direction:column;gap:16px;align-items:center;';
   if(deckTL.length){const el=makeDeckEl(deckTL,()=>drawDeck('TL'));if(el)leftWrap.appendChild(el);}
   if(deckBL.length){const el=makeDeckEl(deckBL,()=>drawDeck('BL'));if(el)leftWrap.appendChild(el);}
   ld.appendChild(leftWrap);
-
   const rightWrap=document.createElement('div');
   rightWrap.style.cssText='display:flex;flex-direction:column;gap:16px;align-items:center;';
   if(deckTR.length){const el=makeDeckEl(deckTR,()=>drawDeck('TR'));if(el)rightWrap.appendChild(el);}
@@ -339,6 +329,7 @@ function drawDeck(which){
   if(slots.length>=SM){on=false;showResult(false);return;}
   saveHist();
   slots.push(deck.pop());
+  addPts(10);
   while(checkMatch());
   render();
   if(slots.length>=SM){on=false;showResult(false);}
@@ -379,6 +370,7 @@ function checkMatch(){
       const rm=new Set(idx.slice(0,3));
       slots=slots.filter((_,i)=>!rm.has(i));
       score+=300;
+      addPts(300);
       return true;
     }
   }
@@ -401,6 +393,7 @@ function clickTile(t){
   saveHist();
   t.removed=true;
   slots.push(t.card);
+  addPts(10);
   checkShading();
   while(checkMatch());
   render();
@@ -508,8 +501,9 @@ function _reset(keepStage){
   tiles=[];slots=[];hist=[];
   undo=2;shuf=1;on=true;SM=7;adUsed=false;
   deckTL=[];deckBL=[];deckTR=[];deckBR=[];deckBC=[];
-  document.getElementById('undo-badge').textContent=2;
-  document.getElementById('shuf-badge').textContent=1;
+  loadShopItems();
+  document.getElementById('undo-badge').textContent=undo;
+  document.getElementById('shuf-badge').textContent=shuf;
   buildStage();render();
 }
 
@@ -517,7 +511,7 @@ function nextStage(){stage++;_reset(true);}
 function retryStage(){_reset(true);}
 function restartGame(){_reset(false);}
 
-window.addEventListener('load',()=>{buildStage();on=true;render();});
+window.addEventListener('load',()=>{loadShopItems();buildStage();on=true;render();});
 window.doUndo=doUndo;
 window.doShuffle=doShuffle;
 window.doWithdraw=doWithdraw;
