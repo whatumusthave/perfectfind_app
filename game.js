@@ -217,20 +217,9 @@ function buildStage(){
   const pool=isLv1 ? makeLv1Pool() : makePool(lv.sets);
   tiles=[];
   const positions=isLv1 ? buildLv1() : buildBoard(lv.boardCount, lv.layers);
-  // positions: layer 오름차순 (0=바닥, 마지막=맨위)
-  // 맨 위 layer 타일(마지막 9개)에 3종x3장 고정 배치
-  const topCount=Math.min(9, positions.length);
-  const topStart=positions.length-topCount;
-  const topCards=[];
-  const picked3=shuffle([...CARDS]).slice(0,3);
-  picked3.forEach(c=>{ topCards.push(c,c,c); });
-  const topShuffled=shuffle(topCards);
-  const restPool=shuffle(pool.slice(0));
   for(let i=0;i<lv.boardCount;i++){
-    const isTop=i>=topStart;
-    const card=isTop ? topShuffled[i-topStart] : restPool[i];
     tiles.push({
-      id:i, card:card,
+      id:i, card:pool[i],
       x:positions[i].x, y:positions[i].y,
       layer:positions[i].layer,
       removed:false, blocked:false, coverage:0
