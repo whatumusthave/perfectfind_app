@@ -493,10 +493,11 @@ function showResult(isWin){
       <button onclick="restartGame()">Play Again</button>
       <button onclick="window.location.href='index.html'">Home</button>
     </div>`;
-  } else if(stage>=5&&!adUsed){
+  } else if(stage>=2&&!adUsed){
+    var adRewardDesc = stage<=7 ? '+3 Slots' : stage<=9 ? '+1 Shuffle' : '+1 Undo';
     ov.innerHTML=`<div class="result-box lose">
       <h2>😿 SLOTS FULL!</h2>
-      <p>Watch ad for +3 slots?</p>
+      <p>Watch ad to get <strong>${adRewardDesc}</strong>?</p>
       <button onclick="watchAd()">📺 Watch Ad</button>
       <button onclick="retryStage()">Try Again</button>
     </div>`;
@@ -524,7 +525,10 @@ function watchAd(){
     if(el) el.textContent=n;
     if(n<=0){
       clearInterval(t);
-      SM=10;adUsed=true;on=true;
+      adUsed=true;on=true;
+      if(stage<=7){ SM=10; }
+      else if(stage<=9){ shuf+=1; document.getElementById('shuf-badge').textContent=shuf; }
+      else { undo+=1; document.getElementById('undo-badge').textContent=undo; }
       ov.style.display='none';
       render();
     }
