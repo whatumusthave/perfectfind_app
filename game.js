@@ -14,8 +14,8 @@ const BW=360, BH=460;
 // ── 레벨 설정 ──
 const LEVELS=[
   {boardCount:9,  deckMode:0, layers:2},  // Lv1 튜토리얼
-  {boardCount:42, deckMode:4, layers:2},  // Lv2 쉬움
-  {boardCount:63, deckMode:4, layers:3},  // Lv3 쉬움+
+  {boardCount:42, deckMode:5, layers:2},  // Lv2 쉬움
+  {boardCount:63, deckMode:5, layers:3},  // Lv3 쉬움+
   {boardCount:84, deckMode:4, layers:3},  // Lv4 중간
   {boardCount:84, deckMode:3, layers:4},  // Lv5 중간
   {boardCount:98, deckMode:3, layers:5},  // Lv6 중간+
@@ -203,7 +203,10 @@ function checkShading(){
 function assignDecks(pool, offset, deckMode){
   deckTL=[]; deckBL=[]; deckTR=[]; deckBR=[]; deckBC=[];
   let idx=offset;
-  if(deckMode===4){
+  if(deckMode===5){
+    for(let i=0;i<6;i++) deckTL.push(pool[idx++]);
+    for(let i=0;i<6;i++) deckTR.push(pool[idx++]);
+  } else if(deckMode===4){
     for(let i=0;i<10;i++) deckTL.push(pool[idx++]);
     for(let i=0;i<4;i++)  deckBL.push(pool[idx++]);
     for(let i=0;i<10;i++) deckTR.push(pool[idx++]);
