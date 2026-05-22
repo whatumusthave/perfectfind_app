@@ -14,15 +14,15 @@ const BW=360, BH=460;
 // ── 레벨 설정 ──
 const LEVELS=[
   {boardCount:9,   deckMode:0, layers:1},  // Lv1 튜토리얼
-  {boardCount:14,  deckMode:4, layers:1},  // Lv2 쉬움    (14+28=42=14x3)
-  {boardCount:14,  deckMode:4, layers:2},  // Lv3 쉬움+   (14+28=42=14x3)
-  {boardCount:56,  deckMode:4, layers:3},  // Lv4 중간    (56+28=84=14x6)
-  {boardCount:56,  deckMode:3, layers:4},  // Lv5 중간    (56+28=84=14x6)
-  {boardCount:56,  deckMode:3, layers:5},  // Lv6 중간+   (56+28=84=14x6)
-  {boardCount:98,  deckMode:2, layers:6},  // Lv7 어려움  (98+28=126=14x9)
-  {boardCount:98,  deckMode:2, layers:7},  // Lv8 어려움+ (98+28=126=14x9)
-  {boardCount:140, deckMode:2, layers:8},  // Lv9 극한    (140+28=168=14x12)
-  {boardCount:140, deckMode:2, layers:10}, // Lv10 1%     (140+28=168=14x12)
+  {boardCount:70,  deckMode:6, layers:1},  // Lv2 (70+14=84=14x6)
+  {boardCount:70,  deckMode:6, layers:2},  // Lv3 (70+14=84=14x6)
+  {boardCount:70,  deckMode:6, layers:3},  // Lv4 (70+14=84=14x6)
+  {boardCount:98,  deckMode:2, layers:4},  // Lv5 (98+28=126=14x9)
+  {boardCount:98,  deckMode:2, layers:5},  // Lv6 (98+28=126=14x9)
+  {boardCount:98,  deckMode:2, layers:6},  // Lv7 (98+28=126=14x9)
+  {boardCount:140, deckMode:2, layers:7},  // Lv8 (140+28=168=14x12)
+  {boardCount:140, deckMode:2, layers:8},  // Lv9 (140+28=168=14x12)
+  {boardCount:140, deckMode:2, layers:10}, // Lv10 1% (140+28=168=14x12)
 ];
 
 let tiles=[], slots=[], hist=[],
@@ -199,19 +199,12 @@ function checkShading(){
 function assignDecks(pool, offset, deckMode){
   deckTL=[]; deckBL=[]; deckTR=[]; deckBR=[]; deckBC=[];
   let idx=offset;
-  if(deckMode===4){
-    // 4개 덱: TL7+BL7+TR7+BR7 = 28장
+  if(deckMode===6){
+    // 2개 덱: TL7+TR7 = 14장 (Lv2~4용)
     for(let i=0;i<7;i++) deckTL.push(pool[idx++]);
-    for(let i=0;i<7;i++) deckBL.push(pool[idx++]);
     for(let i=0;i<7;i++) deckTR.push(pool[idx++]);
-    for(let i=0;i<7;i++) deckBR.push(pool[idx++]);
-  } else if(deckMode===3){
-    // 3개 덱: TL10+TR10+BC8 = 28장
-    for(let i=0;i<10;i++) deckTL.push(pool[idx++]);
-    for(let i=0;i<10;i++) deckTR.push(pool[idx++]);
-    for(let i=0;i<8;i++)  deckBC.push(pool[idx++]);
   } else if(deckMode===2){
-    // 2개 덱: TL14+TR14 = 28장
+    // 2개 덱: TL14+TR14 = 28장 (Lv5~10용)
     for(let i=0;i<14;i++) deckTL.push(pool[idx++]);
     for(let i=0;i<14;i++) deckTR.push(pool[idx++]);
   }
