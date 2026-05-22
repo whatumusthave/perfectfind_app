@@ -418,7 +418,7 @@ function saveUnlocked(u){ localStorage.setItem('ppm_unlocked', JSON.stringify(u)
 
 function buildCollection(){
   buildGrid('zia-grid','zia',9,'zia-final','','png');
-  buildGrid('zio-grid','zio',13,'zio-final','zio','png');
+  buildZioGrid();
 }
 
 function buildGrid(gridId, prefix, count, folder, filePrefix, ext){
