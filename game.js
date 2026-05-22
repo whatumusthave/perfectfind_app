@@ -246,6 +246,22 @@ function buildStage(){
   }
   assignDecks(pool, lv.boardCount, lv.deckMode);
   checkShading();
+  if(!isLv1) guaranteeMatch();
+}
+
+// 클릭 가능한 카드 중 같은 종류 3장 보장
+function guaranteeMatch(){
+  const free=tiles.filter(t=>!t.removed&&!t.blocked);
+  // 현재 free 카드 중 3장 이상 같은 종류 있으면 OK
+  const cnt={};
+  free.forEach(t=>{ cnt[t.card]=(cnt[t.card]||0)+1; });
+  const hasMatch=Object.values(cnt).some(v=>v>=3);
+  if(hasMatch) return;
+  // 없으면: free 카드 중 첫 3장을 같은 종류로 강제 교체
+  if(free.length<3) return;
+  const targetCard=free[0].card;
+  free[1].card=targetCard;
+  free[2].card=targetCard;
 }
 
 // ── 렌더링 ──
