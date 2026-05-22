@@ -14,7 +14,7 @@ const BW=360, BH=460;
 // ── 레벨 설정 ──
 const LEVELS=[
   {boardCount:9,  deckMode:0, layers:2},  // Lv1 튜토리얼
-  {boardCount:30, deckMode:5, layers:2},  // Lv2 쉬움
+  {boardCount:30, deckMode:5, layers:1},  // Lv2 쉬움
   {boardCount:63, deckMode:5, layers:3},  // Lv3 쉬움+
   {boardCount:84, deckMode:4, layers:3},  // Lv4 중간
   {boardCount:84, deckMode:3, layers:4},  // Lv5 중간
