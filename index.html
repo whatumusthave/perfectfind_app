@@ -12,29 +12,13 @@ tailwind.config = {
   theme: {
     extend: {
       colors: {
-        "primary": "#fff6df",
-        "surface-container-high": "#322247",
-        "primary-container": "#ffd700",
-        "secondary": "#cdbdff",
-        "outline": "#999077",
-        "background": "#1b0b2f",
-        "on-background": "#eedcff",
-        "surface-variant": "#3d2d52",
-        "on-surface-variant": "#d0c6ab",
-        "secondary-container": "#4e3f7d",
-        "surface-container": "#27183c",
-        "surface": "#1b0b2f",
-        "on-surface": "#eedcff",
-        "surface-container-low": "#231437",
-        "surface-container-lowest": "#150529",
-      },
-      fontFamily: { "body-md": ["Plus Jakarta Sans"], "label-caps": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "title-sm": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"] },
-      fontSize: {
-        "body-md": ["16px", {"lineHeight":"24px","fontWeight":"500"}],
-        "label-caps": ["12px", {"lineHeight":"16px","letterSpacing":"0.1em","fontWeight":"700"}],
-        "headline-md": ["32px", {"lineHeight":"40px","fontWeight":"700"}],
-        "title-sm": ["20px", {"lineHeight":"28px","fontWeight":"600"}],
-        "display-lg": ["48px", {"lineHeight":"56px","letterSpacing":"-0.02em","fontWeight":"800"}]
+        "primary": "#fff6df", "surface-container-high": "#322247",
+        "primary-container": "#ffd700", "secondary": "#cdbdff",
+        "outline": "#999077", "background": "#1b0b2f",
+        "surface-variant": "#3d2d52", "on-surface-variant": "#d0c6ab",
+        "secondary-container": "#4e3f7d", "surface-container": "#27183c",
+        "surface": "#1b0b2f", "on-surface": "#eedcff",
+        "surface-container-low": "#231437", "surface-container-lowest": "#150529",
       }
     }
   }
@@ -42,197 +26,445 @@ tailwind.config = {
 </script>
 <style>
   .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
-  body { background-color: #1b0b2f; }
+  body { background-color: #1b0b2f; font-family: 'Plus Jakarta Sans', sans-serif; }
   .glass-card { background: rgba(45,27,105,0.4); backdrop-filter: blur(12px); border: 1px solid rgba(201,184,255,0.15); }
   .gold-glow { box-shadow: 0 4px 20px rgba(255,215,0,0.15); }
   .primary-btn { background: #ffd700; color: #1a0a2e; box-shadow: 0 0 20px rgba(255,215,0,0.3); transition: all 0.3s ease; }
   .primary-btn:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(255,215,0,0.5); }
-  .char-frame { background: rgba(45,27,105,0.5); border: 2px solid rgba(255,215,0,0.3); border-radius: 16px; overflow: hidden; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+  .char-frame { background: rgba(45,27,105,0.5); border: 2px solid rgba(255,215,0,0.3); border-radius: 16px; overflow: hidden; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; position: relative; }
   .char-frame img { width: 100%; height: 100%; object-fit: cover; }
   .char-frame.empty { border: 2px dashed rgba(255,215,0,0.15); }
+  .char-frame.locked { border: 2px dashed rgba(255,255,255,0.15); }
+  .char-frame.locked img { filter: brightness(0.2); }
+  .lock-icon { position: absolute; font-size: 22px; }
+  .section-page { display: none; }
+  .section-page.active { display: block; }
+  .nav-link { cursor: pointer; padding-bottom: 2px; }
+  .nav-link.active { color: #ffd700 !important; border-bottom: 2px solid #ffd700; }
+  .shop-card { background: rgba(45,27,105,0.4); border: 1px solid rgba(255,215,0,0.2); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+  .pt-badge { background: rgba(255,215,0,0.15); border: 1px solid rgba(255,215,0,0.4); color: #ffd700; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .buy-btn { background: #ffd700; color: #1a0a2e; border: none; padding: 8px 20px; border-radius: 999px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; width: 100%; }
+  .buy-btn:hover { box-shadow: 0 4px 12px rgba(255,215,0,0.4); }
+  .buy-btn:disabled { background: #444; color: #666; cursor: not-allowed; }
+  .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+  #bonus-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #ffd700; color: #1a0a2e; padding: 12px 28px; border-radius: 999px; font-weight: 700; font-size: 15px; z-index: 9999; display: none; box-shadow: 0 4px 20px rgba(255,215,0,0.5); pointer-events: none; }
 </style>
 </head>
-<body class="font-body-md text-on-surface min-h-screen flex flex-col items-center">
-<div class="w-full max-w-[1280px] bg-background flex flex-col min-h-screen shadow-2xl relative">
+<body class="text-white min-h-screen flex flex-col items-center">
+<div class="w-full max-w-[1280px] bg-[#1b0b2f] flex flex-col min-h-screen shadow-2xl relative">
+
+<div id="bonus-toast"></div>
 
 <!-- Top Ad -->
-<div class="w-full flex justify-center py-4 bg-surface-container-lowest/50">
-  <div class="w-[728px] h-[90px] bg-surface-variant/20 border border-outline/20 flex items-center justify-center text-label-caps text-on-surface-variant rounded-lg">ADVERTISEMENT: LEADERBOARD 728x90</div>
+<div class="w-full flex justify-center py-4 bg-[#150529]/50">
+  <div class="w-[728px] h-[90px] bg-[#3d2d52]/20 border border-[#999077]/20 flex items-center justify-center text-xs text-[#d0c6ab] rounded-lg tracking-widest font-bold">ADVERTISEMENT: LEADERBOARD 728x90</div>
 </div>
 
 <!-- Header -->
-<header class="bg-surface/80 backdrop-blur-xl border-b border-secondary/20 shadow-[0_4px_20px_rgba(255,215,0,0.15)] flex justify-between items-center px-6 h-16 w-full sticky top-0 z-50">
+<header class="bg-[#1b0b2f]/80 backdrop-blur-xl border-b border-[#cdbdff]/20 shadow-[0_4px_20px_rgba(255,215,0,0.15)] flex justify-between items-center px-6 h-16 w-full sticky top-0 z-50">
   <div class="flex items-center gap-2">
-    <span class="material-symbols-outlined text-primary-container" style="font-variation-settings:'FILL' 1;">pets</span>
-    <span class="text-title-sm font-bold text-primary-container tracking-wider">Perfect Paw Match</span>
+    <span class="material-symbols-outlined text-[#ffd700]" style="font-variation-settings:'FILL' 1;">pets</span>
+    <span class="text-lg font-bold text-[#ffd700] tracking-wider">Perfect Paw Match</span>
   </div>
-  <nav class="hidden md:flex gap-6">
-    <a class="text-primary-container font-bold text-label-caps" href="#">Home</a>
-    <a class="text-on-surface-variant text-label-caps hover:text-primary-container" href="game.html">Levels</a>
-    <a class="text-on-surface-variant text-label-caps hover:text-primary-container" href="#">Collection</a>
-    <a class="text-on-surface-variant text-label-caps hover:text-primary-container" href="#">Shop</a>
+  <nav class="hidden md:flex gap-6 items-end">
+    <span class="nav-link text-xs font-bold tracking-widest active" data-section="home" onclick="showSection('home')">HOME</span>
+    <a class="text-xs text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700]" href="game.html">LEVELS</a>
+    <span class="nav-link text-xs text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700]" data-section="collection" onclick="showSection('collection')">COLLECTION</span>
+    <span class="nav-link text-xs text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700]" data-section="shop" onclick="showSection('shop')">SHOP</span>
   </nav>
-  <button><span class="material-symbols-outlined text-on-surface-variant">settings</span></button>
+  <button onclick="showSection('settings')"><span class="material-symbols-outlined text-[#d0c6ab] hover:text-[#ffd700]">settings</span></button>
 </header>
 
 <main class="flex-grow">
 
-  <!-- SECTION 1: Hero with local background -->
+<!-- ═══ HOME ═══ -->
+<div id="section-home" class="section-page active">
   <section class="relative w-full h-[600px] overflow-hidden">
     <img src="./asset/site front page/zio zia front.png" alt="" class="w-full h-full object-cover" style="object-position:center center;"/>
-    <div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-[#1b0b2f] via-[#1b0b2f]/40 to-transparent"></div>
     <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6">
-      <h1 class="font-display-lg text-display-lg text-primary-container mb-6 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">Perfect Paw Match</h1>
-      <p class="text-body-md max-w-2xl mb-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-bold">Master the cosmic art of feline matching. Collect rare celestial artifacts and unlock the secrets of the star-cat constellations.</p>
-      <button class="primary-btn px-10 py-4 rounded-full font-bold text-title-sm uppercase tracking-widest" onclick="window.location.href='game.html'">Play Now</button>
+      <h1 class="text-5xl font-extrabold text-[#ffd700] mb-6 drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]">Perfect Paw Match</h1>
+      <p class="text-base max-w-2xl mb-8 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] font-bold">Master the cosmic art of feline matching. Collect rare celestial artifacts and unlock the secrets of the star-cat constellations.</p>
+      <button class="primary-btn px-10 py-4 rounded-full font-bold text-lg uppercase tracking-widest" onclick="window.location.href='game.html'">Play Now</button>
     </div>
   </section>
 
-  <!-- SECTION 2: Collection -->
   <div class="mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-12 gap-12">
     <div class="lg:col-span-9">
-      <div class="flex items-center justify-between mb-8">
-        <h2 class="font-headline-md text-headline-md text-primary">Your Royal Collection</h2>
-        <span class="text-label-caps bg-secondary-container/30 px-4 py-2 rounded-full text-secondary border border-secondary/20">14 / 14 ITEMS FOUND</span>
-      </div>
+      <h2 class="text-3xl font-bold text-[#fff6df] mb-8">Your Card Collection</h2>
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-3">
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all gold-glow">
-          <img src="./asset/cards/golden-paw.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Golden Paw"/>
-          <p class="text-label-caps text-primary-container">Golden Paw</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all gold-glow">
+          <img src="./asset/cards/golden-paw.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Golden Paw"/>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Golden Paw</p>
         </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all">
-          <img src="./asset/cards/indigo-bowtie.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Indigo Bowtie"/>
-          <p class="text-label-caps text-on-surface-variant">Indigo Bowtie</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/indigo-bowtie.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Indigo Bowtie"/>
+          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Indigo Bowtie</p>
         </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all">
-          <img src="./asset/cards/fuchsia-ribbon.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Fuchsia Ribbon"/>
-          <p class="text-label-caps text-on-surface-variant">Fuchsia Ribbon</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/fuchsia-ribbon.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Fuchsia Ribbon"/>
+          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Fuchsia Ribbon</p>
         </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all">
-          <img src="./asset/cards/crystal-ball.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Crystal Ball"/>
-          <p class="text-label-caps text-on-surface-variant">Crystal Ball</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/crystal-ball.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Crystal Ball"/>
+          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Crystal Ball</p>
         </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all">
-          <img src="./asset/cards/royal-cat-bed.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Royal Cat Bed"/>
-          <p class="text-label-caps text-on-surface-variant">Royal Cat Bed</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/royal-cat-bed.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Royal Cat Bed"/>
+          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Royal Cat Bed</p>
         </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all">
-          <img src="./asset/cards/silver-bag.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Silver Bag"/>
-          <p class="text-label-caps text-on-surface-variant">Silver Bag</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/silver-bag.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Silver Bag"/>
+          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Silver Bag</p>
         </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all">
-          <img src="./asset/cards/celestial-potion.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Celestial Potion"/>
-          <p class="text-label-caps text-on-surface-variant">Celestial Potion</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/celestial-potion.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Celestial Potion"/>
+          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Celestial Potion</p>
         </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all">
-          <img src="./asset/cards/starry-mic.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Starry Mic"/>
-          <p class="text-label-caps text-on-surface-variant">Starry Mic</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/starry-mic.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Starry Mic"/>
+          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Starry Mic</p>
         </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all">
-          <img src="./asset/cards/amethyst-heart.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Amethyst Heart"/>
-          <p class="text-label-caps text-on-surface-variant">Amethyst Heart</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/amethyst-heart.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Amethyst Heart"/>
+          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Amethyst Heart</p>
         </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all">
-          <img src="./asset/cards/turquoise-cushion.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Turquoise Cushion"/>
-          <p class="text-label-caps text-on-surface-variant">Turquoise Cushion</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/turquoise-cushion.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Turquoise Cushion"/>
+          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Turquoise Cushion</p>
         </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all">
-          <img src="./asset/cards/sapphire-paw.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Sapphire Paw"/>
-          <p class="text-label-caps text-on-surface-variant">Sapphire Paw</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/sapphire-paw.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Sapphire Paw"/>
+          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Sapphire Paw</p>
         </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all">
-          <img src="./asset/cards/mistic-yarn.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Mystic Yarn"/>
-          <p class="text-label-caps text-on-surface-variant">Mystic Yarn</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/mistic-yarn.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Mystic Yarn"/>
+          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Mystic Yarn</p>
         </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all">
-          <img src="./asset/cards/jeweled-key.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Jeweled Key"/>
-          <p class="text-label-caps text-on-surface-variant">Jeweled Key</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/jeweled-key.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Jeweled Key"/>
+          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Jeweled Key</p>
         </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center group cursor-pointer hover:bg-surface-container-high/60 transition-all">
-          <img src="./asset/cards/rose-pufferfish.png" class="w-20 h-20 mb-2 rounded-xl group-hover:scale-110 transition-transform object-cover" alt="Rose Pufferfish"/>
-          <p class="text-label-caps text-on-surface-variant">Rose Pufferfish</p>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/rose-pufferfish.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Rose Pufferfish"/>
+          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Rose Pufferfish</p>
         </div>
       </div>
     </div>
     <aside class="lg:col-span-3 space-y-8">
       <div class="w-full flex justify-center">
-        <div class="w-[300px] h-[250px] bg-surface-variant/20 border border-outline/20 flex items-center justify-center text-label-caps text-on-surface-variant rounded-lg p-4 text-center">ADVERTISEMENT: SQUARE 300x250</div>
+        <div class="w-[300px] h-[250px] bg-[#3d2d52]/20 border border-[#999077]/20 flex items-center justify-center text-xs text-[#d0c6ab] rounded-lg p-4 text-center tracking-widest font-bold">ADVERTISEMENT: SQUARE 300x250</div>
       </div>
-      <div class="glass-card p-6 rounded-2xl border-l-4 border-primary-container">
-        <h3 class="text-title-sm text-primary-container mb-4">Daily Bonus</h3>
-        <p class="text-body-md text-on-surface-variant mb-4">Claim your daily stardust to unlock exclusive collection pieces.</p>
-        <button class="w-full py-2 bg-secondary-container/50 text-secondary border border-secondary/30 rounded-xl font-bold">Claim Reward</button>
+      <div class="glass-card p-6 rounded-2xl border-l-4 border-[#ffd700]">
+        <h3 class="text-lg font-bold text-[#ffd700] mb-1">Daily Bonus</h3>
+        <p class="text-sm text-[#ffd700]/70 font-bold mb-3">+100 ⭐ Points</p>
+        <p class="text-sm text-[#d0c6ab] mb-4">Come back every day to claim your free stardust!</p>
+        <div class="text-xs text-[#cdbdff] mb-3">Your Points: <span id="home-pts" class="text-[#ffd700] font-bold">0</span> ⭐</div>
+        <button id="home-bonus-btn" class="w-full py-2 bg-[#4e3f7d]/50 text-[#cdbdff] border border-[#cdbdff]/30 rounded-xl font-bold hover:bg-[#4e3f7d]" onclick="claimBonus()">Claim 100 ⭐</button>
       </div>
     </aside>
   </div>
 
-  <!-- SECTION 3: Zia & Zio alternating (16 frames) -->
-  <section class="py-16 px-6 bg-surface-container-low/50">
+  <section class="py-16 px-6 bg-[#231437]/50">
     <div class="max-w-[1200px] mx-auto">
-      <h2 class="font-headline-md text-headline-md text-primary-container mb-10 text-center">Meet Zia & Zio</h2>
+      <h2 class="text-3xl font-bold text-[#ffd700] mb-10 text-center">Meet Zia & Zio</h2>
       <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-4">
-        <!-- 번갈아: zia1, zio1, zia2, zio2, zia3, zio3, zia4, zio4, zia5, zio5, zia6, zio6, zia7, zio7, empty, empty -->
-        <div class="char-frame"><img src="./asset/zia final/1.png" alt="Zia 1"/></div>
-        <div class="char-frame"><img src="./asset/zio final /zio1.png" alt="Zio 1"/></div>
-        <div class="char-frame"><img src="./asset/zia final/2.png" alt="Zia 2"/></div>
-        <div class="char-frame"><img src="./asset/zio final /zio2.png" alt="Zio 2"/></div>
-        <div class="char-frame"><img src="./asset/zia final/3.png" alt="Zia 3"/></div>
-        <div class="char-frame"><img src="./asset/zio final /zio3.png" alt="Zio 3"/></div>
-        <div class="char-frame"><img src="./asset/zia final/4.png" alt="Zia 4"/></div>
-        <div class="char-frame"><img src="./asset/zio final /zio4.png" alt="Zio 4"/></div>
-        <div class="char-frame"><img src="./asset/zia final/5.png" alt="Zia 5"/></div>
-        <div class="char-frame"><img src="./asset/zio final /zio5.png" alt="Zio 5"/></div>
-        <div class="char-frame"><img src="./asset/zia final/6.png" alt="Zia 6"/></div>
-        <div class="char-frame"><img src="./asset/zio final /zio6.png" alt="Zio 6"/></div>
-        <div class="char-frame"><img src="./asset/zia final/7.png" alt="Zia 7"/></div>
-        <div class="char-frame"><img src="./asset/zio final /zio7.png" alt="Zio 7"/></div>
+        <div class="char-frame"><img src="./asset/zia-final/1.png" alt="Zia 1"/></div>
+        <div class="char-frame"><img src="./asset/zio-final/zio1.png" alt="Zio 1"/></div>
+        <div class="char-frame"><img src="./asset/zia-final/2.png" alt="Zia 2"/></div>
+        <div class="char-frame"><img src="./asset/zio-final/zio2.png" alt="Zio 2"/></div>
+        <div class="char-frame"><img src="./asset/zia-final/3.png" alt="Zia 3"/></div>
+        <div class="char-frame"><img src="./asset/zio-final/zio3.png" alt="Zio 3"/></div>
+        <div class="char-frame"><img src="./asset/zia-final/4.png" alt="Zia 4"/></div>
+        <div class="char-frame"><img src="./asset/zio-final/zio4.png" alt="Zio 4"/></div>
+        <div class="char-frame"><img src="./asset/zia-final/5.png" alt="Zia 5"/></div>
+        <div class="char-frame"><img src="./asset/zio-final/zio5.png" alt="Zio 5"/></div>
+        <div class="char-frame"><img src="./asset/zia-final/6.png" alt="Zia 6"/></div>
+        <div class="char-frame"><img src="./asset/zio-final/zio6.png" alt="Zio 6"/></div>
+        <div class="char-frame"><img src="./asset/zia-final/7.png" alt="Zia 7"/></div>
+        <div class="char-frame"><img src="./asset/zio-final/zio7.png" alt="Zio 7"/></div>
         <div class="char-frame empty"></div>
         <div class="char-frame empty"></div>
       </div>
     </div>
   </section>
 
-  <!-- How to Play -->
   <section class="py-20 px-6">
     <div class="max-w-[900px] mx-auto text-center">
-      <h2 class="font-headline-md text-headline-md text-primary-container mb-12">How to Play</h2>
+      <h2 class="text-3xl font-bold text-[#ffd700] mb-12">How to Play</h2>
       <div class="grid md:grid-cols-3 gap-12">
         <div class="flex flex-col items-center">
-          <div class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center mb-6 border-2 border-secondary/30 text-secondary font-bold text-xl">1</div>
-          <h4 class="text-title-sm text-primary mb-3">Stack the Tiles</h4>
-          <p class="text-on-surface-variant">Select tiles from the celestial board to add them to your collection bar below.</p>
+          <div class="w-16 h-16 rounded-full bg-[#4e3f7d] flex items-center justify-center mb-6 border-2 border-[#cdbdff]/30 text-[#cdbdff] font-bold text-xl">1</div>
+          <h4 class="text-lg font-bold text-[#fff6df] mb-3">Stack the Tiles</h4>
+          <p class="text-[#d0c6ab]">Select tiles from the celestial board to add them to your collection bar below.</p>
         </div>
         <div class="flex flex-col items-center">
-          <div class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center mb-6 border-2 border-secondary/30 text-secondary font-bold text-xl">2</div>
-          <h4 class="text-title-sm text-primary mb-3">Match Triplets</h4>
-          <p class="text-on-surface-variant">Align 3 identical items in the bar to clear them and release their cosmic energy.</p>
+          <div class="w-16 h-16 rounded-full bg-[#4e3f7d] flex items-center justify-center mb-6 border-2 border-[#cdbdff]/30 text-[#cdbdff] font-bold text-xl">2</div>
+          <h4 class="text-lg font-bold text-[#fff6df] mb-3">Match Triplets</h4>
+          <p class="text-[#d0c6ab]">Align 3 identical items in the bar to clear them and release their cosmic energy.</p>
         </div>
         <div class="flex flex-col items-center">
-          <div class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center mb-6 border-2 border-secondary/30 text-secondary font-bold text-xl">3</div>
-          <h4 class="text-title-sm text-primary mb-3">Clear the Board</h4>
-          <p class="text-on-surface-variant">Clear all tiles before the bar fills up to achieve the Perfect Paw Match!</p>
+          <div class="w-16 h-16 rounded-full bg-[#4e3f7d] flex items-center justify-center mb-6 border-2 border-[#cdbdff]/30 text-[#cdbdff] font-bold text-xl">3</div>
+          <h4 class="text-lg font-bold text-[#fff6df] mb-3">Clear the Board</h4>
+          <p class="text-[#d0c6ab]">Clear all tiles before the bar fills up to achieve the Perfect Paw Match!</p>
         </div>
       </div>
     </div>
   </section>
+</div>
+
+<!-- ═══ COLLECTION ═══ -->
+<div id="section-collection" class="section-page">
+  <div class="px-6 py-12 max-w-[1200px] mx-auto">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-3xl font-bold text-[#fff6df]">Collection</h2>
+      <span class="pt-badge">⭐ <span id="col-pts">0</span> pts</span>
+    </div>
+    <p class="text-sm text-[#d0c6ab] mb-10">Unlock Zia & Zio by spending 500 ⭐. Earn points by playing the game.</p>
+    <h3 class="text-xl font-bold text-[#ffd700] mb-4">✨ Zia <span class="text-xs text-[#d0c6ab] ml-2 font-normal">9 characters</span></h3>
+    <div class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 xl:grid-cols-9 gap-4 mb-12" id="zia-grid"></div>
+    <h3 class="text-xl font-bold text-[#ffd700] mb-4">🌙 Zio <span class="text-xs text-[#d0c6ab] ml-2 font-normal">13 characters</span></h3>
+    <div class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-4" id="zio-grid"></div>
+  </div>
+</div>
+
+<!-- ═══ SHOP ═══ -->
+<div id="section-shop" class="section-page">
+  <div class="px-6 py-12 max-w-[900px] mx-auto">
+    <div class="flex items-center justify-between mb-2">
+      <h2 class="text-3xl font-bold text-[#fff6df]">Shop</h2>
+      <span class="pt-badge">⭐ <span id="shop-pts">0</span> pts</span>
+    </div>
+    <p class="text-sm text-[#d0c6ab] mb-10">Spend your stars or unlock premium features.</p>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      <div class="shop-card">
+        <div style="font-size:40px;">↩️</div>
+        <p class="text-lg font-bold text-[#fff6df]">Undo Move</p>
+        <p class="text-sm text-[#d0c6ab]">Take back your last tile pick.</p>
+        <span class="pt-badge">50 ⭐</span>
+        <button class="buy-btn" onclick="buyItem('undo',50)">Buy Undo</button>
+      </div>
+      <div class="shop-card">
+        <div style="font-size:40px;">🔀</div>
+        <p class="text-lg font-bold text-[#fff6df]">Shuffle Board</p>
+        <p class="text-sm text-[#d0c6ab]">Reshuffle all tiles on the board.</p>
+        <span class="pt-badge">100 ⭐</span>
+        <button class="buy-btn" onclick="buyItem('shuffle',100)">Buy Shuffle</button>
+      </div>
+      <div class="shop-card" style="border-color:rgba(255,215,0,0.5);">
+        <div style="font-size:40px;">🚫</div>
+        <p class="text-lg font-bold text-[#ffd700]">Remove Ads</p>
+        <p class="text-sm text-[#d0c6ab]">Play forever without interruptions.</p>
+        <span class="pt-badge">$1.99 one-time</span>
+        <button class="buy-btn" onclick="buyNoAds()">Buy $1.99</button>
+      </div>
+      <div class="shop-card">
+        <img src="./asset/zia-final/1.png" style="width:80px;height:80px;border-radius:12px;object-fit:cover;" alt="Zia"/>
+        <p class="text-lg font-bold text-[#fff6df]">Zia Character</p>
+        <p class="text-sm text-[#d0c6ab]">Unlock any Zia you don't have yet.</p>
+        <span class="pt-badge">500 ⭐ or $0.99</span>
+        <button class="buy-btn" onclick="showSection('collection')">View Collection</button>
+      </div>
+      <div class="shop-card">
+        <img src="./asset/zio-final/zio1.png" style="width:80px;height:80px;border-radius:12px;object-fit:cover;" alt="Zio"/>
+        <p class="text-lg font-bold text-[#fff6df]">Zio Character</p>
+        <p class="text-sm text-[#d0c6ab]">Unlock any Zio you don't have yet.</p>
+        <span class="pt-badge">500 ⭐ or $0.99</span>
+        <button class="buy-btn" onclick="showSection('collection')">View Collection</button>
+      </div>
+      <div class="shop-card">
+        <div style="font-size:40px;">🌟</div>
+        <p class="text-lg font-bold text-[#fff6df]">Daily Bonus</p>
+        <p class="text-sm text-[#d0c6ab]">Free 100 ⭐ every day!</p>
+        <span class="pt-badge">FREE</span>
+        <button class="buy-btn" onclick="claimBonus()">Claim 100 ⭐</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS ═══ -->
+<div id="section-settings" class="section-page">
+  <div class="px-6 py-12 max-w-[700px] mx-auto">
+    <h2 class="text-3xl font-bold text-[#fff6df] mb-2">Settings</h2>
+    <p class="text-sm text-[#d0c6ab] mb-10">Manage your account and learn how points work.</p>
+    <div class="glass-card p-6 rounded-2xl mb-8">
+      <h3 class="text-xl font-bold text-[#ffd700] mb-4">⭐ How to Earn Points</h3>
+      <div class="text-sm text-[#d0c6ab]">
+        <div class="settings-row"><span>Remove a card from the board</span><span class="text-[#ffd700] font-bold">+10 ⭐</span></div>
+        <div class="settings-row"><span>Match 3 identical cards</span><span class="text-[#ffd700] font-bold">+300 ⭐</span></div>
+        <div class="settings-row" style="border:none;"><span>Daily login bonus</span><span class="text-[#ffd700] font-bold">+100 ⭐</span></div>
+      </div>
+    </div>
+    <div class="glass-card p-6 rounded-2xl mb-8">
+      <h3 class="text-xl font-bold text-[#ffd700] mb-4">💸 How to Spend Points</h3>
+      <div class="text-sm text-[#d0c6ab]">
+        <div class="settings-row"><span>Undo Move</span><span class="text-[#cdbdff] font-bold">50 ⭐</span></div>
+        <div class="settings-row"><span>Shuffle Board</span><span class="text-[#cdbdff] font-bold">100 ⭐</span></div>
+        <div class="settings-row"><span>Unlock Zia or Zio character</span><span class="text-[#cdbdff] font-bold">500 ⭐</span></div>
+        <div class="settings-row" style="border:none;"><span>Remove Ads forever</span><span class="text-[#cdbdff] font-bold">$1.99</span></div>
+      </div>
+    </div>
+    <div class="glass-card p-6 rounded-2xl mb-8 flex items-center justify-between">
+      <span class="text-lg font-bold text-[#fff6df]">Your Current Points</span>
+      <span class="text-2xl font-extrabold text-[#ffd700]">⭐ <span id="settings-pts">0</span></span>
+    </div>
+    <div class="glass-card p-6 rounded-2xl">
+      <h3 class="text-xl font-bold text-[#fff6df] mb-2">Reset Data</h3>
+      <p class="text-sm text-[#d0c6ab] mb-4">Clear all local save data. This cannot be undone.</p>
+      <button class="buy-btn" style="background:#c0392b;color:#fff;max-width:200px;" onclick="resetData()">Reset All Data</button>
+    </div>
+  </div>
+</div>
 
 </main>
 
-<footer class="bg-surface-container-lowest border-t border-secondary/10 w-full py-8 mt-auto">
+<footer class="bg-[#150529] border-t border-[#cdbdff]/10 w-full py-8 mt-auto">
   <div class="flex flex-col items-center gap-4 w-full mx-auto px-6">
     <div class="flex items-center gap-2 mb-2">
-      <span class="material-symbols-outlined text-primary-container">pets</span>
-      <span class="text-primary-container font-bold">Perfect Paw Match</span>
+      <span class="material-symbols-outlined text-[#ffd700]">pets</span>
+      <span class="text-[#ffd700] font-bold">Perfect Paw Match</span>
     </div>
     <div class="flex gap-8">
-      <a class="text-label-caps text-secondary/60 hover:text-primary-container" href="privacy.html">Privacy</a>
-      <a class="text-label-caps text-secondary/60 hover:text-primary-container" href="terms.html">Terms</a>
-      <a class="text-label-caps text-secondary/60 hover:text-primary-container" href="#">Contact</a>
+      <a class="text-xs text-[#cdbdff]/60 hover:text-[#ffd700] tracking-widest font-bold" href="privacy.html">PRIVACY</a>
+      <a class="text-xs text-[#cdbdff]/60 hover:text-[#ffd700] tracking-widest font-bold" href="terms.html">TERMS</a>
+      <a class="text-xs text-[#cdbdff]/60 hover:text-[#ffd700] tracking-widest font-bold" href="#">CONTACT</a>
     </div>
-    <p class="text-body-md text-secondary mt-2 opacity-60">© 2025 Perfect Paw Match. All celestial rights reserved.</p>
+    <p class="text-sm text-[#cdbdff] mt-2 opacity-60">© 2025 Perfect Paw Match. All celestial rights reserved.</p>
   </div>
 </footer>
 
 </div>
+<script>
+function getPoints(){ return parseInt(localStorage.getItem('ppm_points')||'0'); }
+function setPoints(n){ localStorage.setItem('ppm_points', n); refreshPts(); }
+function addPoints(n){ setPoints(getPoints()+n); }
+
+function refreshPts(){
+  var p=getPoints();
+  ['home-pts','col-pts','shop-pts','settings-pts'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.textContent=p;
+  });
+}
+
+function showSection(name){
+  document.querySelectorAll('.section-page').forEach(function(el){ el.classList.remove('active'); });
+  document.querySelectorAll('.nav-link').forEach(function(el){ el.classList.remove('active'); });
+  var sec=document.getElementById('section-'+name);
+  if(sec) sec.classList.add('active');
+  var link=document.querySelector('.nav-link[data-section="'+name+'"]');
+  if(link) link.classList.add('active');
+  if(name==='collection') buildCollection();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function claimBonus(){
+  var today=new Date().toDateString();
+  var last=localStorage.getItem('ppm_bonus_date');
+  if(last===today){ showToast('Already claimed today! Come back tomorrow.'); return; }
+  addPoints(100);
+  localStorage.setItem('ppm_bonus_date', today);
+  showToast('🌟 +100 Points Claimed!');
+  updateBonusBtn();
+}
+
+function updateBonusBtn(){
+  var today=new Date().toDateString();
+  var last=localStorage.getItem('ppm_bonus_date');
+  var btn=document.getElementById('home-bonus-btn');
+  if(!btn) return;
+  if(last===today){ btn.textContent='✅ Claimed Today'; btn.disabled=true; }
+  else { btn.textContent='Claim 100 ⭐'; btn.disabled=false; }
+}
+
+function showToast(msg){
+  var t=document.getElementById('bonus-toast');
+  t.textContent=msg;
+  t.style.display='block';
+  setTimeout(function(){ t.style.display='none'; }, 2500);
+}
+
+function buyItem(type, cost){
+  var pts=getPoints();
+  if(pts<cost){ showToast('Not enough points!'); return; }
+  setPoints(pts-cost);
+  if(type==='undo'){
+    var cur=parseInt(localStorage.getItem('ppm_undo')||'0');
+    localStorage.setItem('ppm_undo', cur+1);
+    showToast('Undo added! ('+(cur+1)+'x)');
+  } else if(type==='shuffle'){
+    var cur2=parseInt(localStorage.getItem('ppm_shuffle')||'0');
+    localStorage.setItem('ppm_shuffle', cur2+1);
+    showToast('Shuffle added! ('+(cur2+1)+'x)');
+  }
+}
+
+function buyNoAds(){ showToast('Payment coming soon!'); }
+
+function resetData(){
+  if(!confirm('Reset ALL data?')) return;
+  ['ppm_points','ppm_bonus_date','ppm_undo','ppm_shuffle','ppm_unlocked'].forEach(function(k){ localStorage.removeItem(k); });
+  refreshPts();
+  buildCollection();
+  showToast('Data reset.');
+}
+
+function getUnlocked(){
+  try{ return JSON.parse(localStorage.getItem('ppm_unlocked')||'{}'); }
+  catch(e){ return {}; }
+}
+function saveUnlocked(u){ localStorage.setItem('ppm_unlocked', JSON.stringify(u)); }
+
+function buildCollection(){
+  buildGrid('zia-grid','zia',9,'zia-final','','png');
+  buildGrid('zio-grid','zio',13,'zio-final','zio','png');
+}
+
+function buildGrid(gridId, prefix, count, folder, filePrefix, ext){
+  var grid=document.getElementById(gridId);
+  if(!grid) return;
+  grid.innerHTML='';
+  var unlocked=getUnlocked();
+  for(var i=1;i<=count;i++){
+    var key=prefix+i;
+    var isUnlocked=!!unlocked[key];
+    var fileName=filePrefix ? filePrefix+i+'.'+ext : i+'.'+ext;
+    var imgSrc='./asset/'+folder+'/'+fileName;
+    var card=document.createElement('div');
+    card.className='char-frame'+(isUnlocked?'':' locked');
+    if(isUnlocked){
+      card.innerHTML='<img src="'+imgSrc+'" alt="'+key+'"/>';
+    } else {
+      card.innerHTML='<img src="'+imgSrc+'" alt="'+key+'"/><span class="lock-icon">🔒</span>';
+      card.style.cursor='pointer';
+      card.title='500 points to unlock';
+      (function(k, src, c){
+        c.onclick=function(){ unlockChar(k, src, c); };
+      })(key, imgSrc, card);
+    }
+    grid.appendChild(card);
+  }
+}
+
+function unlockChar(key, imgSrc, card){
+  var cost=500;
+  var pts=getPoints();
+  if(pts<cost){ showToast('Need 500 points to unlock!'); return; }
+  if(!confirm('Spend 500 points to unlock this character?')) return;
+  setPoints(pts-cost);
+  var u=getUnlocked();
+  u[key]=true;
+  saveUnlocked(u);
+  card.classList.remove('locked');
+  card.innerHTML='<img src="'+imgSrc+'" alt="'+key+'"/>';
+  card.onclick=null;
+  card.style.cursor='default';
+  showToast('Character unlocked!');
+}
+
+refreshPts();
+updateBonusBtn();
+</script>
 </body>
 </html>
