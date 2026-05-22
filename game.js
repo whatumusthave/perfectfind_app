@@ -3,9 +3,9 @@
 // 반드시 getElementById('board-inner') 사용
 
 const CARDS=[
-  'amethyst-heart','celestial-potion','crystal-ball','fuchsia-ribbon',
-  'golden-paw','indigo-bowtie','jeweled-key','mistic-yarn',
-  'rose-pufferfish','royal-cat-bed','sapphire-paw','silver-bag',
+  'amethyst-heart','cosmic-milk-bottle','crystal-ball','fuchsia-ribbon',
+  'golden-paw','indigo-bowtie','jeweled-key','mystic-yarn',
+  'ruby-goby','royal-cat-bed','sapphire-paw','silver-bag',
   'starry-mic','turquoise-cushion'
 ];
 const CP='asset/cards/', CW=72, CH=72, STEP=36;
