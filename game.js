@@ -255,16 +255,19 @@ function buildStage(){
 // 클릭 가능한 카드 중 같은 종류 3장 보장
 function guaranteeMatch(){
   const free=tiles.filter(t=>!t.removed&&!t.blocked);
-  // 현재 free 카드 중 3장 이상 같은 종류 있으면 OK
-  const cnt={};
-  free.forEach(t=>{ cnt[t.card]=(cnt[t.card]||0)+1; });
-  const hasMatch=Object.values(cnt).some(v=>v>=3);
-  if(hasMatch) return;
-  // 없으면: free 카드 중 첫 3장을 같은 종류로 강제 교체
   if(free.length<3) return;
-  const targetCard=free[0].card;
-  free[1].card=targetCard;
-  free[2].card=targetCard;
+  // 클릭 가능한 카드 중 10쌍(30장) 강제 매치 보장
+  const pairs=Math.min(10, Math.floor(free.length/3));
+  const cardTypes=[];
+  for(let i=0;i<pairs;i++) cardTypes.push(CARDS[i%CARDS.length]);
+  let idx=0;
+  for(let p=0;p<pairs;p++){
+    if(idx+2>=free.length) break;
+    free[idx].card=cardTypes[p];
+    free[idx+1].card=cardTypes[p];
+    free[idx+2].card=cardTypes[p];
+    idx+=3;
+  }
 }
 
 // ── 렌더링 ──
