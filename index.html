@@ -151,19 +151,16 @@ tailwind.config = {
         </div>
       </div>
     </div>
-    <!-- Daily Bonus Banner -->
-    <div class="lg:col-span-12 w-full mt-4 mb-2">
-      <div class="relative w-full rounded-2xl overflow-hidden cursor-pointer" onclick="claimBonus()" style="max-height:160px;">
-        <img src="./asset/site front page/daily-bonus-page.png" alt="Daily Bonus" class="w-full object-cover" style="max-height:160px;object-position:center;"/>
-      </div>
-    </div>
     <aside class="lg:col-span-3 space-y-8">
       <div class="w-full flex justify-center">
         <div class="w-[300px] h-[250px] bg-[#3d2d52]/20 border border-[#999077]/20 flex items-center justify-center text-xs text-[#d0c6ab] rounded-lg p-4 text-center tracking-widest font-bold">ADVERTISEMENT: SQUARE 300x250</div>
       </div>
-      <div class="glass-card p-4 rounded-2xl border border-[#ffd700]/30">
-          <div class="text-xs text-[#cdbdff] mb-3">Your Points: <span id="home-pts" class="text-[#ffd700] font-bold">0</span> ⭐</div>
-          <button id="home-bonus-btn" class="w-full py-2 bg-[#ffd700] text-[#1a0a2e] rounded-xl font-bold hover:opacity-90" onclick="claimBonus()">Claim 100 ⭐</button>
+      <div class="rounded-2xl overflow-hidden border border-[#ffd700]/30">
+        <img src="./asset/site front page/daily-bonus-page.png" alt="Daily Bonus" style="width:100%;display:block;"/>
+        <div class="p-3 bg-[#1b0b2f]">
+          <div class="text-xs text-[#cdbdff] mb-2">Your Points: <span id="home-pts" class="text-[#ffd700] font-bold">0</span> ⭐</div>
+          <button id="home-bonus-btn" class="w-full py-2 bg-[#ffd700] text-[#1a0a2e] rounded-xl font-bold" onclick="claimBonus()">Claim 100 ⭐</button>
+        </div>
       </div>
     </aside>
   </div>
