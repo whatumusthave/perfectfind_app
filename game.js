@@ -13,16 +13,16 @@ const BW=360, BH=460;
 
 // ── 레벨 설정 ──
 const LEVELS=[
-  {boardCount:9,   deckMode:0, layers:1},  // Lv1 튜토리얼
-  {boardCount:70,  deckMode:6, layers:1},  // Lv2 (70+14=84=14x6)
-  {boardCount:70,  deckMode:6, layers:2},  // Lv3 (70+14=84=14x6)
-  {boardCount:70,  deckMode:6, layers:3},  // Lv4 (70+14=84=14x6)
-  {boardCount:98,  deckMode:2, layers:4},  // Lv5 (98+28=126=14x9)
-  {boardCount:98,  deckMode:2, layers:5},  // Lv6 (98+28=126=14x9)
-  {boardCount:98,  deckMode:2, layers:6},  // Lv7 (98+28=126=14x9)
-  {boardCount:140, deckMode:2, layers:7},  // Lv8 (140+28=168=14x12)
-  {boardCount:140, deckMode:2, layers:8},  // Lv9 (140+28=168=14x12)
-  {boardCount:140, deckMode:2, layers:10}, // Lv10 1% (140+28=168=14x12)
+  {boardCount:9,   deckMode:0, layers:1,  sets:3},  // Lv1 튜토리얼
+  {boardCount:70,  deckMode:6, layers:1,  sets:6},  // Lv2 (70+14=84=14x6)
+  {boardCount:70,  deckMode:6, layers:2,  sets:6},  // Lv3 (70+14=84=14x6)
+  {boardCount:70,  deckMode:6, layers:3,  sets:6},  // Lv4 (70+14=84=14x6)
+  {boardCount:98,  deckMode:2, layers:4,  sets:9},  // Lv5 (98+28=126=14x9)
+  {boardCount:98,  deckMode:2, layers:5,  sets:9},  // Lv6 (98+28=126=14x9)
+  {boardCount:98,  deckMode:2, layers:6,  sets:9},  // Lv7 (98+28=126=14x9)
+  {boardCount:140, deckMode:2, layers:7,  sets:12}, // Lv8 (140+28=168=14x12)
+  {boardCount:140, deckMode:2, layers:8,  sets:12}, // Lv9 (140+28=168=14x12)
+  {boardCount:140, deckMode:2, layers:10, sets:12}, // Lv10 1% (140+28=168=14x12)
 ];
 
 let tiles=[], slots=[], hist=[],
@@ -72,10 +72,10 @@ function shuffle(a){
 }
 
 // ── 풀 생성 ──
-function makePool(){
-  // 14종 × 12 = 168장 풀 생성
+function makePool(sets){
+  // 14종 × sets 장 생성 (sets=6:84장, 9:126장, 12:168장)
   const pool=[];
-  for(let r=0;r<12;r++) CARDS.forEach(c=>pool.push(c));
+  for(let r=0;r<sets;r++) CARDS.forEach(c=>pool.push(c));
   return shuffle(pool);
 }
 
@@ -214,7 +214,7 @@ function assignDecks(pool, offset, deckMode){
 function buildStage(){
   const lv=LEVELS[Math.min(stage-1,LEVELS.length-1)];
   const isLv1=lv.boardCount===9;
-  const pool=isLv1 ? makeLv1Pool() : makePool();
+  const pool=isLv1 ? makeLv1Pool() : makePool(lv.sets);
   tiles=[];
   const positions=isLv1 ? buildLv1() : buildBoard(lv.boardCount, lv.layers);
   // positions: layer 오름차순 (0=바닥, 마지막=맨위)
