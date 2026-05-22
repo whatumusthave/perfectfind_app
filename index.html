@@ -236,3 +236,10 @@ tailwind.config = {
 </div>
 </body>
 </html>
+<script>
+function showSection(name){
+  document.getElementById('section-home').style.display=name==='home'?'block':'none';
+  document.getElementById('section-collection').style.display=name==='collection'?'block':'none';
+  document.getElementById('section-shop').style.display=name==='shop'?'block':'none';
+}
+</script>
