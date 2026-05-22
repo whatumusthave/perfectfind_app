@@ -416,6 +416,28 @@ function getUnlocked(){
 }
 function saveUnlocked(u){ localStorage.setItem('ppm_unlocked', JSON.stringify(u)); }
 
+function buildZioGrid(){
+  var grid=document.getElementById('zio-grid');
+  if(!grid) return;
+  grid.innerHTML='';
+  var nums=[1,2,3,4,5,6,7,8,10,11,12,13];
+  var unlocked=getUnlocked();
+  nums.forEach(function(i){
+    var key='zio'+i;
+    var isUnlocked=!!unlocked[key];
+    var imgSrc='./asset/zio-final/zio'+i+'.png';
+    var card=document.createElement('div');
+    card.className='char-frame'+(isUnlocked?'':' locked');
+    if(isUnlocked){
+      card.innerHTML='<img src="'+imgSrc+'" alt="'+key+'"/>';
+    } else {
+      card.innerHTML='<img src="'+imgSrc+'" alt="'+key+'"/><span class="lock-icon">\u{1F512}</span>';
+      card.style.cursor='pointer';
+      (function(k,src,c){ c.onclick=function(){ unlockChar(k,src,c); }; })(key,imgSrc,card);
+    }
+    grid.appendChild(card);
+  });
+}
 function buildCollection(){
   buildGrid('zia-grid','zia',9,'zia-final','','png');
   buildZioGrid();
