@@ -431,7 +431,7 @@ function buildZioGrid(){
     if(isUnlocked){
       card.innerHTML='<img src="'+imgSrc+'" alt="'+key+'"/>';
     } else {
-      card.innerHTML='<img src="'+imgSrc+'" alt="'+key+'"/><span class="lock-icon">\u{1F512}</span>';
+      card.innerHTML='<img src="'+imgSrc+'" alt="'+key+'"/><span class="lock-icon">🔒</span>';
       card.style.cursor='pointer';
       (function(k,src,c){ c.onclick=function(){ unlockChar(k,src,c); }; })(key,imgSrc,card);
     }
