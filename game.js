@@ -73,14 +73,14 @@ function shuffle(a){
 
 // ── 풀 생성 ──
 function makePool(){
-  // 앞 1/3: 3장씩 묶음 (매치 쉬움) → 뒤 2/3: 완전 랜덤
-  const pool=[];
-  for(let r=0;r<9;r++) CARDS.forEach(c=>pool.push(c));
-  // 앞 42장(14종x3)을 3장씩 묶어서 정렬
+  // 앞 42장: 3장씩 묶음 유지 (shuffle 없음 → 맨위 레이어에 매치 쉬운 카드)
+  // 뒤 84장: 완전 랜덤
   const front=[];
-  CARDS.forEach(c=>{ front.push(c,c,c); });
-  const back=shuffle(pool.slice(42));
-  return [...shuffle(front), ...back];
+  const picked=shuffle([...CARDS]); // 14종 순서만 섞음
+  picked.forEach(c=>{ front.push(c,c,c); }); // 각 3장 묶음
+  const back=[];
+  for(let r=0;r<6;r++) CARDS.forEach(c=>back.push(c));
+  return [...front, ...shuffle(back)];
 }
 
 function makeLv1Pool(){
@@ -225,11 +225,13 @@ function buildStage(){
   const pool=isLv1 ? makeLv1Pool() : makePool();
   tiles=[];
   const positions=isLv1 ? buildLv1() : buildBoard(lv.boardCount, lv.layers);
+  // positions는 layer 오름차순 → 뒤집어서 높은 layer(맨위)에 front pool 배치
+  const posRev=[...positions].reverse();
   for(let i=0;i<lv.boardCount;i++){
     tiles.push({
       id:i, card:pool[i],
-      x:positions[i].x, y:positions[i].y,
-      layer:positions[i].layer,
+      x:posRev[i].x, y:posRev[i].y,
+      layer:posRev[i].layer,
       removed:false, blocked:false, coverage:0
     });
   }
