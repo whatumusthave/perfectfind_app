@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Blog - Perfect Paw Match</title>
+<meta name="description" content="Tips, guides, and updates for Perfect Paw Match — the cosmic cat puzzle game."/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<style>
+  .material-symbols-outlined{font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 48;}
+  body{background-color:#1b0b2f;}
+  .glass-panel{background:rgba(45,27,105,0.4);backdrop-filter:blur(12px);border:1px solid rgba(201,184,255,0.1);}
+  .nebula-gradient{background:radial-gradient(circle at top right,rgba(112,93,0,0.15),transparent),radial-gradient(circle at bottom left,rgba(78,63,125,0.2),transparent);}
+  .tag{background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);color:#ffd700;padding:2px 10px;border-radius:999px;font-size:11px;font-weight:700;}
+  .article-card:hover{transform:translateY(-4px);transition:transform 0.2s ease;}
+  .article-card{transition:transform 0.2s ease;}
+</style>
+<script>
+tailwind.config={darkMode:"class",theme:{extend:{colors:{
+  "primary":"#fff6df","primary-container":"#ffd700","secondary":"#cdbdff",
+  "on-surface":"#eedcff","on-surface-variant":"#d0c6ab","surface":"#1b0b2f",
+  "surface-container-high":"#322247","surface-container-lowest":"#150529",
+  "background":"#1b0b2f"
+},fontFamily:{"body-md":["Plus Jakarta Sans"]},fontSize:{
+  "body-md":["16px",{lineHeight:"24px",fontWeight:"500"}],
+  "title-sm":["20px",{lineHeight:"28px",fontWeight:"600"}],
+  "display-lg":["48px",{lineHeight:"56px",letterSpacing:"-0.02em",fontWeight:"800"}]
+}}}}
+</script>
+</head>
+<body class="text-on-surface nebula-gradient min-h-screen flex flex-col font-body-md">
+
+<header class="bg-[#1b0b2f]/80 backdrop-blur-xl border-b border-[#cdbdff]/20 shadow-[0_4px_20px_rgba(255,215,0,0.1)] flex justify-between items-center px-6 h-16 w-full fixed top-0 z-50">
+  <a href="index.html" class="flex items-center gap-3">
+    <span class="material-symbols-outlined text-[#ffd700]" style="font-variation-settings:'FILL' 1;">pets</span>
+    <span class="text-lg font-bold text-[#ffd700] tracking-wider">Perfect Paw Match</span>
+  </a>
+  <nav class="hidden md:flex items-center gap-8 text-sm font-bold text-[#cdbdff]">
+    <a href="index.html" class="hover:text-[#ffd700] transition-colors">Home</a>
+    <a href="blog.html" class="text-[#ffd700] border-b-2 border-[#ffd700] pb-0.5">Blog</a>
+    <a href="index.html#game" class="hover:text-[#ffd700] transition-colors">Play</a>
+  </nav>
+</header>
+
+<main class="flex-grow pt-24 pb-16 w-full">
+
+  <!-- Hero -->
+  <div class="relative w-full bg-gradient-to-b from-[#2d1b69]/60 to-transparent py-16 px-6 text-center mb-12">
+    <h1 class="text-4xl md:text-5xl font-extrabold text-[#ffd700] mb-4">Paw Match Blog</h1>
+    <p class="text-[#cdbdff] max-w-xl mx-auto text-base">Tips, guides, and cosmic updates for your puzzle adventure.</p>
+  </div>
+
+  <!-- 광고 배너 자리 -->
+  <div class="max-w-[900px] mx-auto px-6 mb-10">
+    <div class="w-full h-[90px] border border-[#cdbdff]/10 rounded-xl flex items-center justify-center text-[#cdbdff]/30 text-xs tracking-widest font-bold">
+      ADVERTISEMENT · 728×90
+    </div>
+  </div>
+
+  <!-- 블로그 포스트 목록 -->
+  <div class="max-w-[900px] mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    <!-- 포스트 1 -->
+    <article class="glass-panel rounded-2xl overflow-hidden article-card">
+      <div class="h-40 bg-gradient-to-br from-[#4e3f7d] to-[#1b0b2f] flex items-center justify-center">
+        <span class="text-6xl">🐾</span>
+      </div>
+      <div class="p-6">
+        <div class="flex gap-2 mb-3"><span class="tag">GUIDE</span><span class="tag">BEGINNER</span></div>
+        <h2 class="text-lg font-bold text-[#fff6df] mb-2">How to Play Perfect Paw Match: Beginner's Guide</h2>
+        <p class="text-sm text-[#d0c6ab] mb-4">Learn the basics of tile matching, how to earn stars, and tips to clear every level without using power-ups.</p>
+        <div class="flex items-center justify-between text-xs text-[#cdbdff]/50">
+          <span>May 2025</span>
+          <a href="blog-how-to-play.html" class="text-[#ffd700] font-bold hover:underline">Read more →</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- 포스트 2 -->
+    <article class="glass-panel rounded-2xl overflow-hidden article-card">
+      <div class="h-40 bg-gradient-to-br from-[#322247] to-[#150529] flex items-center justify-center">
+        <span class="text-6xl">⭐</span>
+      </div>
+      <div class="p-6">
+        <div class="flex gap-2 mb-3"><span class="tag">TIPS</span></div>
+        <h2 class="text-lg font-bold text-[#fff6df] mb-2">5 Ways to Earn More Stars in Perfect Paw Match</h2>
+        <p class="text-sm text-[#d0c6ab] mb-4">Stars unlock characters and power-ups. Here are the fastest ways to stack up your star collection every day.</p>
+        <div class="flex items-center justify-between text-xs text-[#cdbdff]/50">
+          <span>May 2025</span>
+          <a href="blog-earn-stars.html" class="text-[#ffd700] font-bold hover:underline">Read more →</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- 포스트 3 -->
+    <article class="glass-panel rounded-2xl overflow-hidden article-card">
+      <div class="h-40 bg-gradient-to-br from-[#4e3f7d] to-[#322247] flex items-center justify-center">
+        <span class="text-6xl">🐱</span>
+      </div>
+      <div class="p-6">
+        <div class="flex gap-2 mb-3"><span class="tag">CHARACTER</span></div>
+        <h2 class="text-lg font-bold text-[#fff6df] mb-2">Meet Zia & Zio: The Cosmic Cat Characters</h2>
+        <p class="text-sm text-[#d0c6ab] mb-4">Unlock the legendary Zia and Zio characters and add them to your collection. Here's everything you need to know.</p>
+        <div class="flex items-center justify-between text-xs text-[#cdbdff]/50">
+          <span>May 2025</span>
+          <a href="blog-zia-zio.html" class="text-[#ffd700] font-bold hover:underline">Read more →</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- 포스트 4 -->
+    <article class="glass-panel rounded-2xl overflow-hidden article-card">
+      <div class="h-40 bg-gradient-to-br from-[#1b0b2f] to-[#4e3f7d] flex items-center justify-center">
+        <span class="text-6xl">🎯</span>
+      </div>
+      <div class="p-6">
+        <div class="flex gap-2 mb-3"><span class="tag">STRATEGY</span><span class="tag">ADVANCED</span></div>
+        <h2 class="text-lg font-bold text-[#fff6df] mb-2">Advanced Strategy: Clearing Hard Levels (7–10)</h2>
+        <p class="text-sm text-[#d0c6ab] mb-4">Levels 7 through 10 are no joke. Here's a strategic breakdown of how to approach the toughest stages in the game.</p>
+        <div class="flex items-center justify-between text-xs text-[#cdbdff]/50">
+          <span>May 2025</span>
+          <a href="blog-hard-levels.html" class="text-[#ffd700] font-bold hover:underline">Read more →</a>
+        </div>
+      </div>
+    </article>
+
+    <!-- 포스트 5 -->
+    <article class="glass-panel rounded-2xl overflow-hidden article-card md:col-span-2">
+      <div class="flex flex-col md:flex-row">
+        <div class="md:w-48 h-40 md:h-auto bg-gradient-to-br from-[#ffd700]/20 to-[#4e3f7d] flex items-center justify-center flex-shrink-0">
+          <span class="text-6xl">🎮</span>
+        </div>
+        <div class="p-6 flex flex-col justify-center">
+          <div class="flex gap-2 mb-3"><span class="tag">UPDATE</span></div>
+          <h2 class="text-xl font-bold text-[#fff6df] mb-2">What's New in Perfect Paw Match — May 2025 Update</h2>
+          <p class="text-sm text-[#d0c6ab] mb-4">We've added new card skins, improved mobile performance, and introduced the daily bonus system. Here's a full breakdown of everything that's new.</p>
+          <div class="flex items-center justify-between text-xs text-[#cdbdff]/50">
+            <span>May 2025</span>
+            <a href="blog-may-update.html" class="text-[#ffd700] font-bold hover:underline">Read more →</a>
+          </div>
+        </div>
+      </div>
+    </article>
+
+  </div>
+
+  <!-- 광고 배너 자리 2 -->
+  <div class="max-w-[900px] mx-auto px-6 mt-10">
+    <div class="w-full h-[90px] border border-[#cdbdff]/10 rounded-xl flex items-center justify-center text-[#cdbdff]/30 text-xs tracking-widest font-bold">
+      ADVERTISEMENT · 728×90
+    </div>
+  </div>
+
+</main>
+
+<footer class="bg-[#150529] border-t border-[#cdbdff]/10 w-full py-8 mt-auto">
+  <div class="flex flex-col items-center gap-4 max-w-[900px] mx-auto px-6">
+    <div class="flex gap-8">
+      <a href="about.html" class="text-xs font-bold tracking-widest text-[#cdbdff]/60 hover:text-[#ffd700]">ABOUT</a>
+      <a href="privacy.html" class="text-xs font-bold tracking-widest text-[#cdbdff]/60 hover:text-[#ffd700]">PRIVACY</a>
+      <a href="terms.html" class="text-xs font-bold tracking-widest text-[#cdbdff]/60 hover:text-[#ffd700]">TERMS</a>
+      <a href="contact.html" class="text-xs font-bold tracking-widest text-[#cdbdff]/60 hover:text-[#ffd700]">CONTACT</a>
+    </div>
+    <div class="text-[#ffd700] font-bold flex items-center gap-2">
+      <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;">pets</span>
+      Perfect Paw Match
+    </div>
+    <p class="text-sm text-[#cdbdff]/60">© 2025 Perfect Paw Match. All celestial rights reserved.</p>
+  </div>
+</footer>
+
+</body>
+</html>
