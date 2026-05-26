@@ -51,6 +51,67 @@ tailwind.config = {
   .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
   #bonus-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #ffd700; color: #1a0a2e; padding: 12px 28px; border-radius: 999px; font-weight: 700; font-size: 15px; z-index: 9999; display: none; box-shadow: 0 4px 20px rgba(255,215,0,0.5); pointer-events: none; }
 </style>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA7sF7Bjt0h3Nw7W42pTyJheHVgAt5pxJ8",
+  authDomain: "perfect-paw-match.firebaseapp.com",
+  projectId: "perfect-paw-match",
+  storageBucket: "perfect-paw-match.firebasestorage.app",
+  messagingSenderId: "990908464411",
+  appId: "1:990908464411:web:29135ceb791aadb2df67be"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+// 로그인 상태 변경 감지
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    // 로그인됨
+    document.getElementById('auth-btn').innerHTML = `
+      <img src="${user.photoURL}" style="width:28px;height:28px;border-radius:50%;border:2px solid #ffd700;">
+    `;
+    document.getElementById('auth-name').textContent = user.displayName;
+    document.getElementById('auth-section').style.display = 'flex';
+    document.getElementById('login-prompt').style.display = 'none';
+    // Firestore에서 포인트 불러오기
+    const ref = doc(db, 'users', user.uid);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      localStorage.setItem('ppm_stars', snap.data().stars || 0);
+    } else {
+      await setDoc(ref, { stars: 0, uid: user.uid, name: user.displayName });
+    }
+    refreshPts();
+  } else {
+    // 로그아웃
+    document.getElementById('auth-btn').innerHTML = `<span class="material-symbols-outlined text-[#d0c6ab]">account_circle</span>`;
+    document.getElementById('auth-section').style.display = 'none';
+    document.getElementById('login-prompt').style.display = 'flex';
+  }
+});
+
+window.googleLogin = async function() {
+  try { await signInWithPopup(auth, provider); }
+  catch(e) { console.error(e); }
+};
+
+window.googleLogout = async function() {
+  await signOut(auth);
+};
+
+window.syncStars = async function(stars) {
+  const user = auth.currentUser;
+  if (!user) return;
+  await updateDoc(doc(db, 'users', user.uid), { stars });
+};
+</script>
 </head>
 <body class="text-white min-h-screen flex flex-col items-center">
 <div class="w-full max-w-[1280px] bg-[#1b0b2f] flex flex-col min-h-screen shadow-2xl relative">
@@ -74,6 +135,7 @@ tailwind.config = {
     <span class="nav-link text-xs text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700]" data-section="collection" onclick="showSection('collection')">COLLECTION</span>
     <span class="nav-link text-xs text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700]" data-section="shop" onclick="showSection('shop')">SHOP</span>
   </nav>
+  <button id="auth-btn" onclick="googleLogin()" title="Google로 로그인"><span class="material-symbols-outlined text-[#d0c6ab] hover:text-[#ffd700]">account_circle</span></button>
   <button onclick="showSection('settings')"><span class="material-symbols-outlined text-[#d0c6ab] hover:text-[#ffd700]">settings</span></button>
 </header>
 
@@ -291,7 +353,26 @@ tailwind.config = {
     <h2 class="text-3xl font-bold text-[#fff6df] mb-2">Settings</h2>
     <p class="text-sm text-[#d0c6ab] mb-10">Manage your account and learn how points work.</p>
 
-    <!-- 음악 설정 -->
+    <!-- 로그인 상태 -->
+    <div id="auth-section" class="glass-card p-6 rounded-2xl mb-8" style="display:none;">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <span id="auth-name" class="font-bold text-[#fff6df]"></span>
+          <span class="text-xs text-[#cdbdff]/60">Google로 로그인됨</span>
+        </div>
+        <button onclick="googleLogout()" class="sec-btn" style="width:auto;padding:6px 16px;font-size:12px;">로그아웃</button>
+      </div>
+    </div>
+    <div id="login-prompt" class="glass-card p-6 rounded-2xl mb-8" style="display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <p class="font-bold text-[#fff6df] mb-1">로그인하면 포인트가 저장돼요</p>
+        <p class="text-xs text-[#cdbdff]/60">브라우저 지워도 별점 유지됩니다.</p>
+      </div>
+      <button onclick="googleLogin()" class="buy-btn" style="width:auto;padding:8px 20px;display:flex;align-items:center;gap:8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#1a0a2e" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#1a0a2e" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#1a0a2e" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#1a0a2e" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+        Google 로그인
+      </button>
+    </div>
     <div class="glass-card p-6 rounded-2xl mb-8">
       <h3 class="text-xl font-bold text-[#ffd700] mb-4">🎵 Music & Sound</h3>
       <div class="text-sm text-[#d0c6ab]">
@@ -360,7 +441,7 @@ tailwind.config = {
 </div>
 <script>
 function getPoints(){ return parseInt(localStorage.getItem('ppm_points')||'0'); }
-function setPoints(n){ localStorage.setItem('ppm_points', n); refreshPts(); }
+function setPoints(n){ localStorage.setItem('ppm_stars',n); refreshPts(); if(window.syncStars) window.syncStars(n); }
 function addPoints(n){ setPoints(getPoints()+n); }
 
 function refreshPts(){
