@@ -395,54 +395,48 @@ function clickTile(t){
   if(!on||t.removed||t.blocked) return;
   if(slots.length>=SM){on=false;showResult(false);return;}
   saveHist();
-  if(navigator.vibrate) navigator.vibrate(18);
+  if(navigator.vibrate) navigator.vibrate(12);
 
-  // 카드 위치 계산
   const bd=document.getElementById('board-inner');
   const bar=document.getElementById('slot-bar');
   if(bd && bar){
     const bdRect=bd.getBoundingClientRect();
     const barRect=bar.getBoundingClientRect();
     const slotIdx=slots.length;
-    const slotX=barRect.left+(slotIdx*46)+20;
-    const slotY=barRect.top+20;
+    const cellW=bar.clientWidth/SM;
+    const slotX=barRect.left+cellW*slotIdx+cellW/2;
+    const slotY=barRect.top+barRect.height/2;
     const startX=bdRect.left+t.x+CW/2;
     const startY=bdRect.top+t.y+CH/2;
 
-    // 비행 카드 생성
     const fly=document.createElement('img');
     fly.src=CP+t.card+'.png';
     fly.style.cssText=`
       position:fixed;
       left:${startX-22}px;top:${startY-22}px;
       width:44px;height:44px;
-      border-radius:8px;border:2px solid gold;
+      border-radius:6px;border:1.5px solid gold;
       object-fit:cover;z-index:99999;
       pointer-events:none;
-      box-shadow:0 0 16px rgba(255,215,0,0.8);
+      box-shadow:0 2px 8px rgba(0,0,0,0.5);
     `;
     document.body.appendChild(fly);
 
-    // 포물선 애니메이션
     const dx=slotX-startX;
     const dy=slotY-startY;
-    const dur=320;
+    const dur=180;
     const start=performance.now();
     function step(now){
       const p=Math.min((now-start)/dur,1);
-      const ease=p<0.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
-      const arc=Math.sin(p*Math.PI)*-80;
-      const x=startX+dx*ease-22;
-      const y=startY+dy*ease+arc-22;
-      const sc=1-p*0.3;
-      fly.style.left=x+'px';
-      fly.style.top=y+'px';
-      fly.style.transform=`scale(${sc}) rotate(${p*15}deg)`;
-      fly.style.opacity=p>0.85?(1-(p-0.85)/0.15)+'':1;
+      // ease-out 빠르게 직선 이동
+      const e=1-Math.pow(1-p,3);
+      fly.style.left=(startX+dx*e-22)+'px';
+      fly.style.top=(startY+dy*e-22)+'px';
+      fly.style.transform=`scale(${1-p*0.15})`;
       if(p<1) requestAnimationFrame(step);
       else {
         fly.remove();
-        if(navigator.vibrate) navigator.vibrate([10,10,20]);
+        if(navigator.vibrate) navigator.vibrate(15);
       }
     }
     requestAnimationFrame(step);
@@ -454,11 +448,10 @@ function clickTile(t){
   checkShading();
   while(checkMatch());
   render();
-  animateSlotDrop(slots.length-1);
   if(slots.length>=SM){on=false;showResult(false);}
 }
 
-function animateSlotDrop(idx){
+function animateSlotDrop(idx){}
   const bar=document.getElementById('slot-bar');
   if(!bar) return;
   const cell=bar.children[idx];
@@ -592,7 +585,27 @@ function nextStage(){stage++;_reset(true);}
 function retryStage(){_reset(true);}
 function restartGame(){_reset(false);}
 
-window.addEventListener('load',()=>{loadShopItems();buildStage();on=true;render();});
+window.addEventListener('load',()=>{
+  loadShopItems();buildStage();on=true;render();
+  dealAnimation();
+});
+
+function dealAnimation(){
+  const bd=document.getElementById('board-inner');
+  if(!bd) return;
+  const cards=bd.querySelectorAll('div');
+  cards.forEach((el,i)=>{
+    el.style.opacity='0';
+    el.style.transform='scale(0.5) translateY(-30px)';
+    el.style.transition='none';
+    setTimeout(()=>{
+      el.style.transition='opacity 0.12s ease, transform 0.15s cubic-bezier(0.2,0.8,0.4,1)';
+      el.style.opacity='1';
+      el.style.transform='scale(1) translateY(0)';
+      if(navigator.vibrate) navigator.vibrate(6);
+    }, i*28);
+  });
+}
 window.doUndo=doUndo;
 window.doShuffle=doShuffle;
 window.doWithdraw=doWithdraw;
