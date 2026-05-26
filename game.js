@@ -259,10 +259,6 @@ function render(){
       el.style.border='2.5px solid gold';
       el.style.cursor='pointer';
       el.style.boxShadow='0 0 10px rgba(255,215,0,0.5)';
-      el.style.transition='transform 0.12s cubic-bezier(0.34,1.56,0.64,1)';
-      el.style.transformOrigin='center center';
-      el.onpointerdown=()=>{el.style.transform='scale(0.88)';};
-      el.onpointerup=()=>{el.style.transform='scale(1)';};
       el.onclick=()=>clickTile(t);
     }
     bd.appendChild(el);
@@ -276,7 +272,7 @@ function render(){
 function makeDeckEl(deck, onclick){
   if(!deck.length) return null;
   const wrap=document.createElement('div');
-  wrap.style.cssText='position:relative;width:62px;height:100px;cursor:pointer;display:inline-block;';
+  wrap.style.cssText='position:relative;width:62px;height:82px;cursor:pointer;';
   wrap.onclick=onclick;
   const showCount=Math.min(6,deck.length);
   for(let i=showCount-1;i>=0;i--){
@@ -308,21 +304,21 @@ function makeDeckEl(deck, onclick){
 }
 
 function renderDecks(){
-  const row=document.getElementById('deck-row');
-  if(!row) return;
-  row.innerHTML='';
+  const ld=document.getElementById('left-deck');
+  const rd=document.getElementById('right-deck');
+  ld.innerHTML=''; rd.innerHTML='';
   const lv=LEVELS[Math.min(stage-1,LEVELS.length-1)];
   if(lv.deckMode===0) return;
-  const decks=[
-    {d:deckTL,k:'TL'},{d:deckBL,k:'BL'},
-    {d:deckTR,k:'TR'},{d:deckBR,k:'BR'}
-  ];
-  decks.forEach(({d,k})=>{
-    if(d.length){
-      const el=makeDeckEl(d,()=>drawDeck(k));
-      if(el) row.appendChild(el);
-    }
-  });
+  const leftWrap=document.createElement('div');
+  leftWrap.style.cssText='display:flex;flex-direction:column;gap:16px;align-items:center;';
+  if(deckTL.length){const el=makeDeckEl(deckTL,()=>drawDeck('TL'));if(el)leftWrap.appendChild(el);}
+  if(deckBL.length){const el=makeDeckEl(deckBL,()=>drawDeck('BL'));if(el)leftWrap.appendChild(el);}
+  ld.appendChild(leftWrap);
+  const rightWrap=document.createElement('div');
+  rightWrap.style.cssText='display:flex;flex-direction:column;gap:16px;align-items:center;';
+  if(deckTR.length){const el=makeDeckEl(deckTR,()=>drawDeck('TR'));if(el)rightWrap.appendChild(el);}
+  if(deckBR.length){const el=makeDeckEl(deckBR,()=>drawDeck('BR'));if(el)rightWrap.appendChild(el);}
+  rd.appendChild(rightWrap);
 }
 
 function drawDeck(which){
@@ -395,53 +391,6 @@ function clickTile(t){
   if(!on||t.removed||t.blocked) return;
   if(slots.length>=SM){on=false;showResult(false);return;}
   saveHist();
-  if(navigator.vibrate) navigator.vibrate(12);
-
-  const bd=document.getElementById('board-inner');
-  const bar=document.getElementById('slot-bar');
-  if(bd && bar){
-    const bdRect=bd.getBoundingClientRect();
-    const barRect=bar.getBoundingClientRect();
-    const slotIdx=slots.length;
-    const cellW=bar.clientWidth/SM;
-    const slotX=barRect.left+cellW*slotIdx+cellW/2;
-    const slotY=barRect.top+barRect.height/2;
-    const startX=bdRect.left+t.x+CW/2;
-    const startY=bdRect.top+t.y+CH/2;
-
-    const fly=document.createElement('img');
-    fly.src=CP+t.card+'.png';
-    fly.style.cssText=`
-      position:fixed;
-      left:${startX-22}px;top:${startY-22}px;
-      width:44px;height:44px;
-      border-radius:6px;border:1.5px solid gold;
-      object-fit:cover;z-index:99999;
-      pointer-events:none;
-      box-shadow:0 2px 8px rgba(0,0,0,0.5);
-    `;
-    document.body.appendChild(fly);
-
-    const dx=slotX-startX;
-    const dy=slotY-startY;
-    const dur=180;
-    const start=performance.now();
-    function step(now){
-      const p=Math.min((now-start)/dur,1);
-      // ease-out 빠르게 직선 이동
-      const e=1-Math.pow(1-p,3);
-      fly.style.left=(startX+dx*e-22)+'px';
-      fly.style.top=(startY+dy*e-22)+'px';
-      fly.style.transform=`scale(${1-p*0.15})`;
-      if(p<1) requestAnimationFrame(step);
-      else {
-        fly.remove();
-        if(navigator.vibrate) navigator.vibrate(15);
-      }
-    }
-    requestAnimationFrame(step);
-  }
-
   t.removed=true;
   slots.push(t.card);
   addPts(10);
@@ -449,25 +398,6 @@ function clickTile(t){
   while(checkMatch());
   render();
   if(slots.length>=SM){on=false;showResult(false);}
-}
-
-function animateSlotDrop(idx){}
-  const bar=document.getElementById('slot-bar');
-  if(!bar) return;
-  const cell=bar.children[idx];
-  if(!cell) return;
-  const img=cell.querySelector('img');
-  if(!img) return;
-  img.style.transition='none';
-  img.style.transform='translateY(-40px) scale(0.6)';
-  img.style.opacity='0';
-  requestAnimationFrame(()=>{
-    requestAnimationFrame(()=>{
-      img.style.transition='transform 0.32s cubic-bezier(0.34,1.56,0.64,1), opacity 0.18s ease';
-      img.style.transform='translateY(0) scale(1)';
-      img.style.opacity='1';
-    });
-  });
 }
 
 function doUndo(){
