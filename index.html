@@ -46,6 +46,8 @@ tailwind.config = {
   .buy-btn { background: #ffd700; color: #1a0a2e; border: none; padding: 8px 20px; border-radius: 999px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; width: 100%; }
   .buy-btn:hover { box-shadow: 0 4px 12px rgba(255,215,0,0.4); }
   .buy-btn:disabled { background: #444; color: #666; cursor: not-allowed; }
+  .sec-btn { background: #6b4c2a; color: #ffd700; border: 1px solid rgba(255,215,0,0.3); padding: 8px 20px; border-radius: 999px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; width: 100%; }
+  .sec-btn:hover { box-shadow: 0 4px 12px rgba(107,76,42,0.5); }
   .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
   #bonus-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #ffd700; color: #1a0a2e; padding: 12px 28px; border-radius: 999px; font-weight: 700; font-size: 15px; z-index: 9999; display: none; box-shadow: 0 4px 20px rgba(255,215,0,0.5); pointer-events: none; }
 </style>
@@ -263,14 +265,16 @@ tailwind.config = {
         <p class="text-lg font-bold text-[#fff6df]">Zia Character</p>
         <p class="text-sm text-[#d0c6ab]">Unlock any Zia you don't have yet.</p>
         <span class="pt-badge">500 ⭐ or $0.99</span>
-        <button class="buy-btn" onclick="showSection('collection')">View Collection</button>
+        <button class="sec-btn" onclick="showSection('collection')">View Collection</button>
+        <button class="buy-btn" onclick="buyZia()">500 ⭐ or $0.99</button>
       </div>
       <div class="shop-card">
         <img src="./asset/zio-final/zio1.png" style="width:80px;height:80px;border-radius:12px;object-fit:cover;" alt="Zio"/>
         <p class="text-lg font-bold text-[#fff6df]">Zio Character</p>
         <p class="text-sm text-[#d0c6ab]">Unlock any Zio you don't have yet.</p>
         <span class="pt-badge">500 ⭐ or $0.99</span>
-        <button class="buy-btn" onclick="showSection('collection')">View Collection</button>
+        <button class="sec-btn" onclick="showSection('collection')">View Collection</button>
+        <button class="buy-btn" onclick="buyZio()">500 ⭐ or $0.99</button>
       </div>
       <div class="shop-card">
         <div style="font-size:40px;">🌟</div>
@@ -400,7 +404,28 @@ function buyItem(type, cost){
   }
 }
 
-function buyNoAds(){ showToast('Payment coming soon!'); }
+function buyNoAds(){
+  var choice=confirm('Pay with PayPal?\nOK = PayPal  |  Cancel = Credit Card (Stripe)');
+  if(choice){ window.open('https://www.paypal.com/ncp/payment/5M5SC7J9KQFVY','_blank'); }
+  else { window.open('https://buy.stripe.com/fZu7sKccg5Zp4ez7JNgjC00','_blank'); }
+}
+function spendStars(cost){
+  var pts=parseInt(localStorage.getItem('ppm_stars')||'0');
+  if(pts>=cost){ localStorage.setItem('ppm_stars',pts-cost); updatePts(); showToast('✅ Unlocked with ⭐!'); return true; }
+  return false;
+}
+function buyZia(){
+  if(spendStars(500)) return;
+  var choice=confirm('Pay with PayPal?\nOK = PayPal  |  Cancel = Credit Card (Stripe)');
+  if(choice){ window.open('https://www.paypal.com/ncp/payment/7E8DA6WE9XNQY','_blank'); }
+  else { window.open('https://buy.stripe.com/14A3cu4JOevVbH19RVgjC01','_blank'); }
+}
+function buyZio(){
+  if(spendStars(500)) return;
+  var choice=confirm('Pay with PayPal?\nOK = PayPal  |  Cancel = Credit Card (Stripe)');
+  if(choice){ window.open('https://www.paypal.com/ncp/payment/7E8DA6WE9XNQY','_blank'); }
+  else { window.open('https://buy.stripe.com/14A3cu4JOevVbH19RVgjC01','_blank'); }
+}
 
 function resetData(){
   if(!confirm('Reset ALL data?')) return;
