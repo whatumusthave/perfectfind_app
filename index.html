@@ -51,6 +51,55 @@ tailwind.config = {
   .sec-btn:hover { box-shadow: 0 4px 12px rgba(107,76,42,0.5); }
   #bonus-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #ffd700; color: #1a0a2e; padding: 12px 28px; border-radius: 999px; font-weight: 700; font-size: 15px; z-index: 9999; display: none; box-shadow: 0 4px 20px rgba(255,215,0,0.5); pointer-events: none; }
 </style>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyA7sF7Bjt0h3Nw7W42pTyJheHVgAt5pxJ8",
+  authDomain: "perfect-paw-match.firebaseapp.com",
+  projectId: "perfect-paw-match",
+  storageBucket: "perfect-paw-match.firebasestorage.app",
+  messagingSenderId: "990908464411",
+  appId: "1:990908464411:web:29135ceb791aadb2df67be"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+onAuthStateChanged(auth, async (user) => {
+  const authBtn = document.getElementById('auth-btn');
+  const authSec = document.getElementById('auth-section');
+  const loginPrompt = document.getElementById('login-prompt');
+  if (user) {
+    if(authBtn) authBtn.innerHTML = `<img src="${user.photoURL}" style="width:28px;height:28px;border-radius:50%;border:2px solid #ffd700;cursor:pointer;" onclick="window.googleLogout()">`;
+    if(authSec) authSec.style.display='flex';
+    if(loginPrompt) loginPrompt.style.display='none';
+    const nameEl = document.getElementById('auth-name');
+    if(nameEl) nameEl.textContent = user.displayName;
+    const ref = doc(db, 'users', user.uid);
+    const snap = await getDoc(ref);
+    if(snap.exists()){
+      localStorage.setItem('ppm_stars', snap.data().stars || 0);
+    } else {
+      await setDoc(ref, { stars: 0, uid: user.uid, name: user.displayName });
+    }
+    if(window.refreshPts) window.refreshPts();
+  } else {
+    if(authBtn) authBtn.innerHTML = `<span class="material-symbols-outlined text-[#d0c6ab] hover:text-[#ffd700]" style="cursor:pointer;" onclick="window.googleLogin()">account_circle</span>`;
+    if(authSec) authSec.style.display='none';
+    if(loginPrompt) loginPrompt.style.display='flex';
+  }
+});
+window.googleLogin = async function(){ try{ await signInWithPopup(auth, provider); }catch(e){ console.error(e); } };
+window.googleLogout = async function(){ await signOut(auth); };
+window.syncStars = async function(stars){
+  const user = auth.currentUser;
+  if(!user) return;
+  const { updateDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+  await updateDoc(doc(db,'users',user.uid),{ stars });
+};
+</script>
 </head>
 <body class="text-white min-h-screen flex flex-col items-center">
 <div class="w-full max-w-[1280px] bg-[#1b0b2f] flex flex-col min-h-screen shadow-2xl relative">
@@ -76,6 +125,7 @@ tailwind.config = {
     <a class="text-xs text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700]" href="blog.html">BLOG</a>
   </nav>
   <div class="flex items-center gap-2">
+    <span id="auth-btn" class="material-symbols-outlined text-[#d0c6ab] hover:text-[#ffd700]" style="cursor:pointer;" onclick="window.googleLogin()">account_circle</span>
     <button onclick="showSection('settings')"><span class="material-symbols-outlined text-[#d0c6ab] hover:text-[#ffd700]">settings</span></button>
     <button class="md:hidden material-symbols-outlined text-[#ffd700] text-2xl" onclick="toggleMobileMenu()">menu</button>
   </div>
@@ -372,6 +422,23 @@ function toggleMobileMenu() {
   <div class="px-6 py-12 max-w-[700px] mx-auto">
     <h2 class="text-3xl font-bold text-[#fff6df] mb-2">Settings</h2>
     <p class="text-sm text-[#d0c6ab] mb-10">Manage your account and learn how points work.</p>
+
+    <!-- Google 로그인 -->
+    <div id="login-prompt" class="glass-card p-6 rounded-2xl mb-8 flex items-center justify-between">
+      <div>
+        <p class="font-bold text-[#fff6df] mb-1">로그인하면 포인트가 저장돼요</p>
+        <p class="text-xs text-[#cdbdff]/60">브라우저 지워도 별점 유지됩니다.</p>
+      </div>
+      <button onclick="window.googleLogin()" class="buy-btn" style="width:auto;padding:8px 16px;font-size:13px;">Google 로그인</button>
+    </div>
+    <div id="auth-section" class="glass-card p-6 rounded-2xl mb-8" style="display:none;flex-direction:row;align-items:center;justify-content:space-between;">
+      <div>
+        <p id="auth-name" class="font-bold text-[#fff6df]"></p>
+        <p class="text-xs text-[#cdbdff]/60">Google로 로그인됨</p>
+      </div>
+      <button onclick="window.googleLogout()" class="sec-btn" style="width:auto;padding:6px 16px;font-size:12px;">로그아웃</button>
+    </div>
+
     <div class="glass-card p-6 rounded-2xl mb-8">
       <h3 class="text-xl font-bold text-[#ffd700] mb-4">🎵 Music & Sound</h3>
       <div class="text-sm text-[#d0c6ab]">
@@ -439,7 +506,7 @@ function toggleMobileMenu() {
 </div>
 <script>
 function getPoints(){ return parseInt(localStorage.getItem('ppm_points')||'0'); }
-function setPoints(n){ localStorage.setItem('ppm_points', n); refreshPts(); }
+function setPoints(n){ localStorage.setItem('ppm_stars',n); refreshPts(); if(window.syncStars) window.syncStars(n); }
 function addPoints(n){ setPoints(getPoints()+n); }
 
 function refreshPts(){
