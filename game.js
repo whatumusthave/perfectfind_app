@@ -523,15 +523,15 @@ window.addEventListener('resize', scaleGame);
 function scaleGame(){
   const container=document.querySelector('.game-container');
   if(!container) return;
-  const availW=container.clientWidth;
-  const neededW=360+56+56+8; // board + 2 decks + gaps
-  if(availW < neededW){
-    const s=availW/neededW;
-    container.style.transform=`scale(${s})`;
-    container.style.transformOrigin='top center';
-  } else {
-    container.style.transform='';
-  }
+  const availW=window.innerWidth;
+  const availH=window.innerHeight;
+  const neededW=360+72+72+12;
+  const neededH=460+80+50; // board + bottom + header
+  const sw=availW/neededW;
+  const sh=availH/neededH;
+  const s=Math.min(sw,sh,1);
+  container.style.transform=`scale(${s})`;
+  container.style.transformOrigin='top center';
 }
 window.doUndo=doUndo;
 window.doShuffle=doShuffle;
