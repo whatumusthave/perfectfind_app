@@ -272,7 +272,7 @@ function render(){
 function makeDeckEl(deck, onclick){
   if(!deck.length) return null;
   const wrap=document.createElement('div');
-  wrap.style.cssText='position:relative;width:62px;height:82px;cursor:pointer;';
+  wrap.style.cssText='position:relative;width:62px;height:100px;cursor:pointer;display:inline-block;';
   wrap.onclick=onclick;
   const showCount=Math.min(6,deck.length);
   for(let i=showCount-1;i>=0;i--){
