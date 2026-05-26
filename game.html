@@ -17,13 +17,18 @@
     #score{background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);border-radius:20px;padding:3px 10px}
     #stage-label{font-size:11px;font-weight:700;color:var(--lav)}
 
-    .game-container{flex:1;display:flex;align-items:center;justify-content:center;gap:2px;min-height:0;padding:2px 0;overflow:hidden}
-    #left-deck,#right-deck{width:56px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;align-self:stretch}
-    #game-board{flex:0 0 360px;height:460px;display:flex;align-items:center;justify-content:center}
-    #board-inner{position:relative;width:360px;height:460px}
-    .game-scaler{display:flex;align-items:center;justify-content:center;width:100%;height:100%;transform-origin:center center}
+    /* 게임 컨테이너 */
+    .game-container{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative;overflow:hidden}
 
-    /* 하단 고정 영역 */
+    /* 보드 */
+    #game-board{position:relative;width:360px;height:460px;flex-shrink:0}
+    #board-inner{position:relative;width:360px;height:460px}
+
+    /* 덱: 보드 위에 오버레이 (좌우 끝에 붙임) */
+    #left-deck{position:absolute;left:0;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:10;pointer-events:auto}
+    #right-deck{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:10;pointer-events:auto}
+
+    /* 하단 */
     .bottom{flex-shrink:0;background:rgba(12,4,24,.97);border-top:1px solid rgba(205,189,255,.08);padding:4px 8px 8px}
     .slot-row{display:flex;align-items:center;justify-content:center;gap:3px;margin-bottom:6px}
     #slot-count{font-size:10px;font-weight:700;color:rgba(205,189,255,.4);margin-right:5px;white-space:nowrap}
@@ -43,14 +48,6 @@
     .result-box button{display:block;width:100%;padding:12px;margin-top:8px;border:none;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
     .result-box button:first-of-type{background:var(--gold);color:#1a0a2e}
     .result-box button:not(:first-of-type){background:rgba(205,189,255,.07);color:var(--lav);border:1.5px solid rgba(205,189,255,.18)}
-
-    /* 작은 화면 대응 */
-    @media(max-height:680px){
-      .act-btn{width:68px;height:50px}
-      .act-btn svg{width:24px;height:24px}
-      .bottom{padding:3px 8px 6px}
-      .slot-row{margin-bottom:4px}
-    }
   </style>
 </head>
 <body>

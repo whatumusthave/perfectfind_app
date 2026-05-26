@@ -515,24 +515,7 @@ function nextStage(){stage++;_reset(true);}
 function retryStage(){_reset(true);}
 function restartGame(){_reset(false);}
 
-window.addEventListener('load',()=>{
-  loadShopItems();buildStage();on=true;render();
-  scaleGame();
-});
-window.addEventListener('resize', scaleGame);
-function scaleGame(){
-  const container=document.querySelector('.game-container');
-  if(!container) return;
-  const availW=window.innerWidth;
-  const availH=window.innerHeight;
-  const neededW=360+72+72+12;
-  const neededH=460+80+50; // board + bottom + header
-  const sw=availW/neededW;
-  const sh=availH/neededH;
-  const s=Math.min(sw,sh,1);
-  container.style.transform=`scale(${s})`;
-  container.style.transformOrigin='top center';
-}
+window.addEventListener('load',()=>{loadShopItems();buildStage();on=true;render();});
 window.doUndo=doUndo;
 window.doShuffle=doShuffle;
 window.doWithdraw=doWithdraw;
