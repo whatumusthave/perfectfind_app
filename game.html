@@ -17,22 +17,25 @@
     #score{background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);border-radius:20px;padding:3px 10px}
     #stage-label{font-size:11px;font-weight:700;color:var(--lav)}
 
-    /* 게임 컨테이너 */
-    .game-container{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;position:relative;overflow:hidden}
-
-    /* 보드 */
-    #game-board{position:relative;width:360px;height:460px;flex-shrink:0}
+    /* 게임 보드만 */
+    .game-container{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;overflow:hidden}
+    #game-board{width:360px;height:460px;flex-shrink:0}
     #board-inner{position:relative;width:360px;height:460px}
+    #left-deck,#right-deck{display:none} /* 숨김 — 덱은 하단에 */
 
-    /* 덱: 보드 위에 오버레이 (좌우 끝에 붙임) */
-    #left-deck{position:absolute;left:0;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:10;pointer-events:auto}
-    #right-deck{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;z-index:10;pointer-events:auto}
-
-    /* 하단 */
+    /* 하단 전체 */
     .bottom{flex-shrink:0;background:rgba(12,4,24,.97);border-top:1px solid rgba(205,189,255,.08);padding:4px 8px 8px}
+
+    /* 덱 행 — 슬롯 위 */
+    .deck-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:6px;min-height:30px}
+    .deck-row:empty{display:none}
+
+    /* 슬롯 행 */
     .slot-row{display:flex;align-items:center;justify-content:center;gap:3px;margin-bottom:6px}
     #slot-count{font-size:10px;font-weight:700;color:rgba(205,189,255,.4);margin-right:5px;white-space:nowrap}
     #slot-bar{display:flex;gap:3px;flex-wrap:nowrap;justify-content:center}
+
+    /* 버튼 행 */
     .action-btns{display:flex;justify-content:center;gap:12px}
     .act-btn{width:76px;height:58px;border:none;border-radius:14px;cursor:pointer;background:linear-gradient(180deg,#4a90e8 0,#2d6abf 100%);box-shadow:0 4px 0 #1a4a8a,0 6px 16px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;gap:2px;transition:transform .08s,box-shadow .08s}
     .act-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #1a4a8a,0 2px 8px rgba(0,0,0,.3)}
@@ -62,6 +65,7 @@
     <div id="right-deck"></div>
   </div>
   <div class="bottom">
+    <div class="deck-row" id="deck-row"></div>
     <div class="slot-row">
       <div id="slot-count">0/7</div>
       <div id="slot-bar"></div>

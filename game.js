@@ -304,21 +304,21 @@ function makeDeckEl(deck, onclick){
 }
 
 function renderDecks(){
-  const ld=document.getElementById('left-deck');
-  const rd=document.getElementById('right-deck');
-  ld.innerHTML=''; rd.innerHTML='';
+  const row=document.getElementById('deck-row');
+  if(!row) return;
+  row.innerHTML='';
   const lv=LEVELS[Math.min(stage-1,LEVELS.length-1)];
   if(lv.deckMode===0) return;
-  const leftWrap=document.createElement('div');
-  leftWrap.style.cssText='display:flex;flex-direction:column;gap:16px;align-items:center;';
-  if(deckTL.length){const el=makeDeckEl(deckTL,()=>drawDeck('TL'));if(el)leftWrap.appendChild(el);}
-  if(deckBL.length){const el=makeDeckEl(deckBL,()=>drawDeck('BL'));if(el)leftWrap.appendChild(el);}
-  ld.appendChild(leftWrap);
-  const rightWrap=document.createElement('div');
-  rightWrap.style.cssText='display:flex;flex-direction:column;gap:16px;align-items:center;';
-  if(deckTR.length){const el=makeDeckEl(deckTR,()=>drawDeck('TR'));if(el)rightWrap.appendChild(el);}
-  if(deckBR.length){const el=makeDeckEl(deckBR,()=>drawDeck('BR'));if(el)rightWrap.appendChild(el);}
-  rd.appendChild(rightWrap);
+  const decks=[
+    {d:deckTL,k:'TL'},{d:deckBL,k:'BL'},
+    {d:deckTR,k:'TR'},{d:deckBR,k:'BR'}
+  ];
+  decks.forEach(({d,k})=>{
+    if(d.length){
+      const el=makeDeckEl(d,()=>drawDeck(k));
+      if(el) row.appendChild(el);
+    }
+  });
 }
 
 function drawDeck(which){
