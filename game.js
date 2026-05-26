@@ -259,6 +259,10 @@ function render(){
       el.style.border='2.5px solid gold';
       el.style.cursor='pointer';
       el.style.boxShadow='0 0 10px rgba(255,215,0,0.5)';
+      el.style.transition='transform 0.12s cubic-bezier(0.34,1.56,0.64,1)';
+      el.style.transformOrigin='center center';
+      el.onpointerdown=()=>{el.style.transform='scale(0.88)';};
+      el.onpointerup=()=>{el.style.transform='scale(1)';};
       el.onclick=()=>clickTile(t);
     }
     bd.appendChild(el);
@@ -391,13 +395,36 @@ function clickTile(t){
   if(!on||t.removed||t.blocked) return;
   if(slots.length>=SM){on=false;showResult(false);return;}
   saveHist();
+  // 햅틱
+  if(navigator.vibrate) navigator.vibrate(18);
   t.removed=true;
   slots.push(t.card);
   addPts(10);
   checkShading();
   while(checkMatch());
   render();
+  // 슬롯 드롭 애니메이션
+  animateSlotDrop(slots.length-1);
   if(slots.length>=SM){on=false;showResult(false);}
+}
+
+function animateSlotDrop(idx){
+  const bar=document.getElementById('slot-bar');
+  if(!bar) return;
+  const cell=bar.children[idx];
+  if(!cell) return;
+  const img=cell.querySelector('img');
+  if(!img) return;
+  img.style.transition='none';
+  img.style.transform='translateY(-40px) scale(0.6)';
+  img.style.opacity='0';
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      img.style.transition='transform 0.32s cubic-bezier(0.34,1.56,0.64,1), opacity 0.18s ease';
+      img.style.transform='translateY(0) scale(1)';
+      img.style.opacity='1';
+    });
+  });
 }
 
 function doUndo(){
