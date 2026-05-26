@@ -585,27 +585,7 @@ function nextStage(){stage++;_reset(true);}
 function retryStage(){_reset(true);}
 function restartGame(){_reset(false);}
 
-window.addEventListener('load',()=>{
-  loadShopItems();buildStage();on=true;render();
-  dealAnimation();
-});
-
-function dealAnimation(){
-  const bd=document.getElementById('board-inner');
-  if(!bd) return;
-  const cards=bd.querySelectorAll('div');
-  cards.forEach((el,i)=>{
-    el.style.opacity='0';
-    el.style.transform='scale(0.5) translateY(-30px)';
-    el.style.transition='none';
-    setTimeout(()=>{
-      el.style.transition='opacity 0.12s ease, transform 0.15s cubic-bezier(0.2,0.8,0.4,1)';
-      el.style.opacity='1';
-      el.style.transform='scale(1) translateY(0)';
-      if(navigator.vibrate) navigator.vibrate(6);
-    }, i*28);
-  });
-}
+window.addEventListener('load',()=>{loadShopItems();buildStage();on=true;render();});
 window.doUndo=doUndo;
 window.doShuffle=doShuffle;
 window.doWithdraw=doWithdraw;
