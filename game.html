@@ -10,24 +10,34 @@
   <style>
     :root{--bg:#1b0b2f;--panel:#322247;--gold:#ffd700;--lav:#cdbdff}
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    body{background:var(--bg);color:var(--lav);font-family:'Plus Jakarta Sans',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;user-select:none}
+    html,body{height:100%;overflow:hidden}
+    body{background:var(--bg);color:var(--lav);font-family:'Plus Jakarta Sans',sans-serif;display:flex;flex-direction:column;user-select:none}
     header{display:flex;align-items:center;justify-content:space-between;padding:5px 14px;background:rgba(27,11,47,.97);border-bottom:1px solid rgba(205,189,255,.1);flex-shrink:0}
     .logo,#score{font-size:13px;font-weight:800;color:var(--gold)}
     #score{background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);border-radius:20px;padding:3px 10px}
     #stage-label{font-size:11px;font-weight:700;color:var(--lav)}
-    .game-container{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-height:0;padding:8px}
-    #left-deck,#right-deck{width:74px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-    #game-board{flex:0 0 360px;height:460px;display:flex;align-items:center;justify-content:center}
+
+    /* 게임 영역: 남은 공간 모두 차지 */
+    .game-container{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;min-height:0;padding:4px 2px}
+
+    /* 덱: 화면에 보이도록 */
+    #left-deck,#right-deck{width:68px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;align-self:stretch}
+
+    /* 보드: 유연하게 */
+    #game-board{flex:1;min-width:0;height:100%;display:flex;align-items:center;justify-content:center;max-width:360px}
     #board-inner{position:relative;width:360px;height:460px}
-    .bottom{flex-shrink:0;background:rgba(12,4,24,.97);border-top:1px solid rgba(205,189,255,.08);padding:6px 10px 12px}
-    .slot-row{display:flex;align-items:center;justify-content:center;gap:3px;margin-bottom:10px}
+
+    /* 하단 고정 영역 */
+    .bottom{flex-shrink:0;background:rgba(12,4,24,.97);border-top:1px solid rgba(205,189,255,.08);padding:4px 8px 8px}
+    .slot-row{display:flex;align-items:center;justify-content:center;gap:3px;margin-bottom:6px}
     #slot-count{font-size:10px;font-weight:700;color:rgba(205,189,255,.4);margin-right:5px;white-space:nowrap}
-    #slot-bar{display:flex;gap:3px;flex-wrap:wrap;justify-content:center}
-    .action-btns{display:flex;justify-content:center;gap:16px}
-    .act-btn{width:80px;height:64px;border:none;border-radius:14px;cursor:pointer;background:linear-gradient(180deg,#4a90e8 0,#2d6abf 100%);box-shadow:0 4px 0 #1a4a8a,0 6px 16px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;gap:2px;transition:transform .08s,box-shadow .08s}
+    #slot-bar{display:flex;gap:3px;flex-wrap:nowrap;justify-content:center}
+    .action-btns{display:flex;justify-content:center;gap:12px}
+    .act-btn{width:76px;height:58px;border:none;border-radius:14px;cursor:pointer;background:linear-gradient(180deg,#4a90e8 0,#2d6abf 100%);box-shadow:0 4px 0 #1a4a8a,0 6px 16px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;gap:2px;transition:transform .08s,box-shadow .08s}
     .act-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #1a4a8a,0 2px 8px rgba(0,0,0,.3)}
-    .act-btn svg{width:32px;height:32px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))}
+    .act-btn svg{width:28px;height:28px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.3))}
     .act-badge{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:#111;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.3)}
+
     #overlay{display:none;position:fixed;inset:0;background:rgba(20,8,40,.9);backdrop-filter:blur(16px);z-index:10000;align-items:center;justify-content:center}
     .result-box{background:rgba(50,34,71,.98);border:1px solid rgba(205,189,255,.15);border-radius:24px;padding:28px 22px;text-align:center;max-width:300px;width:92%}
     .result-box.win{box-shadow:0 0 60px rgba(255,215,0,.45)}
@@ -37,13 +47,21 @@
     .result-box button{display:block;width:100%;padding:12px;margin-top:8px;border:none;border-radius:12px;font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer}
     .result-box button:first-of-type{background:var(--gold);color:#1a0a2e}
     .result-box button:not(:first-of-type){background:rgba(205,189,255,.07);color:var(--lav);border:1.5px solid rgba(205,189,255,.18)}
+
+    /* 작은 화면 대응 */
+    @media(max-height:680px){
+      .act-btn{width:68px;height:50px}
+      .act-btn svg{width:24px;height:24px}
+      .bottom{padding:3px 8px 6px}
+      .slot-row{margin-bottom:4px}
+    }
   </style>
 </head>
 <body>
   <header>
     <div class="logo">Perfect Paw</div>
     <div id="stage-label">Stage 1</div>
-    <div id="score">0</div>
+    <div id="score">★ 0</div>
   </header>
   <div class="game-container">
     <div id="left-deck"></div>
