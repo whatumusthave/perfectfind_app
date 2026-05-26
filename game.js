@@ -515,7 +515,24 @@ function nextStage(){stage++;_reset(true);}
 function retryStage(){_reset(true);}
 function restartGame(){_reset(false);}
 
-window.addEventListener('load',()=>{loadShopItems();buildStage();on=true;render();});
+window.addEventListener('load',()=>{
+  loadShopItems();buildStage();on=true;render();
+  scaleGame();
+});
+window.addEventListener('resize', scaleGame);
+function scaleGame(){
+  const container=document.querySelector('.game-container');
+  if(!container) return;
+  const availW=container.clientWidth;
+  const neededW=360+56+56+8; // board + 2 decks + gaps
+  if(availW < neededW){
+    const s=availW/neededW;
+    container.style.transform=`scale(${s})`;
+    container.style.transformOrigin='top center';
+  } else {
+    container.style.transform='';
+  }
+}
 window.doUndo=doUndo;
 window.doShuffle=doShuffle;
 window.doWithdraw=doWithdraw;
