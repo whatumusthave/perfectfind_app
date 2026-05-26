@@ -290,6 +290,27 @@ tailwind.config = {
   <div class="px-6 py-12 max-w-[700px] mx-auto">
     <h2 class="text-3xl font-bold text-[#fff6df] mb-2">Settings</h2>
     <p class="text-sm text-[#d0c6ab] mb-10">Manage your account and learn how points work.</p>
+
+    <!-- 음악 설정 -->
+    <div class="glass-card p-6 rounded-2xl mb-8">
+      <h3 class="text-xl font-bold text-[#ffd700] mb-4">🎵 Music & Sound</h3>
+      <div class="text-sm text-[#d0c6ab]">
+        <div class="settings-row">
+          <span>Background Music</span>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="music-toggle" class="sr-only peer" onchange="toggleMusic(this.checked)">
+            <div class="w-11 h-6 bg-[#4e3f7d] peer-checked:bg-[#ffd700] rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
+          </label>
+        </div>
+        <div class="settings-row" style="border:none;">
+          <span>Volume</span>
+          <input type="range" id="music-volume" min="0" max="100" value="70"
+            oninput="setMusicVolume(this.value)"
+            class="w-32 accent-[#ffd700] cursor-pointer">
+        </div>
+      </div>
+    </div>
+
     <div class="glass-card p-6 rounded-2xl mb-8">
       <h3 class="text-xl font-bold text-[#ffd700] mb-4">⭐ How to Earn Points</h3>
       <div class="text-sm text-[#d0c6ab]">
@@ -425,6 +446,35 @@ function buyZio(){
   else { window.open('https://buy.stripe.com/14A3cu4JOevVbH19RVgjC01','_blank'); }
 }
 
+// 음악 설정
+var bgMusic=null;
+function toggleMusic(on){
+  localStorage.setItem('ppm_music', on?'1':'0');
+  if(on){
+    if(!bgMusic){
+      bgMusic=new Audio();
+      bgMusic.loop=true;
+      bgMusic.volume=(parseInt(localStorage.getItem('ppm_vol')||'70'))/100;
+      // BGM 파일 추가 후 src 설정: bgMusic.src='asset/bgm.mp3';
+    }
+    // bgMusic.play();
+  } else {
+    if(bgMusic){ bgMusic.pause(); }
+  }
+}
+function setMusicVolume(val){
+  localStorage.setItem('ppm_vol', val);
+  if(bgMusic) bgMusic.volume=val/100;
+}
+function initMusicSettings(){
+  var on=localStorage.getItem('ppm_music')==='1';
+  var vol=parseInt(localStorage.getItem('ppm_vol')||'70');
+  var tog=document.getElementById('music-toggle');
+  var volEl=document.getElementById('music-volume');
+  if(tog) tog.checked=on;
+  if(volEl) volEl.value=vol;
+}
+
 function resetData(){
   if(!confirm('Reset ALL data?')) return;
   ['ppm_points','ppm_bonus_date','ppm_undo','ppm_shuffle','ppm_unlocked'].forEach(function(k){ localStorage.removeItem(k); });
@@ -488,6 +538,7 @@ function unlockChar(key, imgSrc, card){
 
 refreshPts();
 updateBonusBtn();
+initMusicSettings();
 </script>
 </body>
 </html>
