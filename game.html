@@ -18,9 +18,12 @@
     #stage-label{font-size:11px;font-weight:700;color:var(--lav)}
 
     /* 게임 보드만 */
-    .game-container{flex:1;display:flex;align-items:center;justify-content:center;min-height:0;overflow:visible}
-    #game-board{width:100%;max-width:360px;height:auto;flex-shrink:1;overflow:visible}
-    #board-inner{position:relative;width:360px;height:460px;transform-origin:top center}
+    .game-container{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
+    #game-board{width:360px;height:460px;flex-shrink:0;transform-origin:top center}
+    #board-inner{position:relative;width:360px;height:460px}
+    @media(max-width:380px){
+      #game-board{transform:scale(0.9);width:324px;height:414px;}
+    }
     #left-deck,#right-deck{display:none} /* 숨김 — 덱은 하단에 */
 
     /* 하단 전체 */

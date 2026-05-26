@@ -585,21 +585,7 @@ function nextStage(){stage++;_reset(true);}
 function retryStage(){_reset(true);}
 function restartGame(){_reset(false);}
 
-window.addEventListener('load',()=>{
-  loadShopItems();buildStage();on=true;render();
-  fitBoard();
-});
-window.addEventListener('resize', fitBoard);
-function fitBoard(){
-  const bi=document.getElementById('board-inner');
-  if(!bi) return;
-  const avail=window.innerWidth;
-  const s=Math.min(avail/360, 1);
-  bi.style.transform=`scale(${s})`;
-  bi.style.transformOrigin='top center';
-  const gb=document.getElementById('game-board');
-  if(gb) gb.style.height=(460*s)+'px';
-}
+window.addEventListener('load',()=>{loadShopItems();buildStage();on=true;render();});
 window.doUndo=doUndo;
 window.doShuffle=doShuffle;
 window.doWithdraw=doWithdraw;
