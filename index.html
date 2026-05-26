@@ -46,72 +46,9 @@ tailwind.config = {
   .buy-btn { background: #ffd700; color: #1a0a2e; border: none; padding: 8px 20px; border-radius: 999px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; width: 100%; }
   .buy-btn:hover { box-shadow: 0 4px 12px rgba(255,215,0,0.4); }
   .buy-btn:disabled { background: #444; color: #666; cursor: not-allowed; }
-  .sec-btn { background: #6b4c2a; color: #ffd700; border: 1px solid rgba(255,215,0,0.3); padding: 8px 20px; border-radius: 999px; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s; width: 100%; }
-  .sec-btn:hover { box-shadow: 0 4px 12px rgba(107,76,42,0.5); }
   .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
   #bonus-toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%); background: #ffd700; color: #1a0a2e; padding: 12px 28px; border-radius: 999px; font-weight: 700; font-size: 15px; z-index: 9999; display: none; box-shadow: 0 4px 20px rgba(255,215,0,0.5); pointer-events: none; }
 </style>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyA7sF7Bjt0h3Nw7W42pTyJheHVgAt5pxJ8",
-  authDomain: "perfect-paw-match.firebaseapp.com",
-  projectId: "perfect-paw-match",
-  storageBucket: "perfect-paw-match.firebasestorage.app",
-  messagingSenderId: "990908464411",
-  appId: "1:990908464411:web:29135ceb791aadb2df67be"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
-
-// 로그인 상태 변경 감지
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    // 로그인됨
-    document.getElementById('auth-btn').innerHTML = `
-      <img src="${user.photoURL}" style="width:28px;height:28px;border-radius:50%;border:2px solid #ffd700;">
-    `;
-    document.getElementById('auth-name').textContent = user.displayName;
-    document.getElementById('auth-section').style.display = 'flex';
-    document.getElementById('login-prompt').style.display = 'none';
-    // Firestore에서 포인트 불러오기
-    const ref = doc(db, 'users', user.uid);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      localStorage.setItem('ppm_stars', snap.data().stars || 0);
-    } else {
-      await setDoc(ref, { stars: 0, uid: user.uid, name: user.displayName });
-    }
-    refreshPts();
-  } else {
-    // 로그아웃
-    document.getElementById('auth-btn').innerHTML = `<span class="material-symbols-outlined text-[#d0c6ab]">account_circle</span>`;
-    document.getElementById('auth-section').style.display = 'none';
-    document.getElementById('login-prompt').style.display = 'flex';
-  }
-});
-
-window.googleLogin = async function() {
-  try { await signInWithPopup(auth, provider); }
-  catch(e) { console.error(e); }
-};
-
-window.googleLogout = async function() {
-  await signOut(auth);
-};
-
-window.syncStars = async function(stars) {
-  const user = auth.currentUser;
-  if (!user) return;
-  await updateDoc(doc(db, 'users', user.uid), { stars });
-};
-</script>
 </head>
 <body class="text-white min-h-screen flex flex-col items-center">
 <div class="w-full max-w-[1280px] bg-[#1b0b2f] flex flex-col min-h-screen shadow-2xl relative">
@@ -135,9 +72,23 @@ window.syncStars = async function(stars) {
     <span class="nav-link text-xs text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700]" data-section="collection" onclick="showSection('collection')">COLLECTION</span>
     <span class="nav-link text-xs text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700]" data-section="shop" onclick="showSection('shop')">SHOP</span>
   </nav>
-  <button id="auth-btn" onclick="googleLogin()" title="Google로 로그인"><span class="material-symbols-outlined text-[#d0c6ab] hover:text-[#ffd700]">account_circle</span></button>
-  <button onclick="showSection('settings')"><span class="material-symbols-outlined text-[#d0c6ab] hover:text-[#ffd700]">settings</span></button>
+  <button class="md:hidden material-symbols-outlined text-[#ffd700] text-2xl" onclick="toggleMobileMenu()">menu</button>
 </header>
+<div id="mobileMenu" class="hidden md:hidden fixed top-16 left-0 right-0 bg-[#1b0b2f]/95 border-b border-[#cdbdff]/20 z-40">
+  <nav class="flex flex-col gap-4 p-6">
+    <span class="nav-link text-sm font-bold tracking-widest text-[#ffd700] cursor-pointer" data-section="home" onclick="showSection('home'); toggleMobileMenu()">HOME</span>
+    <a class="text-sm text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700]" href="game.html">LEVELS</a>
+    <a class="text-sm text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700]" href="game.html">LEVELS</a>
+    <span class="nav-link text-sm text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700] cursor-pointer" data-section="collection" onclick="showSection('collection'); toggleMobileMenu()">COLLECTION</span>
+    <span class="nav-link text-sm text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700] cursor-pointer" data-section="shop" onclick="showSection('shop'); toggleMobileMenu()">SHOP</span>
+  </nav>
+</div>
+<script>
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobileMenu');
+  menu.classList.toggle('hidden');
+}
+</script>
 
 <main class="flex-grow">
 
@@ -153,7 +104,7 @@ window.syncStars = async function(stars) {
     </div>
   </section>
 
-  <div class="mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-12 gap-12">
+  <div class="mx-auto px-6 pt-8 grid grid-cols-1 lg:grid-cols-12 gap-6">
     <div class="lg:col-span-9">
       <h2 class="text-3xl font-bold text-[#fff6df] mb-8">Your Card Collection</h2>
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-7 gap-3">
@@ -163,74 +114,75 @@ window.syncStars = async function(stars) {
         </div>
         <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
           <img src="./asset/cards/indigo-bowtie.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Indigo Bowtie"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Indigo Bowtie</p>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Indigo Bowtie</p>
         </div>
         <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
           <img src="./asset/cards/fuchsia-ribbon.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Fuchsia Ribbon"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Fuchsia Ribbon</p>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Fuchsia Ribbon</p>
         </div>
         <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
           <img src="./asset/cards/crystal-ball.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Crystal Ball"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Crystal Ball</p>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Crystal Ball</p>
         </div>
         <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
           <img src="./asset/cards/royal-cat-bed.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Royal Cat Bed"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Royal Cat Bed</p>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Royal Cat Bed</p>
         </div>
         <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
           <img src="./asset/cards/silver-bag.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Silver Bag"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Silver Bag</p>
-        </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
-          <img src="./asset/cards/celestial-potion.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Celestial Potion"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Celestial Potion</p>
-        </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
-          <img src="./asset/cards/starry-mic.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Starry Mic"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Starry Mic</p>
-        </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
-          <img src="./asset/cards/amethyst-heart.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Amethyst Heart"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Amethyst Heart</p>
-        </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
-          <img src="./asset/cards/turquoise-cushion.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Turquoise Cushion"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Turquoise Cushion</p>
-        </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
-          <img src="./asset/cards/sapphire-paw.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Sapphire Paw"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Sapphire Paw</p>
-        </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
-          <img src="./asset/cards/mystic-yarn.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Mystic Yarn"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Mystic Yarn</p>
-        </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
-          <img src="./asset/cards/jeweled-key.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Jeweled Key"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Jeweled Key</p>
-        </div>
-        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
-          <img src="./asset/cards/ruby-goby.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Ruby Goby"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Ruby Goby</p>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Silver Bag</p>
         </div>
         <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
           <img src="./asset/cards/cosmic-milk-bottle.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Cosmic Milk Bottle"/>
-          <p class="text-xs font-bold tracking-widest text-[#d0c6ab]">Cosmic Milk Bottle</p>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Cosmic Milk Bottle</p>
+        </div>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/starry-mic.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Starry Mic"/>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Starry Mic</p>
+        </div>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/amethyst-heart.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Amethyst Heart"/>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Amethyst Heart</p>
+        </div>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/turquoise-cushion.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Turquoise Cushion"/>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Turquoise Cushion</p>
+        </div>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/sapphire-paw.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Sapphire Paw"/>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Sapphire Paw</p>
+        </div>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/mystic-yarn.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Mystic Yarn"/>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Mystic Yarn</p>
+        </div>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/jeweled-key.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Jeweled Key"/>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Jeweled Key</p>
+        </div>
+        <div class="glass-card p-3 rounded-2xl flex flex-col items-center text-center cursor-pointer hover:bg-[#322247]/60 transition-all">
+          <img src="./asset/cards/ruby-goby.png" class="w-20 h-20 mb-2 rounded-xl object-cover" alt="Ruby Goby"/>
+          <p class="text-xs font-bold tracking-widest text-[#ffd700]">Ruby Goby</p>
         </div>
       </div>
     </div>
-    <aside class="lg:col-span-3 space-y-8">
-      <div class="w-full flex justify-center">
-        <div class="w-[300px] h-[250px] bg-[#3d2d52]/20 border border-[#999077]/20 flex items-center justify-center text-xs text-[#d0c6ab] rounded-lg p-4 text-center tracking-widest font-bold">ADVERTISEMENT: SQUARE 300x250</div>
-      </div>
-      <div class="glass-card p-6 rounded-2xl border-l-4 border-[#ffd700]">
+    <div class="lg:col-span-3 flex justify-center items-start">
+      <div class="w-full h-full bg-[#3d2d52]/20 border border-[#999077]/20 flex items-center justify-center text-xs text-[#d0c6ab] rounded-lg p-4 text-center tracking-widest font-bold">ADVERTISEMENT: SQUARE 300x250</div>
+    </div>
+    <div class="lg:col-span-9">
+      <div class="glass-card rounded-2xl border-l-4 border-[#ffd700] p-6">
         <h3 class="text-lg font-bold text-[#ffd700] mb-1">Daily Bonus</h3>
-        <p class="text-sm text-[#ffd700]/70 font-bold mb-3">+100 ⭐ Points</p>
-        <p class="text-sm text-[#d0c6ab] mb-4">Come back every day to claim your free stardust!</p>
+        <p class="text-sm text-[#ffd700]/70 font-bold mb-2">+100 ⭐ Points</p>
+        <p class="text-sm text-[#d0c6ab] mb-3">Come back every day to claim your free stardust!</p>
         <div class="text-xs text-[#cdbdff] mb-3">Your Points: <span id="home-pts" class="text-[#ffd700] font-bold">0</span> ⭐</div>
-        <button id="home-bonus-btn" class="w-full py-2 bg-[#4e3f7d]/50 text-[#cdbdff] border border-[#cdbdff]/30 rounded-xl font-bold hover:bg-[#4e3f7d]" onclick="claimBonus()">Claim 100 ⭐</button>
+        <button id="home-bonus-btn" class="py-2 px-8 bg-[#4e3f7d]/50 text-[#cdbdff] border border-[#cdbdff]/30 rounded-xl font-bold hover:bg-[#4e3f7d]" onclick="claimBonus()">Claim 100 ⭐</button>
       </div>
-    </aside>
+    </div>
+    <div class="lg:col-span-3 flex flex-col justify-between">
+      <div class="rounded-2xl overflow-hidden">
+        <img src="./asset/site front page/daily-bonus-page.png" alt="Daily Bonus" style="width:100%;display:block;border-radius:12px;"/>
+      </div>
+    </div>
   </div>
 
   <section class="py-16 px-6 bg-[#231437]/50">
@@ -293,6 +245,64 @@ window.syncStars = async function(stars) {
     <div class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 xl:grid-cols-9 gap-4 mb-12" id="zia-grid"></div>
     <h3 class="text-xl font-bold text-[#ffd700] mb-4">🌙 Zio <span class="text-xs text-[#d0c6ab] ml-2 font-normal">13 characters</span></h3>
     <div class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-4" id="zio-grid"></div>
+
+
+    <!-- Y Card 형광프레임 -->
+    <h3 class="text-xl font-bold text-[#ffd700] mt-10 mb-4">✨ Neon Frame Cards <span class="text-xs text-[#d0c6ab] ml-2 font-normal">14 cards</span></h3>
+    <div class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-4 mb-10">
+      <div class="char-frame locked"><img src="./asset/y card/amethyst-heart.png" alt="amethyst-heart"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/y card/cosmic-milk-bottle.png" alt="cosmic-milk-bottle"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/y card/crystal-ball.png" alt="crystal-ball"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/y card/fuchsia-ribbon.png" alt="fuchsia-ribbon"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/y card/golden-paw.png" alt="golden-paw"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/y card/indigo-bowtie.png" alt="indigo-bowtie"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/y card/jeweled-key.png" alt="jeweled-key"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/y card/mystic-yarn.png" alt="mystic-yarn"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/y card/ruby-goby.png" alt="ruby-goby"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/y card/royal-cat-bed.png" alt="royal-cat-bed"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/y card/sapphire-paw.png" alt="sapphire-paw"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/y card/silver-bag.png" alt="silver-bag"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/y card/starry-mic.png" alt="starry-mic"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/y card/turquoise-cushion.png" alt="turquoise-cushion"/><span class="lock-icon">🔒</span></div>
+    </div>
+
+    <!-- Stripe Card -->
+    <h3 class="text-xl font-bold text-[#ffd700] mb-4">🌟 Cosmic Stripe Cards <span class="text-xs text-[#d0c6ab] ml-2 font-normal">14 cards</span></h3>
+    <div class="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 gap-4 mb-10">
+      <div class="char-frame locked"><img src="./asset/cards/amethyst-heart.png" alt="amethyst-heart"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/cards/cosmic-milk-bottle.png" alt="cosmic-milk-bottle"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/cards/crystal-ball.png" alt="crystal-ball"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/cards/fuchsia-ribbon.png" alt="fuchsia-ribbon"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/cards/golden-paw.png" alt="golden-paw"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/cards/indigo-bowtie.png" alt="indigo-bowtie"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/cards/jeweled-key.png" alt="jeweled-key"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/cards/mystic-yarn.png" alt="mystic-yarn"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/cards/ruby-goby.png" alt="ruby-goby"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/cards/royal-cat-bed.png" alt="royal-cat-bed"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/cards/sapphire-paw.png" alt="sapphire-paw"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/cards/silver-bag.png" alt="silver-bag"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/cards/starry-mic.png" alt="starry-mic"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/cards/turquoise-cushion.png" alt="turquoise-cushion"/><span class="lock-icon">🔒</span></div>
+    </div>
+
+    <!-- Zia & Zio Couple Profile -->
+    <h3 class="text-xl font-bold text-[#ffd700] mt-10 mb-4">💑 Zia & Zio Together <span class="text-xs text-[#d0c6ab] ml-2 font-normal">6 images</span></h3>
+    <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-4 mb-10">
+      <div class="char-frame locked"><img src="./asset/ziozia couple profile pix/ziozia1.png" alt="ZioZia 1"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/ziozia couple profile pix/ziozia2.png" alt="ZioZia 2"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/ziozia couple profile pix/ziozia3.png" alt="ZioZia 3"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/ziozia couple profile pix/ziozia4.png" alt="ZioZia 4"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/ziozia couple profile pix/ziozia5.png" alt="ZioZia 5"/><span class="lock-icon">🔒</span></div>
+    </div>
+
+    <!-- Zia & Zio Collection -->
+    <h3 class="text-xl font-bold text-[#ffd700] mb-4">🎨 Zia & Zio Collection <span class="text-xs text-[#d0c6ab] ml-2 font-normal">3 images</span></h3>
+    <div class="grid grid-cols-3 sm:grid-cols-4 gap-4">
+      <div class="char-frame locked"><img src="./asset/zioziacouple collection/ziozia0.png" alt="ZioZia 0"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/zioziacouple collection/zioziaf1.png" alt="ZioZia F1"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/zioziacouple collection/zioziaf2.png" alt="ZioZia F2"/><span class="lock-icon">🔒</span></div>
+      <div class="char-frame locked"><img src="./asset/zioziacouple collection/zioziaf3.png" alt="ZioZia F3"/><span class="lock-icon">🔒</span></div>
+    </div>
   </div>
 </div>
 
@@ -330,15 +340,15 @@ window.syncStars = async function(stars) {
         <img src="./asset/zia-final/1.png" style="width:80px;height:80px;border-radius:12px;object-fit:cover;" alt="Zia"/>
         <p class="text-lg font-bold text-[#fff6df]">Zia Character</p>
         <p class="text-sm text-[#d0c6ab]">Unlock any Zia you don't have yet.</p>
-        <button class="sec-btn" onclick="showSection('collection')">View Collection</button>
-        <button class="buy-btn" onclick="buyZia()">500 ⭐ or $0.99</button>
+        <span class="pt-badge">500 ⭐ or $0.99</span>
+        <button class="buy-btn" onclick="showSection('collection')">View Collection</button>
       </div>
       <div class="shop-card">
         <img src="./asset/zio-final/zio1.png" style="width:80px;height:80px;border-radius:12px;object-fit:cover;" alt="Zio"/>
         <p class="text-lg font-bold text-[#fff6df]">Zio Character</p>
         <p class="text-sm text-[#d0c6ab]">Unlock any Zio you don't have yet.</p>
-        <button class="sec-btn" onclick="showSection('collection')">View Collection</button>
-        <button class="buy-btn" onclick="buyZio()">500 ⭐ or $0.99</button>
+        <span class="pt-badge">500 ⭐ or $0.99</span>
+        <button class="buy-btn" onclick="showSection('collection')">View Collection</button>
       </div>
       <div class="shop-card">
         <div style="font-size:40px;">🌟</div>
@@ -356,46 +366,6 @@ window.syncStars = async function(stars) {
   <div class="px-6 py-12 max-w-[700px] mx-auto">
     <h2 class="text-3xl font-bold text-[#fff6df] mb-2">Settings</h2>
     <p class="text-sm text-[#d0c6ab] mb-10">Manage your account and learn how points work.</p>
-
-    <!-- 로그인 상태 -->
-    <div id="auth-section" class="glass-card p-6 rounded-2xl mb-8" style="display:none;">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <span id="auth-name" class="font-bold text-[#fff6df]"></span>
-          <span class="text-xs text-[#cdbdff]/60">Google로 로그인됨</span>
-        </div>
-        <button onclick="googleLogout()" class="sec-btn" style="width:auto;padding:6px 16px;font-size:12px;">로그아웃</button>
-      </div>
-    </div>
-    <div id="login-prompt" class="glass-card p-6 rounded-2xl mb-8" style="display:flex;align-items:center;justify-content:space-between;">
-      <div>
-        <p class="font-bold text-[#fff6df] mb-1">로그인하면 포인트가 저장돼요</p>
-        <p class="text-xs text-[#cdbdff]/60">브라우저 지워도 별점 유지됩니다.</p>
-      </div>
-      <button onclick="googleLogin()" class="buy-btn" style="width:auto;padding:8px 20px;display:flex;align-items:center;gap:8px;">
-        <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#1a0a2e" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#1a0a2e" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#1a0a2e" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#1a0a2e" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-        Google 로그인
-      </button>
-    </div>
-    <div class="glass-card p-6 rounded-2xl mb-8">
-      <h3 class="text-xl font-bold text-[#ffd700] mb-4">🎵 Music & Sound</h3>
-      <div class="text-sm text-[#d0c6ab]">
-        <div class="settings-row">
-          <span>Background Music</span>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="music-toggle" class="sr-only peer" onchange="toggleMusic(this.checked)">
-            <div class="w-11 h-6 bg-[#4e3f7d] peer-checked:bg-[#ffd700] rounded-full transition-colors after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5"></div>
-          </label>
-        </div>
-        <div class="settings-row" style="border:none;">
-          <span>Volume</span>
-          <input type="range" id="music-volume" min="0" max="100" value="70"
-            oninput="setMusicVolume(this.value)"
-            class="w-32 accent-[#ffd700] cursor-pointer">
-        </div>
-      </div>
-    </div>
-
     <div class="glass-card p-6 rounded-2xl mb-8">
       <h3 class="text-xl font-bold text-[#ffd700] mb-4">⭐ How to Earn Points</h3>
       <div class="text-sm text-[#d0c6ab]">
@@ -434,9 +404,11 @@ window.syncStars = async function(stars) {
       <span class="text-[#ffd700] font-bold">Perfect Paw Match</span>
     </div>
     <div class="flex gap-8">
+      <a class="text-xs text-[#cdbdff]/60 hover:text-[#ffd700] tracking-widest font-bold" href="about.html">ABOUT</a>
       <a class="text-xs text-[#cdbdff]/60 hover:text-[#ffd700] tracking-widest font-bold" href="privacy.html">PRIVACY</a>
       <a class="text-xs text-[#cdbdff]/60 hover:text-[#ffd700] tracking-widest font-bold" href="terms.html">TERMS</a>
-      <a class="text-xs text-[#cdbdff]/60 hover:text-[#ffd700] tracking-widest font-bold" href="#">CONTACT</a>
+      <a class="text-xs text-[#cdbdff]/60 hover:text-[#ffd700] tracking-widest font-bold" href="refund.html">REFUND</a>
+      <a class="text-xs text-[#cdbdff]/60 hover:text-[#ffd700] tracking-widest font-bold" href="contact.html">CONTACT</a>
     </div>
     <p class="text-sm text-[#cdbdff] mt-2 opacity-60">© 2025 Perfect Paw Match. All celestial rights reserved.</p>
   </div>
@@ -445,7 +417,7 @@ window.syncStars = async function(stars) {
 </div>
 <script>
 function getPoints(){ return parseInt(localStorage.getItem('ppm_points')||'0'); }
-function setPoints(n){ localStorage.setItem('ppm_stars',n); refreshPts(); if(window.syncStars) window.syncStars(n); }
+function setPoints(n){ localStorage.setItem('ppm_points', n); refreshPts(); }
 function addPoints(n){ setPoints(getPoints()+n); }
 
 function refreshPts(){
@@ -508,57 +480,7 @@ function buyItem(type, cost){
   }
 }
 
-function buyNoAds(){
-  var choice=confirm('Pay with PayPal?\nOK = PayPal  |  Cancel = Credit Card (Stripe)');
-  if(choice){ window.open('https://www.paypal.com/ncp/payment/5M5SC7J9KQFVY','_blank'); }
-  else { window.open('https://buy.stripe.com/fZu7sKccg5Zp4ez7JNgjC00','_blank'); }
-}
-function spendStars(cost){
-  var pts=parseInt(localStorage.getItem('ppm_stars')||'0');
-  if(pts>=cost){ localStorage.setItem('ppm_stars',pts-cost); updatePts(); showToast('✅ Unlocked with ⭐!'); return true; }
-  return false;
-}
-function buyZia(){
-  if(spendStars(500)) return;
-  var choice=confirm('Pay with PayPal?\nOK = PayPal  |  Cancel = Credit Card (Stripe)');
-  if(choice){ window.open('https://www.paypal.com/ncp/payment/7E8DA6WE9XNQY','_blank'); }
-  else { window.open('https://buy.stripe.com/14A3cu4JOevVbH19RVgjC01','_blank'); }
-}
-function buyZio(){
-  if(spendStars(500)) return;
-  var choice=confirm('Pay with PayPal?\nOK = PayPal  |  Cancel = Credit Card (Stripe)');
-  if(choice){ window.open('https://www.paypal.com/ncp/payment/7E8DA6WE9XNQY','_blank'); }
-  else { window.open('https://buy.stripe.com/14A3cu4JOevVbH19RVgjC01','_blank'); }
-}
-
-// 음악 설정
-var bgMusic=null;
-function toggleMusic(on){
-  localStorage.setItem('ppm_music', on?'1':'0');
-  if(on){
-    if(!bgMusic){
-      bgMusic=new Audio();
-      bgMusic.loop=true;
-      bgMusic.volume=(parseInt(localStorage.getItem('ppm_vol')||'70'))/100;
-      // BGM 파일 추가 후 src 설정: bgMusic.src='asset/bgm.mp3';
-    }
-    // bgMusic.play();
-  } else {
-    if(bgMusic){ bgMusic.pause(); }
-  }
-}
-function setMusicVolume(val){
-  localStorage.setItem('ppm_vol', val);
-  if(bgMusic) bgMusic.volume=val/100;
-}
-function initMusicSettings(){
-  var on=localStorage.getItem('ppm_music')==='1';
-  var vol=parseInt(localStorage.getItem('ppm_vol')||'70');
-  var tog=document.getElementById('music-toggle');
-  var volEl=document.getElementById('music-volume');
-  if(tog) tog.checked=on;
-  if(volEl) volEl.value=vol;
-}
+function buyNoAds(){ window.open('https://buy.stripe.com/fZu7sKccg5Zp4ez7JNgjC00','_blank'); }
 
 function resetData(){
   if(!confirm('Reset ALL data?')) return;
@@ -574,9 +496,31 @@ function getUnlocked(){
 }
 function saveUnlocked(u){ localStorage.setItem('ppm_unlocked', JSON.stringify(u)); }
 
+function buildZioGrid(){
+  var grid=document.getElementById('zio-grid');
+  if(!grid) return;
+  grid.innerHTML='';
+  var nums=[1,2,3,4,5,6,7,8,10,11,12,13];
+  var unlocked=getUnlocked();
+  nums.forEach(function(i){
+    var key='zio'+i;
+    var isUnlocked=!!unlocked[key];
+    var imgSrc='./asset/zio-final/zio'+i+'.png';
+    var card=document.createElement('div');
+    card.className='char-frame'+(isUnlocked?'':' locked');
+    if(isUnlocked){
+      card.innerHTML='<img src="'+imgSrc+'" alt="'+key+'"/>';
+    } else {
+      card.innerHTML='<img src="'+imgSrc+'" alt="'+key+'"/><span class="lock-icon">🔒</span>';
+      card.style.cursor='pointer';
+      (function(k,src,c){ c.onclick=function(){ unlockChar(k,src,c); }; })(key,imgSrc,card);
+    }
+    grid.appendChild(card);
+  });
+}
 function buildCollection(){
   buildGrid('zia-grid','zia',9,'zia-final','','png');
-  buildGrid('zio-grid','zio',13,'zio-final','zio','png');
+  buildZioGrid();
 }
 
 function buildGrid(gridId, prefix, count, folder, filePrefix, ext){
@@ -623,7 +567,6 @@ function unlockChar(key, imgSrc, card){
 
 refreshPts();
 updateBonusBtn();
-initMusicSettings();
 </script>
 </body>
 </html>
