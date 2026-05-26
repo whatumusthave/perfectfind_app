@@ -19,7 +19,7 @@
 
     /* 게임 보드만 */
     .game-container{flex:1;display:flex;align-items:center;justify-content:center;min-height:0}
-    #game-board{width:360px;height:460px;flex-shrink:0;transform-origin:top center}
+    #game-board{width:360px;height:460px;flex-shrink:1;transform-origin:top center}
     #board-inner{position:relative;width:360px;height:460px}
     @media(max-width:380px){
       #game-board{transform:scale(0.9);width:324px;height:414px;}
@@ -30,7 +30,7 @@
     .bottom{flex-shrink:0;background:rgba(12,4,24,.97);border-top:1px solid rgba(205,189,255,.08);padding:4px 8px 8px}
 
     /* 덱 행 — 슬롯 위 */
-    .deck-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:6px;min-height:100px;overflow:visible}
+    .deck-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:4px;min-height:0;overflow:visible}
 
     /* 슬롯 행 */
     .slot-row{display:flex;align-items:center;justify-content:center;gap:3px;margin-bottom:6px}
