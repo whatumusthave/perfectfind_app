@@ -395,15 +395,65 @@ function clickTile(t){
   if(!on||t.removed||t.blocked) return;
   if(slots.length>=SM){on=false;showResult(false);return;}
   saveHist();
-  // 햅틱
   if(navigator.vibrate) navigator.vibrate(18);
+
+  // 카드 위치 계산
+  const bd=document.getElementById('board-inner');
+  const bar=document.getElementById('slot-bar');
+  if(bd && bar){
+    const bdRect=bd.getBoundingClientRect();
+    const barRect=bar.getBoundingClientRect();
+    const slotIdx=slots.length;
+    const slotX=barRect.left+(slotIdx*46)+20;
+    const slotY=barRect.top+20;
+    const startX=bdRect.left+t.x+CW/2;
+    const startY=bdRect.top+t.y+CH/2;
+
+    // 비행 카드 생성
+    const fly=document.createElement('img');
+    fly.src=CP+t.card+'.png';
+    fly.style.cssText=`
+      position:fixed;
+      left:${startX-22}px;top:${startY-22}px;
+      width:44px;height:44px;
+      border-radius:8px;border:2px solid gold;
+      object-fit:cover;z-index:99999;
+      pointer-events:none;
+      box-shadow:0 0 16px rgba(255,215,0,0.8);
+    `;
+    document.body.appendChild(fly);
+
+    // 포물선 애니메이션
+    const dx=slotX-startX;
+    const dy=slotY-startY;
+    const dur=320;
+    const start=performance.now();
+    function step(now){
+      const p=Math.min((now-start)/dur,1);
+      const ease=p<0.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+      const arc=Math.sin(p*Math.PI)*-80;
+      const x=startX+dx*ease-22;
+      const y=startY+dy*ease+arc-22;
+      const sc=1-p*0.3;
+      fly.style.left=x+'px';
+      fly.style.top=y+'px';
+      fly.style.transform=`scale(${sc}) rotate(${p*15}deg)`;
+      fly.style.opacity=p>0.85?(1-(p-0.85)/0.15)+'':1;
+      if(p<1) requestAnimationFrame(step);
+      else {
+        fly.remove();
+        if(navigator.vibrate) navigator.vibrate([10,10,20]);
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
   t.removed=true;
   slots.push(t.card);
   addPts(10);
   checkShading();
   while(checkMatch());
   render();
-  // 슬롯 드롭 애니메이션
   animateSlotDrop(slots.length-1);
   if(slots.length>=SM){on=false;showResult(false);}
 }
