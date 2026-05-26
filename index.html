@@ -74,7 +74,10 @@ tailwind.config = {
     <span class="nav-link text-xs text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700]" data-section="collection" onclick="showSection('collection')">COLLECTION</span>
     <span class="nav-link text-xs text-[#d0c6ab] tracking-widest font-bold hover:text-[#ffd700]" data-section="shop" onclick="showSection('shop')">SHOP</span>
   </nav>
-  <button class="md:hidden material-symbols-outlined text-[#ffd700] text-2xl" onclick="toggleMobileMenu()">menu</button>
+  <div class="flex items-center gap-2">
+    <button onclick="showSection('settings')"><span class="material-symbols-outlined text-[#d0c6ab] hover:text-[#ffd700]">settings</span></button>
+    <button class="md:hidden material-symbols-outlined text-[#ffd700] text-2xl" onclick="toggleMobileMenu()">menu</button>
+  </div>
 </header>
 <div id="mobileMenu" class="hidden md:hidden fixed top-16 left-0 right-0 bg-[#1b0b2f]/95 border-b border-[#cdbdff]/20 z-40">
   <nav class="flex flex-col gap-4 p-6">
