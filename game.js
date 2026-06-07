@@ -1,4 +1,4 @@
-// Perfect Paw Match — 최종 완벽판
+// Pawfect Match — 최종 완벽판
 // HTML 구조: #game-board > #board-inner (360×460, position:relative)
 // 반드시 getElementById('board-inner') 사용
 
