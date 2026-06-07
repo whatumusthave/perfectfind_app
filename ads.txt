@@ -1,1 +1,1 @@
-google.com, pub-8017094594733668, DIRECT, f08c47fec0942fa0
+AMAZON.COM, amazon.co.jp, 2026, DIRECT
