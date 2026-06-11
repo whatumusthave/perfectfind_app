@@ -443,6 +443,7 @@ function showResult(isWin){
       <h2>🎉 STAGE ${stage} CLEAR!</h2>
       <p>Score: ${score.toLocaleString()}</p>
       <button onclick="nextStage()">Next Stage →</button>
+      <button onclick="shareToTikTok()">🎵 Share to TikTok</button>
       <button onclick="window.location.href='index.html'">Home</button>
     </div>`;
   } else if(isWin){
@@ -450,6 +451,7 @@ function showResult(isWin){
       <h2>🏆 ALL CLEAR!</h2>
       <p>Final Score: ${score.toLocaleString()}</p>
       <button onclick="restartGame()">Play Again</button>
+      <button onclick="shareToTikTok()">🎵 Share to TikTok</button>
       <button onclick="window.location.href='index.html'">Home</button>
     </div>`;
   } else if(stage>=2&&!adUsed){
@@ -520,3 +522,8 @@ window.nextStage=nextStage;
 window.retryStage=retryStage;
 window.restartGame=restartGame;
 window.watchAd=watchAd;
+
+function shareToTikTok(){
+  const text = encodeURIComponent('I just cleared Pawfect Match! 🐾✨ Can you beat my score? Play free → https://perfectfind.win #PawfectMatch #PuzzleGame #TikTokGaming');
+  window.open('https://www.tiktok.com/upload?description='+text, '_blank');
+}
